@@ -39,6 +39,7 @@ router.get('/:userId', async (req, res) => {
           role: user.role,
           quizStats: user.quizStats || { xp: 0, completed: 0, streak: 0 },
           badges: user.badges || [],
+          footprint: user.footprint || 0,
           bio: user.bio || '',
           lastLogin: user.lastLogin,
           createdAt: user.createdAt,
@@ -88,6 +89,7 @@ router.get('/:userId', async (req, res) => {
         role: user.role,
         quizStats: user.quizStats || { xp: 0, completed: 0, streak: 0 },
         badges: user.badges || [],
+        footprint: user.footprint || 0,
         bio: user.bio || '',
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
@@ -142,6 +144,39 @@ router.patch('/:userId', async (req, res) => {
       return res.json({ success: true, user: updated, warning: 'DB offline — updated in memory' })
     }
     return res.json({ success: true, user: { _id: userId, name, avatar, bio }, warning: 'DB offline' })
+  }
+})
+
+// ── POST /api/profile/:userId/footprint — Update footprint calculation ──────
+router.post('/:userId/footprint', async (req, res) => {
+  const { userId } = req.params
+  const { footprint } = req.body
+  const isDBConnected = mongoose.connection.readyState === 1
+
+  if (isDBConnected) {
+    try {
+      const updated = await User.findByIdAndUpdate(userId, { footprint }, { new: true }).select('-password')
+      if (!updated) return res.status(404).json({ error: 'User not found' })
+      if (req.app?.locals?.io) {
+        req.app.locals.io.emit('profile:updated', { userId, footprint: updated.footprint })
+      }
+      return res.json({ success: true, user: updated })
+    } catch (err) {
+      console.error('❌ Footprint update error:', err.message)
+      return res.status(500).json({ error: 'Failed to update footprint' })
+    }
+  } else {
+    // In-memory fallback
+    const mockUsers = req.app.locals.mockUsers || []
+    const index = mockUsers.findIndex(u => u._id === userId || u.id === userId)
+    if (index !== -1) {
+      mockUsers[index].footprint = footprint
+      if (req.app?.locals?.io) {
+        req.app.locals.io.emit('profile:updated', { userId, footprint })
+      }
+      return res.json({ success: true, user: mockUsers[index], warning: 'DB offline — updated in memory' })
+    }
+    return res.json({ success: true, warning: 'DB offline' })
   }
 })
 

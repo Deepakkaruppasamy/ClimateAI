@@ -552,8 +552,9 @@ export default function Profile() {
             </motion.div>
 
             {/* ── Stats Grid ──────────────────────────────────────── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <StatCard icon={Star} label="Total XP" value={totalXP} color="#ffcc00" sub={`Level ${xpLevel}`} />
+              <StatCard icon={Leaf} label="Annual Footprint" value={`${profile.footprint || 0}t`} color="#00d4ff" sub="calculated footprint" />
               <StatCard icon={BookOpen} label="Quizzes Done" value={profile.quizStats?.completed || 0} color="#7c3aed" sub={`${avgScore}% avg score`} />
               <StatCard icon={Zap} label="Day Streak" value={profile.quizStats?.streak || 0} color="#ff8800" sub="consecutive days" />
               <StatCard icon={Leaf} label="CO2 Offset" value={`${approvedCarbon}t`} color="#22c55e" sub="approved credits" />

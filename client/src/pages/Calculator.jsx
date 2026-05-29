@@ -18,12 +18,28 @@ export default function Calculator() {
   const [step, setStep] = useState(1) // 1: Home, 2: Transit, 3: Diet, 4: Results
   const [calculating, setCalculating] = useState(false)
 
+  const saveFootprint = async (footprintVal) => {
+    if (!user?._id) return
+    try {
+      await fetch(`/api/profile/${user._id}/footprint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ footprint: footprintVal })
+      })
+    } catch (err) {
+      console.warn('Failed to save carbon footprint calculation:', err)
+    }
+  }
+
   const handleStepChange = (nextStep) => {
     playTap()
     setCalculating(true)
     setTimeout(() => {
       setStep(nextStep)
       setCalculating(false)
+      if (nextStep === 4) {
+        saveFootprint(total)
+      }
     }, 550)
   }
   

@@ -70,6 +70,7 @@ app.locals.mockUsers = [
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
     quizStats: { xp: 200, completed: 5, streak: 3 },
     badges: ['Climate Scholar'],
+    footprint: 12.4,
     createdAt: new Date(Date.now() - 86400000 * 10),
     lastLogin: new Date()
   },
@@ -83,6 +84,7 @@ app.locals.mockUsers = [
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
     quizStats: { xp: 500, completed: 10, streak: 7 },
     badges: ['Eco-Guardian', 'Climate Scholar'],
+    footprint: 6.8,
     createdAt: new Date(Date.now() - 86400000 * 30),
     lastLogin: new Date()
   },
@@ -96,6 +98,7 @@ app.locals.mockUsers = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
     quizStats: { xp: 80, completed: 2, streak: 1 },
     badges: [],
+    footprint: 10.2,
     createdAt: new Date(Date.now() - 86400000 * 2),
     lastLogin: new Date()
   }
@@ -113,6 +116,27 @@ app.locals.mockScores = [
   { userId: '507f1f77bcf86cd799439011', userName: 'Alex Carter', score: 80, xpGained: 80, createdAt: new Date(Date.now() - 86400000 * 4) },
   { userId: '507f1f77bcf86cd799439012', userName: 'Elena Rostova', score: 90, xpGained: 90, createdAt: new Date(Date.now() - 86400000 * 1) },
   { userId: '507f1f77bcf86cd799439013', userName: 'Marcus Chen', score: 70, xpGained: 70, createdAt: new Date(Date.now() - 86400000 * 3) }
+]
+
+app.locals.mockComments = [
+  { 
+    _id: 'c1',
+    id: 'c1',
+    articleId: '1', 
+    userName: 'Alex Carter', 
+    userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 
+    content: 'Incredible news for datacenters. Green grids are the key to absolute clean cloud solutions.', 
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
+  },
+  { 
+    _id: 'c2',
+    id: 'c2',
+    articleId: '2', 
+    userName: 'Marcus Chen', 
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', 
+    content: 'The Arctic telemetry warning radar seems extremely aligned with climate forecast models.', 
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString() 
+  }
 ]
 
 // Stress-test middleware (no-op unless enabled)

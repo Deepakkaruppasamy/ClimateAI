@@ -35,23 +35,7 @@ let mockArticles = [
   }
 ]
 
-// ── In-Memory Comments Fallback ──────────────────────────────
-const mockComments = [
-  { 
-    articleId: '1', 
-    userName: 'Alex Carter', 
-    userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 
-    content: 'Incredible news for datacenters. Green grids are the key to absolute clean cloud solutions.', 
-    createdAt: new Date(Date.now() - 3600000 * 24) 
-  },
-  { 
-    articleId: '2', 
-    userName: 'Marcus Chen', 
-    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', 
-    content: 'The Arctic telemetry warning radar seems extremely aligned with climate forecast models.', 
-    createdAt: new Date(Date.now() - 3600000 * 12) 
-  }
-]
+// ── In-Memory Comments Fallback (Utilizes global app.locals.mockComments) ─────
 
 // ── GET All Articles ─────────────────────────────────────────
 router.get('/', async (req, res) => {
@@ -181,9 +165,10 @@ router.get('/:id/comments', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch comments' })
     }
   } else {
+    const mockComments = req.app.locals.mockComments || []
     const filtered = mockComments
       .filter(c => c.articleId === articleId)
-      .sort((a, b) => b.createdAt - a.createdAt)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     return res.json({ success: true, comments: filtered, warning: 'DB offline' })
   }
 })
@@ -213,7 +198,17 @@ router.post('/:id/comments', async (req, res) => {
       return res.status(500).json({ error: 'Failed to save comments' })
     }
   } else {
-    const newMockComment = { articleId, userName, userAvatar, content, createdAt: new Date() }
+    const mockComments = req.app.locals.mockComments || []
+    const newMockComment = {
+      _id: `mock-c-${Date.now()}`,
+      id: `mock-c-${Date.now()}`,
+      articleId,
+      userName,
+      userAvatar,
+      content,
+      pinned: false,
+      createdAt: new Date().toISOString()
+    }
     mockComments.push(newMockComment)
     if (req.app?.locals?.io) {
       req.app.locals.io.emit('news:comment-added', { articleId, comment: newMockComment })
@@ -243,7 +238,8 @@ router.delete('/:id/comments/:commentId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to delete comment' });
     }
   } else {
-    const index = mockComments.findIndex(c => c.articleId === articleId && c._id === commentId);
+    const mockComments = req.app.locals.mockComments || []
+    const index = mockComments.findIndex(c => c.articleId === articleId && (c._id === commentId || c.id === commentId));
     if (index !== -1) mockComments.splice(index, 1);
     if (req.app?.locals?.io) {
       req.app.locals.io.emit('news:comment-updated', { articleId, commentId, action: 'delete' });
@@ -271,7 +267,8 @@ router.post('/:id/comments/:commentId/pin', async (req, res) => {
       return res.status(500).json({ error: 'Failed to toggle pin' });
     }
   } else {
-    const comment = mockComments.find(c => c.articleId === articleId && c._id === commentId);
+    const mockComments = req.app.locals.mockComments || []
+    const comment = mockComments.find(c => c.articleId === articleId && (c._id === commentId || c.id === commentId));
     if (!comment) return res.status(404).json({ error: 'Comment not found in memory' });
     comment.pinned = !comment.pinned;
     if (req.app?.locals?.io) {

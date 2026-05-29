@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  footprint: {
+    type: Number,
+    default: 0
+  },
   bio: {
     type: String,
     default: ''
