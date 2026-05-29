@@ -27,6 +27,7 @@ import AdminRoute from './components/layout/AdminRoute'
 import { WeatherProvider } from './context/WeatherContext'
 import { AuthProvider } from './context/AuthContext'
 import { SocketProvider } from './context/SocketContext'
+import CosmosOrrery from './components/ui/CosmosOrrery'
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -93,6 +94,7 @@ export default function App() {
                       error: { iconTheme: { primary: '#ff4444', secondary: '#040d1a' } },
                     }}
                   />
+                  <CosmosOrrery />
                 </div>
               )}
             </WeatherProvider>
