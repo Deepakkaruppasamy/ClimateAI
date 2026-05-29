@@ -3,30 +3,47 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const CarbonRequest = require('../models/CarbonRequest');
 
-// GET pending carbon requests
+// Badge calculation helper
+function recalculateBadges(userObj, approvedCarbonTotal) {
+  if (!userObj) return;
+  if (!userObj.badges) userObj.badges = [];
+  
+  // Eco-Guardian
+  if (approvedCarbonTotal > 0 && !userObj.badges.includes('Eco-Guardian')) {
+    userObj.badges.push('Eco-Guardian');
+  }
+  // Carbon Neutral
+  if (approvedCarbonTotal >= 10 && !userObj.badges.includes('Carbon Neutral')) {
+    userObj.badges.push('Carbon Neutral');
+  }
+  // Climate Scholar
+  if (userObj.quizStats && userObj.quizStats.completed >= 3 && !userObj.badges.includes('Climate Scholar')) {
+    userObj.badges.push('Climate Scholar');
+  }
+  // Streak Master
+  if (userObj.quizStats && userObj.quizStats.streak >= 7 && !userObj.badges.includes('Streak Master')) {
+    userObj.badges.push('Streak Master');
+  }
+}
+
+// GET all carbon requests
 router.get('/requests', async (req, res) => {
   const isDBConnected = mongoose.connection.readyState === 1;
   if (isDBConnected) {
     try {
-      const pending = await CarbonRequest.find({ status: 'pending' });
-      return res.json({ success: true, requests: pending });
+      const requests = await CarbonRequest.find({}).sort({ createdAt: -1 });
+      return res.json({ success: true, requests });
     } catch (err) {
       console.error('❌ Fetch carbon requests error:', err.message);
       return res.status(500).json({ error: 'Failed to fetch carbon requests' });
     }
   } else {
+    const mockCarbonRequests = req.app.locals.mockCarbonRequests || [];
     return res.json({ success: true, requests: mockCarbonRequests, warning: 'DB offline — showing in-memory requests' });
   }
 });
 
 // POST new carbon request
-const mockCarbonRequests = [
-  { _id: 'demo-1', id: 'demo-1', userId: 'user_alpha', projectId: 'PROJ-2024-GHG', amount: 150, status: 'pending',  createdAt: new Date(Date.now() - 3600000 * 4).toISOString() },
-  { _id: 'demo-2', id: 'demo-2', userId: 'user_beta',  projectId: 'PROJ-2023-WIND', amount: 220, status: 'approved', createdAt: new Date(Date.now() - 3600000 * 12).toISOString() },
-  { _id: 'demo-3', id: 'demo-3', userId: 'user_gamma', projectId: 'PROJ-2024-SOLAR', amount: 80, status: 'rejected', createdAt: new Date(Date.now() - 3600000 * 24).toISOString() },
-  { _id: 'demo-4', id: 'demo-4', userId: 'user_delta', projectId: 'PROJ-2025-BIOFUEL', amount: 310, status: 'pending', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
-];
-
 router.post('/request', async (req, res) => {
   const { userId, amount, projectId } = req.body;
   if (!userId || !amount || !projectId) {
@@ -48,6 +65,7 @@ router.post('/request', async (req, res) => {
     }
   } else {
     // In-memory fallback for demo mode
+    const mockCarbonRequests = req.app.locals.mockCarbonRequests || [];
     const mockReq = {
       _id: `mock-${Date.now()}`,
       id: `mock-${Date.now()}`,
@@ -77,6 +95,21 @@ router.post('/:id/approve', async (req, res) => {
     try {
       const updated = await CarbonRequest.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
       if (!updated) return res.status(404).json({ error: 'Request not found' });
+      
+      // Calculate approved total and update user badges in database
+      const userRequests = await CarbonRequest.find({ userId: updated.userId, status: 'approved' });
+      const approvedCarbonTotal = userRequests.reduce((sum, r) => sum + (r.amount || 0), 0);
+      
+      const User = require('../models/User');
+      const userObj = await User.findById(updated.userId);
+      if (userObj) {
+        recalculateBadges(userObj, approvedCarbonTotal);
+        await userObj.save();
+        if (req.app?.locals?.io) {
+          req.app.locals.io.emit('profile:updated', { userId: userObj._id, name: userObj.name, avatar: userObj.avatar });
+        }
+      }
+
       if (req.app && req.app.locals && req.app.locals.io) {
         req.app.locals.io.emit('carbon:status-updated', updated);
       }
@@ -87,12 +120,26 @@ router.post('/:id/approve', async (req, res) => {
     }
   } else {
     // In-memory fallback/demo updates
+    const mockCarbonRequests = req.app.locals.mockCarbonRequests || [];
     const index = mockCarbonRequests.findIndex(r => r._id === id || r.id === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Mock/Demo request not found' });
     }
     mockCarbonRequests[index].status = 'approved';
     const updated = mockCarbonRequests[index];
+    
+    // Find mock user and update badges
+    const mockUsers = req.app.locals.mockUsers || [];
+    const userObj = mockUsers.find(u => u._id === updated.userId || u.id === updated.userId);
+    if (userObj) {
+      const userRequests = mockCarbonRequests.filter(r => (r.userId === userObj._id || r.userId === userObj.id) && r.status === 'approved');
+      const approvedCarbonTotal = userRequests.reduce((sum, r) => sum + (r.amount || 0), 0);
+      recalculateBadges(userObj, approvedCarbonTotal);
+      if (req.app?.locals?.io) {
+        req.app.locals.io.emit('profile:updated', { userId: userObj._id || userObj.id, name: userObj.name, avatar: userObj.avatar });
+      }
+    }
+
     if (req.app && req.app.locals && req.app.locals.io) {
       req.app.locals.io.emit('carbon:status-updated', updated);
     }
@@ -123,6 +170,7 @@ router.post('/:id/reject', async (req, res) => {
     }
   } else {
     // In-memory fallback/demo updates
+    const mockCarbonRequests = req.app.locals.mockCarbonRequests || [];
     const index = mockCarbonRequests.findIndex(r => r._id === id || r.id === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Mock/Demo request not found' });

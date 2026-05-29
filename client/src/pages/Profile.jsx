@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import VideoBackground from '../components/ui/VideoBackground'
+import { useSocket } from '../context/SocketContext'
 
 // ── Badge config ─────────────────────────────────────────────
 const BADGE_CONFIG = {
@@ -79,6 +80,7 @@ export default function Profile() {
   const { user, logout, updateUser } = useAuth()
   const navigate = useNavigate()
   const { userId: paramUserId } = useParams() // if admin views someone else
+  const { socket } = useSocket()
 
   const targetId = paramUserId || user?._id
   const isOwnProfile = !paramUserId || paramUserId === user?._id
@@ -162,6 +164,66 @@ export default function Profile() {
     fetchProfile()
     if (isAdmin && isOwnProfile) fetchAllUsers()
   }, [targetId, user])
+
+  // Socket.IO real-time synchronization
+  useEffect(() => {
+    if (!socket) return
+
+    const onCarbonCreated = (req) => {
+      if (String(req.userId) === String(targetId)) {
+        setCarbonReqs(prev => {
+          if (prev.some(r => (r._id || r.id) === (req._id || req.id))) return prev
+          return [req, ...prev]
+        })
+      }
+    }
+
+    const onCarbonUpdated = (req) => {
+      if (String(req.userId) === String(targetId)) {
+        setCarbonReqs(prev => prev.map(r => ((r._id || r.id) === (req._id || req.id) ? req : r)))
+      }
+    }
+
+    const onQuizScoreSubmitted = (s) => {
+      if (String(s.userId) === String(targetId)) {
+        setScores(prev => {
+          if (prev.some(x => new Date(x.createdAt).getTime() === new Date(s.createdAt).getTime())) return prev
+          return [s, ...prev]
+        })
+        setProfile(prev => {
+          if (!prev) return prev
+          const currentStats = prev.quizStats || { xp: 0, completed: 0, streak: 0 }
+          return {
+            ...prev,
+            quizStats: {
+              ...currentStats,
+              xp: currentStats.xp + (s.xpGained || 0),
+              completed: currentStats.completed + 1,
+              streak: currentStats.streak + 1
+            }
+          }
+        })
+      }
+    }
+
+    const onProfileUpdated = (data) => {
+      if (String(data.userId) === String(targetId)) {
+        fetchProfile()
+      }
+    }
+
+    socket.on('carbon:request-created', onCarbonCreated)
+    socket.on('carbon:status-updated', onCarbonUpdated)
+    socket.on('quiz:score-submitted', onQuizScoreSubmitted)
+    socket.on('profile:updated', onProfileUpdated)
+
+    return () => {
+      socket.off('carbon:request-created', onCarbonCreated)
+      socket.off('carbon:status-updated', onCarbonUpdated)
+      socket.off('quiz:score-submitted', onQuizScoreSubmitted)
+      socket.off('profile:updated', onProfileUpdated)
+    }
+  }, [socket, targetId])
 
   // ── Save profile edits ───────────────────────────────────────
   const handleSave = async () => {

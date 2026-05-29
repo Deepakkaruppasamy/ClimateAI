@@ -496,6 +496,9 @@ body {
   object-fit: cover;
   object-position: center;
   transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* Cinematic letterbox bars */

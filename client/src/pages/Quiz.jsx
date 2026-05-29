@@ -186,7 +186,7 @@ export default function Quiz() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user?.googleId || 'mock',
+          userId: user?._id || user?.googleId || 'mock',
           userName: user?.name || 'Anonymous Champion',
           score: pointsPercentage,
           xpGained: pointsPercentage
@@ -242,7 +242,7 @@ export default function Quiz() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user?.googleId || 'mock',
+          userId: user?._id || user?.googleId || 'mock',
           userName: user?.name || 'Anonymous Champion',
           score: nextScorePct,
           xpGained: nextScorePct

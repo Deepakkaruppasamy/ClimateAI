@@ -78,6 +78,25 @@ router.post('/challenge', (req, res) => {
   return res.json({ success: true, message: 'Challenge dispatched' });
 });
 
+// Badge calculation helper
+function recalculateBadges(userObj, score) {
+  if (!userObj) return;
+  if (!userObj.badges) userObj.badges = [];
+  
+  // Climate Scholar
+  if (userObj.quizStats && userObj.quizStats.completed >= 3 && !userObj.badges.includes('Climate Scholar')) {
+    userObj.badges.push('Climate Scholar');
+  }
+  // Quiz Champion
+  if (score === 100 && !userObj.badges.includes('Quiz Champion')) {
+    userObj.badges.push('Quiz Champion');
+  }
+  // Streak Master
+  if (userObj.quizStats && userObj.quizStats.streak >= 7 && !userObj.badges.includes('Streak Master')) {
+    userObj.badges.push('Streak Master');
+  }
+}
+
 // GET high scores leaderboard
 router.get('/leaderboard', async (req, res) => {
   const isDBConnected = mongoose.connection.readyState === 1;
@@ -91,12 +110,9 @@ router.get('/leaderboard', async (req, res) => {
     }
   } else {
     // In-memory fallback
-    const mockLeaderboard = [
-      { userId: 'mock-1', userName: 'EcoChampion', score: 100, xpGained: 100, createdAt: new Date() },
-      { userId: 'mock-2', userName: 'SolarSleuth', score: 80, xpGained: 80, createdAt: new Date() },
-      { userId: 'mock-3', userName: 'WindWalker', score: 60, xpGained: 60, createdAt: new Date() },
-    ];
-    return res.json({ success: true, leaderboard: mockLeaderboard, warning: 'DB offline' });
+    const mockScores = req.app.locals.mockScores || [];
+    const standings = [...mockScores].sort((a, b) => b.score - a.score).slice(0, 10);
+    return res.json({ success: true, leaderboard: standings, warning: 'DB offline' });
   }
 });
 
@@ -114,9 +130,13 @@ router.post('/score', async (req, res) => {
 
       // Update user statistics if database has user
       const User = require('../models/User');
-      const userObj = await User.findOne({
-        $or: [{ googleId: userId }, { email: userId }]
-      });
+      let query = {};
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        query = { _id: userId };
+      } else {
+        query = { $or: [{ googleId: userId }, { email: userId }] };
+      }
+      const userObj = await User.findOne(query);
       if (userObj) {
         if (!userObj.quizStats) {
           userObj.quizStats = { streak: 0, xp: 0, completed: 0 };
@@ -124,7 +144,13 @@ router.post('/score', async (req, res) => {
         userObj.quizStats.xp += xpGained;
         userObj.quizStats.completed += 1;
         userObj.quizStats.streak += 1;
+        
+        recalculateBadges(userObj, score);
         await userObj.save();
+        
+        if (req.app?.locals?.io) {
+          req.app.locals.io.emit('profile:updated', { userId: userObj._id, name: userObj.name, avatar: userObj.avatar });
+        }
       }
 
       // Emit real-time score notification
@@ -138,10 +164,44 @@ router.post('/score', async (req, res) => {
       return res.status(500).json({ error: 'Failed to save score' });
     }
   } else {
+    // Save to shared mockScores
+    const mockScores = req.app.locals.mockScores || [];
+    const newScore = {
+      userId,
+      userName,
+      score,
+      xpGained,
+      createdAt: new Date()
+    };
+    mockScores.push(newScore);
+
+    // Update mock user statistics
+    const mockUsers = req.app.locals.mockUsers || [];
+    const userObj = mockUsers.find(u => u._id === userId || u.id === userId || u.email === userId || u.googleId === userId);
+    if (userObj) {
+      if (!userObj.quizStats) {
+        userObj.quizStats = { streak: 0, xp: 0, completed: 0 };
+      }
+      userObj.quizStats.xp += xpGained;
+      userObj.quizStats.completed += 1;
+      userObj.quizStats.streak += 1;
+      
+      recalculateBadges(userObj, score);
+      
+      if (req.app?.locals?.io) {
+        req.app.locals.io.emit('profile:updated', { userId: userObj._id || userObj.id, name: userObj.name, avatar: userObj.avatar });
+      }
+    }
+
+    // Emit real-time score notification
+    if (req.app && req.app.locals && req.app.locals.io) {
+      req.app.locals.io.emit('quiz:score-submitted', newScore);
+    }
+
     return res.status(201).json({
       success: true,
-      score: { userId, userName, score, xpGained },
-      warning: 'DB offline'
+      score: newScore,
+      warning: 'DB offline — saved in memory'
     });
   }
 });

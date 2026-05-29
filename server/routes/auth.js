@@ -4,19 +4,7 @@ const router = express.Router()
 const User = require('../models/User')
 const { hashPassword, verifyPassword, generateAvatar } = require('../utils/authHelper')
 
-// ── In-Memory Database Fallback for Offline Development ─────
-const prePopulatedUsers = [
-  { name: 'Alex Carter', email: 'alex.carter@gmail.com', password: 'password123', role: 'user', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
-  { name: 'Elena Rostova', email: 'elena.rostova@gmail.com', password: 'password123', role: 'admin', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
-  { name: 'Marcus Chen', email: 'marcus.chen@gmail.com', password: 'password123', role: 'user', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' }
-]
-
-const mockUsers = prePopulatedUsers.map(u => ({
-  ...u,
-  password: hashPassword(u.password),
-  createdAt: new Date(),
-  lastLogin: new Date()
-}))
+// ── In-Memory Database Fallback (Utilizes global app.locals.mockUsers) ─────
 
 // Helper to filter out sensitive password hashes
 const serializeUser = (user) => {
@@ -69,16 +57,23 @@ router.post('/register', async (req, res) => {
     }
   } else {
     // MongoDB offline: check in-memory registry
+    const mockUsers = req.app.locals.mockUsers || []
     const existingMock = mockUsers.find(u => u.email === normalizedEmail)
     if (existingMock) {
       return res.status(400).json({ error: 'An account with this email already exists (In-Memory)' })
     }
 
     const newMockUser = {
+      _id: `mock-${Date.now()}`,
+      id: `mock-${Date.now()}`,
+      googleId: null,
       name,
       email: normalizedEmail,
       password: hashedPassword,
       avatar: avatarUrl,
+      role: ['elena.rostova@gmail.com', 'deep@gmail.com'].includes(normalizedEmail) ? 'admin' : 'user',
+      quizStats: { xp: 0, completed: 0, streak: 0 },
+      badges: [],
       createdAt: new Date(),
       lastLogin: new Date()
     }
@@ -130,6 +125,7 @@ router.post('/login', async (req, res) => {
     }
   } else {
     // MongoDB offline: check in-memory registry
+    const mockUsers = req.app.locals.mockUsers || []
     const mockUser = mockUsers.find(u => u.email === normalizedEmail)
     if (!mockUser) {
       return res.status(401).json({ error: 'Invalid email or password' })

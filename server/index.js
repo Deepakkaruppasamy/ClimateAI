@@ -56,6 +56,65 @@ app.locals.io = io
 app.locals.stressTest = { enabled: false, latencyMs: 3000, rateLimitChance: 0.5 }
 // Activity log ring buffer — max 100 entries across the app
 app.locals.activityLog = []
+
+// Global Mock Database Fallbacks (for DB offline development)
+const { hashPassword } = require('./utils/authHelper')
+app.locals.mockUsers = [
+  {
+    _id: '507f1f77bcf86cd799439011',
+    googleId: null,
+    name: 'Alex Carter',
+    email: 'alex.carter@gmail.com',
+    password: hashPassword('password123'),
+    role: 'user',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    quizStats: { xp: 200, completed: 5, streak: 3 },
+    badges: ['Climate Scholar'],
+    createdAt: new Date(Date.now() - 86400000 * 10),
+    lastLogin: new Date()
+  },
+  {
+    _id: '507f1f77bcf86cd799439012',
+    googleId: null,
+    name: 'Elena Rostova',
+    email: 'elena.rostova@gmail.com',
+    password: hashPassword('password123'),
+    role: 'admin',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+    quizStats: { xp: 500, completed: 10, streak: 7 },
+    badges: ['Eco-Guardian', 'Climate Scholar'],
+    createdAt: new Date(Date.now() - 86400000 * 30),
+    lastLogin: new Date()
+  },
+  {
+    _id: '507f1f77bcf86cd799439013',
+    googleId: null,
+    name: 'Marcus Chen',
+    email: 'marcus.chen@gmail.com',
+    password: hashPassword('password123'),
+    role: 'user',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    quizStats: { xp: 80, completed: 2, streak: 1 },
+    badges: [],
+    createdAt: new Date(Date.now() - 86400000 * 2),
+    lastLogin: new Date()
+  }
+]
+
+app.locals.mockCarbonRequests = [
+  { _id: 'demo-1', id: 'demo-1', userId: '507f1f77bcf86cd799439011', projectId: 'proj_reforest', amount: 15.0, status: 'pending',  createdAt: new Date(Date.now() - 3600000 * 4).toISOString() },
+  { _id: 'demo-2', id: 'demo-2', userId: '507f1f77bcf86cd799439011', projectId: 'proj_wind', amount: 22.0, status: 'approved', createdAt: new Date(Date.now() - 3600000 * 12).toISOString() },
+  { _id: 'demo-3', id: 'demo-3', userId: '507f1f77bcf86cd799439012', projectId: 'proj_capture', amount: 8.0, status: 'rejected', createdAt: new Date(Date.now() - 3600000 * 24).toISOString() },
+  { _id: 'demo-4', id: 'demo-4', userId: '507f1f77bcf86cd799439012', projectId: 'proj_reforest', amount: 31.0, status: 'pending', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
+]
+
+app.locals.mockScores = [
+  { userId: '507f1f77bcf86cd799439011', userName: 'Alex Carter', score: 100, xpGained: 100, createdAt: new Date(Date.now() - 86400000 * 2) },
+  { userId: '507f1f77bcf86cd799439011', userName: 'Alex Carter', score: 80, xpGained: 80, createdAt: new Date(Date.now() - 86400000 * 4) },
+  { userId: '507f1f77bcf86cd799439012', userName: 'Elena Rostova', score: 90, xpGained: 90, createdAt: new Date(Date.now() - 86400000 * 1) },
+  { userId: '507f1f77bcf86cd799439013', userName: 'Marcus Chen', score: 70, xpGained: 70, createdAt: new Date(Date.now() - 86400000 * 3) }
+]
+
 // Stress-test middleware (no-op unless enabled)
 app.use(require('./middleware/stressTest'))
 
