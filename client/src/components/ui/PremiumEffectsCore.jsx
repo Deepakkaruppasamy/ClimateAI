@@ -18,8 +18,9 @@ export default function PremiumEffectsCore() {
     return saved !== 'false' // default is true
   })
 
-  const cursorRef = useRef(null)
   const trailTimerRef = useRef(null)
+  const activeMagneticRef = useRef(null)
+  const rafRef = useRef(null)
 
   // 1. Scroll Progress Ribbon Tracker
   const { scrollYProgress } = useScroll()
@@ -57,17 +58,63 @@ export default function PremiumEffectsCore() {
       }
     }
 
+    // High-Performance Event-Driven Proximity Attraction (GPU-friendly requestAnimationFrame loop)
+    let currentX = 0
+    let currentY = 0
+    let targetX = 0
+    let targetY = 0
+
+    const updatePosition = () => {
+      // Linear interpolation (lerp) for smooth easing
+      currentX += (targetX - currentX) * 0.25
+      currentY += (targetY - currentY) * 0.25
+      setMousePos({ x: currentX, y: currentY })
+
+      // Animate active magnetic target on active frame sync
+      const activeEl = activeMagneticRef.current
+      if (magneticEnabled && activeEl) {
+        const rect = activeEl.getBoundingClientRect()
+        const elCenterX = rect.left + rect.width / 2
+        const elCenterY = rect.top + rect.height / 2
+
+        const distX = targetX - elCenterX
+        const distY = targetY - elCenterY
+        const distance = Math.hypot(distX, distY)
+
+        if (distance < 80) {
+          const strength = 0.35 // magnetic pull force
+          const pullX = distX * strength
+          const pullY = distY * strength
+          activeEl.style.transform = `translate3d(${pullX}px, ${pullY}px, 0) scale(1.05)`
+          activeEl.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.2)'
+        } else {
+          // Depart lock state gently
+          activeEl.style.transform = ''
+          activeEl.style.boxShadow = ''
+          activeEl.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease'
+          activeMagneticRef.current = null
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(updatePosition)
+    }
+
+    // Trigger loop startup
+    rafRef.current = requestAnimationFrame(updatePosition)
+
     // 2. Mouse Move & Custom Trail Telemetry
     const handleMouseMove = (e) => {
-      if (!cursorEnabled) return // Bypass custom cursor tracking
       const { clientX, clientY } = e
-      setMousePos({ x: clientX, y: clientY })
+      targetX = clientX
+      targetY = clientY
 
-      // Generate soft organic trail particles on fast sweeps
-      if (Math.random() > 0.75) {
+      if (!cursorEnabled) return // Bypass custom cursor trails
+
+      // Throttle particle trails to conserve GC cycles
+      if (Math.random() > 0.8) {
         setTrail(prev => [
-          ...prev.slice(-15),
-          { id: Math.random(), x: clientX, y: clientY, size: Math.random() * 6 + 2 }
+          ...prev.slice(-10), // Limit trails to max 10 elements
+          { id: Math.random(), x: clientX, y: clientY, size: Math.random() * 5 + 2 }
         ])
       }
 
@@ -90,6 +137,26 @@ export default function PremiumEffectsCore() {
       }
     }
 
+    const handleMouseOver = (e) => {
+      if (!magneticEnabled) return
+      const target = e.target?.closest?.('a, button, .btn-primary, .btn-ghost, .magnetic')
+      if (target) {
+        activeMagneticRef.current = target
+        target.style.transition = 'none' // Remove delay during active lock
+      }
+    }
+
+    const handleMouseOut = (e) => {
+      if (!magneticEnabled) return
+      const target = e.target?.closest?.('a, button, .btn-primary, .btn-ghost, .magnetic')
+      if (target && activeMagneticRef.current === target) {
+        target.style.transform = ''
+        target.style.boxShadow = ''
+        target.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease'
+        activeMagneticRef.current = null
+      }
+    }
+
     const handleMouseDown = () => {
       if (cursorEnabled) setIsClicking(true)
     }
@@ -98,55 +165,23 @@ export default function PremiumEffectsCore() {
     }
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mouseover', handleMouseOver, { passive: true })
+    window.addEventListener('mouseout', handleMouseOut, { passive: true })
     window.addEventListener('mousedown', handleMouseDown, { passive: true })
     window.addEventListener('mouseup', handleMouseUp, { passive: true })
-
-    // 3. Dynamic Magnetic Attraction Easing (Tesla/Apple Style)
-    let magneticInterval
-    if (magneticEnabled) {
-      magneticInterval = setInterval(() => {
-        const magneticElements = document.querySelectorAll('a, button, .btn-primary, .btn-ghost, .magnetic')
-        if (magneticElements.length === 0) return
-
-        // Get mouse position relative to elements
-        magneticElements.forEach(el => {
-          const rect = el.getBoundingClientRect()
-          const elCenterX = rect.left + rect.width / 2
-          const elCenterY = rect.top + rect.height / 2
-
-          // Calculate distance from cursor to element center
-          const distX = mousePos.x - elCenterX
-          const distY = mousePos.y - elCenterY
-          const distance = Math.hypot(distX, distY)
-
-          // Pull element slightly if cursor gets within 60px bounds
-          if (distance < 60) {
-            const strength = 0.25 // magnetic force pull factor
-            const pullX = distX * strength
-            const pullY = distY * strength
-            el.style.transform = `translate3d(${pullX}px, ${pullY}px, 0) scale(1.05)`
-            el.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.25)'
-            el.style.transition = 'none' // remove delay during active lock
-          } else {
-            // Gently restore state
-            el.style.transform = ''
-            el.style.boxShadow = ''
-            el.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease'
-          }
-        })
-      }, 16) // ~60fps checking frequency
-    }
 
     return () => {
       mediaQuery.removeEventListener('change', handleMotionChange)
       window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseover', handleMouseOver)
+      window.removeEventListener('mouseout', handleMouseOut)
       window.removeEventListener('mousedown', handleMouseDown)
       window.removeEventListener('mouseup', handleMouseUp)
       window.removeEventListener('climateai:cursor-preference-updated', handleCursorPreference)
       window.removeEventListener('climateai:magnetic-preference-updated', handleMagneticPreference)
-      if (magneticInterval) clearInterval(magneticInterval)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [mousePos, cursorEnabled, magneticEnabled])
+  }, [cursorEnabled, magneticEnabled])
 
   // Periodic particle trail decay
   useEffect(() => {
@@ -197,17 +232,16 @@ export default function PremiumEffectsCore() {
       {cursorEnabled && (
         <div
           ref={cursorRef}
-          className="fixed pointer-events-none rounded-full z-[99999] -translate-x-1/2 -translate-y-1/2 hidden md:block"
+          className="fixed pointer-events-none rounded-full z-[99999] hidden md:block"
           style={{
-            left: `${mousePos.x}px`,
-            top: `${mousePos.y}px`,
+            transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0) translate(-50%, -50%)`,
             width: cursorType === 'clickable' ? '40px' : isClicking ? '12px' : '24px',
             height: cursorType === 'clickable' ? '40px' : isClicking ? '12px' : '24px',
             background: isClicking ? cursorColors[cursorType] : 'transparent',
             border: cursorBorders[cursorType],
             boxShadow: cursorType === 'clickable' ? '0 0 15px rgba(6, 255, 212, 0.3)' : 'none',
             transition: 'width 0.25s ease-out, height 0.25s ease-out, background 0.25s ease-out, border 0.25s ease-out',
-            willChange: 'left, top, width, height'
+            willChange: 'transform, width, height'
           }}
         />
       )}
@@ -215,15 +249,14 @@ export default function PremiumEffectsCore() {
       {/* ── Cursor Core Dot ─────────────────────────────────── */}
       {cursorEnabled && (
         <div
-          className="fixed pointer-events-none rounded-full z-[99999] -translate-x-1/2 -translate-y-1/2 hidden md:block"
+          className="fixed pointer-events-none rounded-full z-[99999] hidden md:block"
           style={{
-            left: `${mousePos.x}px`,
-            top: `${mousePos.y}px`,
+            transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0) translate(-50%, -50%)`,
             width: '6px',
             height: '6px',
             background: cursorType === 'danger' ? '#ff4444' : cursorType === 'success' ? '#06ffd4' : '#00d4ff',
             boxShadow: '0 0 6px rgba(0, 212, 255, 0.8)',
-            willChange: 'left, top'
+            willChange: 'transform'
           }}
         />
       )}
@@ -232,15 +265,14 @@ export default function PremiumEffectsCore() {
       {cursorEnabled && trail.map((t, idx) => (
         <div
           key={t.id}
-          className="fixed pointer-events-none rounded-full bg-neon-cyan/40 z-[99998] -translate-x-1/2 -translate-y-1/2 animate-float-particles"
+          className="fixed pointer-events-none rounded-full bg-neon-cyan/40 z-[99998] animate-float-particles"
           style={{
-            left: `${t.x}px`,
-            top: `${t.y}px`,
+            transform: `translate3d(${t.x}px, ${t.y}px, 0) translate(-50%, -50%)`,
             width: `${t.size}px`,
             height: `${t.size}px`,
             opacity: (idx + 1) / trail.length * 0.7,
             boxShadow: '0 0 8px rgba(6, 255, 212, 0.4)',
-            willChange: 'left, top'
+            willChange: 'transform'
           }}
         />
       ))}
