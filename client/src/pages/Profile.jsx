@@ -82,6 +82,16 @@ export default function Profile() {
   const { userId: paramUserId } = useParams() // if admin views someone else
   const { socket } = useSocket()
 
+  // Aesthetic preference toggle overrides
+  const [cursorEnabled, setCursorEnabled] = useState(() => {
+    const saved = localStorage.getItem('climateai:premium-cursor-enabled')
+    return saved !== 'false' // default is true
+  })
+  const [magneticEnabled, setMagneticEnabled] = useState(() => {
+    const saved = localStorage.getItem('climateai:magnetic-enabled')
+    return saved !== 'false' // default is true
+  })
+
   const targetId = paramUserId || user?._id
   const isOwnProfile = !paramUserId || paramUserId === user?._id
   const isAdmin = user?.role === 'admin'
@@ -559,6 +569,73 @@ export default function Profile() {
               <StatCard icon={Zap} label="Day Streak" value={profile.quizStats?.streak || 0} color="#ff8800" sub="consecutive days" />
               <StatCard icon={Leaf} label="CO2 Offset" value={`${approvedCarbon}t`} color="#22c55e" sub="approved credits" />
             </div>
+
+            {/* ── Aesthetic Preferences ───────────────────────────── */}
+            {isOwnProfile && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="glass-strong rounded-3xl p-6 border border-white/5"
+              >
+                <div className="flex items-center justify-between flex-wrap gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-blue to-neon-cyan flex items-center justify-center shadow-lg">
+                      <Activity size={18} className="text-white animate-pulse" />
+                    </div>
+                    <div>
+                      <h2 className="text-white font-display text-lg">Aesthetic Preferences</h2>
+                      <p className="text-xs text-gray-500">Customize interactive interface components and custom cursor effects</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6 flex-wrap">
+                    {/* Toggle: Premium Cursor & Click Animations */}
+                    <div className="flex items-center gap-4 bg-white/5 border border-white/5 rounded-2xl p-3 px-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-white">Premium Cursor & Click Trails</span>
+                        <span className="text-[10px] text-gray-500 font-mono">Custom glowing pointer with interactive halo & sparkle sweeps</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newVal = !cursorEnabled
+                          setCursorEnabled(newVal)
+                          localStorage.setItem('climateai:premium-cursor-enabled', String(newVal))
+                          window.dispatchEvent(new Event('climateai:cursor-preference-updated'))
+                        }}
+                        className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 flex items-center ${
+                          cursorEnabled ? 'bg-neon-cyan justify-end' : 'bg-white/10 justify-start'
+                        }`}
+                        title="Toggle custom cursor and mouse click/hover trails"
+                      >
+                        <motion.div layout className="w-4 h-4 rounded-full bg-dark-900 shadow-md" />
+                      </button>
+                    </div>
+
+                    {/* Toggle: Magnetic Attractions */}
+                    <div className="flex items-center gap-4 bg-white/5 border border-white/5 rounded-2xl p-3 px-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-white">Magnetic Attraction Easing</span>
+                        <span className="text-[10px] text-gray-500 font-mono">Pulls buttons and active tabs magnetically toward cursor sweeps</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newVal = !magneticEnabled
+                          setMagneticEnabled(newVal)
+                          localStorage.setItem('climateai:magnetic-enabled', String(newVal))
+                          window.dispatchEvent(new Event('climateai:magnetic-preference-updated'))
+                        }}
+                        className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 flex items-center ${
+                          magneticEnabled ? 'bg-neon-cyan justify-end' : 'bg-white/10 justify-start'
+                        }`}
+                        title="Toggle magnetic button and tab pull factor"
+                      >
+                        <motion.div layout className="w-4 h-4 rounded-full bg-dark-900 shadow-md" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* ── Badges ──────────────────────────────────────────── */}
             <motion.div
