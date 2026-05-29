@@ -14,6 +14,7 @@ import WeatherParticles from '../components/hero/WeatherParticles'
 import AnimatedGlobe from '../components/hero/AnimatedGlobe'
 import { useWeather } from '../context/WeatherContext'
 import use3dTilt from '../utils/use3dTilt'
+import useQuantumFloat from '../utils/useQuantumFloat'
 import { playTap, playHover } from '../utils/audio'
 
 // ── Video pool (cycling on hero) ────────────────────────────
@@ -33,22 +34,17 @@ const getDiagReport = (year) => {
 }
 
 // ── Floating Weather Card ────────────────────────────────────
-function FloatingCard({ delay = 0, className = '', children }) {
-  const tiltProps = use3dTilt(7, 600)
+function FloatingCard({ delay = 0, zFactor = 1.0, className = '', children }) {
+  const physicsProps = useQuantumFloat(delay, zFactor)
   return (
     <motion.div
-      ref={tiltProps.ref}
-      onMouseMove={tiltProps.onMouseMove}
-      onMouseLeave={tiltProps.onMouseLeave}
-      onMouseEnter={playHover}
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      ref={physicsProps.ref}
+      onMouseDown={physicsProps.onMouseDown}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-      className={`glass-strong rounded-2xl p-4 ${className}`}
-      style={{
-        ...tiltProps.style,
-        animation: `float ${5 + delay}s ease-in-out ${delay}s infinite`
-      }}
+      className={`glass-strong rounded-2xl p-4 transition-shadow select-none ${className}`}
+      style={physicsProps.style}
     >
       {children}
     </motion.div>
@@ -350,7 +346,7 @@ export default function Landing() {
                 </motion.div>
 
                 {/* Floating card: Current Weather */}
-                <FloatingCard delay={0.6} className="absolute top-10 -left-10 w-54">
+                <FloatingCard delay={0.6} zFactor={1.3} className="absolute top-10 -left-10 w-54">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-xl bg-neon-blue/20 flex items-center justify-center">
                       <Sun size={16} className="text-neon-blue" />
@@ -367,7 +363,7 @@ export default function Landing() {
                 </FloatingCard>
 
                 {/* Floating card: AQI */}
-                <FloatingCard delay={1.1} className="absolute bottom-24 -left-2 w-44">
+                <FloatingCard delay={1.1} zFactor={1.0} className="absolute bottom-24 -left-2 w-44">
                   <div className="text-xs text-gray-400 mb-1 label-overline">Air Quality</div>
                   <div className="text-2xl font-bold text-neon-cyan" style={{ fontFamily: 'var(--font-display)' }}>Good</div>
                   <div className="mt-2 h-1.5 rounded-full bg-white/10">
@@ -378,7 +374,7 @@ export default function Landing() {
                 </FloatingCard>
 
                 {/* Floating card: AI Forecast */}
-                <FloatingCard delay={1.6} className="absolute top-24 -right-2 w-48">
+                <FloatingCard delay={1.6} zFactor={1.0} className="absolute top-24 -right-2 w-48">
                   <div className="flex items-center gap-2 mb-3">
                     <Brain size={13} className="text-neon-purple" />
                     <span className="label-overline">AI Forecast</span>
@@ -395,7 +391,7 @@ export default function Landing() {
                 </FloatingCard>
 
                 {/* Floating card: Alert */}
-                <FloatingCard delay={2.1} className="absolute bottom-6 right-2 w-48">
+                <FloatingCard delay={2.1} zFactor={0.5} className="absolute bottom-6 right-2 w-48">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
                     <span className="label-overline text-red-400">Alert Active</span>
