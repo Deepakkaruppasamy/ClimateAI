@@ -20,7 +20,13 @@ router.get('/requests', async (req, res) => {
 });
 
 // POST new carbon request
-const mockCarbonRequests = [];
+const mockCarbonRequests = [
+  { _id: 'demo-1', id: 'demo-1', userId: 'user_alpha', projectId: 'PROJ-2024-GHG', amount: 150, status: 'pending',  createdAt: new Date(Date.now() - 3600000 * 4).toISOString() },
+  { _id: 'demo-2', id: 'demo-2', userId: 'user_beta',  projectId: 'PROJ-2023-WIND', amount: 220, status: 'approved', createdAt: new Date(Date.now() - 3600000 * 12).toISOString() },
+  { _id: 'demo-3', id: 'demo-3', userId: 'user_gamma', projectId: 'PROJ-2024-SOLAR', amount: 80, status: 'rejected', createdAt: new Date(Date.now() - 3600000 * 24).toISOString() },
+  { _id: 'demo-4', id: 'demo-4', userId: 'user_delta', projectId: 'PROJ-2025-BIOFUEL', amount: 310, status: 'pending', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
+];
+
 router.post('/request', async (req, res) => {
   const { userId, amount, projectId } = req.body;
   if (!userId || !amount || !projectId) {
@@ -61,11 +67,13 @@ router.post('/request', async (req, res) => {
 // Approve request
 router.post('/:id/approve', async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: 'Request not found (invalid ID)' });
-  }
+  const isMockId = String(id).startsWith('mock-') || String(id).startsWith('demo-');
   const isDBConnected = mongoose.connection.readyState === 1;
-  if (isDBConnected) {
+
+  if (isDBConnected && !isMockId) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: 'Request not found (invalid ID)' });
+    }
     try {
       const updated = await CarbonRequest.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
       if (!updated) return res.status(404).json({ error: 'Request not found' });
@@ -78,18 +86,30 @@ router.post('/:id/approve', async (req, res) => {
       return res.status(500).json({ error: 'Failed to approve request' });
     }
   } else {
-    return res.status(503).json({ error: 'Database offline' });
+    // In-memory fallback/demo updates
+    const index = mockCarbonRequests.findIndex(r => r._id === id || r.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Mock/Demo request not found' });
+    }
+    mockCarbonRequests[index].status = 'approved';
+    const updated = mockCarbonRequests[index];
+    if (req.app && req.app.locals && req.app.locals.io) {
+      req.app.locals.io.emit('carbon:status-updated', updated);
+    }
+    return res.json({ success: true, request: updated, warning: 'DB offline — updated in memory' });
   }
 });
 
 // Reject request
 router.post('/:id/reject', async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: 'Request not found (invalid ID)' });
-  }
+  const isMockId = String(id).startsWith('mock-') || String(id).startsWith('demo-');
   const isDBConnected = mongoose.connection.readyState === 1;
-  if (isDBConnected) {
+
+  if (isDBConnected && !isMockId) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: 'Request not found (invalid ID)' });
+    }
     try {
       const updated = await CarbonRequest.findByIdAndUpdate(id, { status: 'rejected' }, { new: true });
       if (!updated) return res.status(404).json({ error: 'Request not found' });
@@ -102,7 +122,17 @@ router.post('/:id/reject', async (req, res) => {
       return res.status(500).json({ error: 'Failed to reject request' });
     }
   } else {
-    return res.status(503).json({ error: 'Database offline' });
+    // In-memory fallback/demo updates
+    const index = mockCarbonRequests.findIndex(r => r._id === id || r.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Mock/Demo request not found' });
+    }
+    mockCarbonRequests[index].status = 'rejected';
+    const updated = mockCarbonRequests[index];
+    if (req.app && req.app.locals && req.app.locals.io) {
+      req.app.locals.io.emit('carbon:status-updated', updated);
+    }
+    return res.json({ success: true, request: updated, warning: 'DB offline — updated in memory' });
   }
 });
 

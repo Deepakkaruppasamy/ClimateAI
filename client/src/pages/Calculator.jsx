@@ -90,7 +90,7 @@ export default function Calculator() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user?.googleId || user?.email || 'anonymous',
+            userId: user?._id || '507f1f77bcf86cd799439011', // valid Mongoose ObjectId fallback
             amount: total,
             projectId: activeProject?.id || 'PROJ-UNKNOWN'
           })
