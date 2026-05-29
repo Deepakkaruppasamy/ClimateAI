@@ -6,6 +6,7 @@ import Navbar from './components/layout/Navbar'
 import LoadingScreen from './components/ui/LoadingScreen'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import GlobalAlertBanner from './components/ui/GlobalAlertBanner'
+import PremiumEffectsCore from './components/ui/PremiumEffectsCore'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Assistant from './pages/Assistant'
@@ -74,6 +75,7 @@ export default function App() {
               {appReady && (
                 <div className="min-h-screen bg-dark-900 flex flex-col">
                   <GlobalAlertBanner />
+                  <PremiumEffectsCore />
                   <Navbar />
                   <div className="flex-1">
                     <AnimatedRoutes />
