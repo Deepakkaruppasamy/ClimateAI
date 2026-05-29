@@ -45,6 +45,36 @@ export default function CosmosOrrery() {
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
 
+  const toggleVideoRef = useRef(null)
+  
+  // Custom HLS loader for live orbital toggle button video stream
+  useEffect(() => {
+    const video = toggleVideoRef.current
+    if (!video) return
+    let hlsInstance = null
+    const url = 'https://stream.mux.com/BuGGTsiXq1T00WUb8qfURrHkTCbhrkfFLSv4uAOZzdhw.m3u8'
+    
+    const initHls = async () => {
+      const { default: Hls } = await import('hls.js')
+      if (Hls.isSupported()) {
+        hlsInstance = new Hls({ autoStartLoad: true })
+        hlsInstance.loadSource(url)
+        hlsInstance.attachMedia(video)
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url
+      }
+      video.muted = true
+      video.playsInline = true
+      video.loop = true
+      video.play().catch(() => {})
+    }
+    initHls()
+
+    return () => {
+      if (hlsInstance) hlsInstance.destroy()
+    }
+  }, [])
+
   const canvasRef = useRef(null)
   const animFrameIdRef = useRef(null)
   const planetPositionsRef = useRef([])
@@ -423,12 +453,20 @@ export default function CosmosOrrery() {
           transition={{ rotate: { duration: 1.5, ease: 'easeInOut' }, scale: { duration: 0.2 } }}
           className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center shadow-[0_0_30px_rgba(0,212,255,0.45)] border border-white/20 overflow-hidden group cursor-pointer"
         >
+          {/* Loop video stream rendering inside button */}
+          <video
+            ref={toggleVideoRef}
+            className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+            autoPlay
+            muted
+            playsInline
+            loop
+          />
+          <div className="absolute inset-0 bg-black/20 z-[2] group-hover:bg-transparent transition-all duration-300 pointer-events-none" />
+
           {/* Animated cybernetic outer spinner rings */}
-          <div className="absolute inset-0.5 rounded-[14px] border border-dashed border-neon-cyan opacity-40 animate-spin" style={{ animationDuration: '8s' }} />
-          <div className="absolute inset-2 rounded-xl border border-dotted border-white/20 animate-spin" style={{ animationDuration: '5s', animationDirection: 'reverse' }} />
-          
-          {/* Main Logo icon */}
-          <Zap size={22} className="text-white group-hover:scale-110 transition-transform z-10" />
+          <div className="absolute inset-0.5 rounded-[14px] border border-dashed border-neon-cyan opacity-40 animate-spin z-10 pointer-events-none" style={{ animationDuration: '8s' }} />
+          <div className="absolute inset-2 rounded-xl border border-dotted border-white/20 animate-spin z-10 pointer-events-none" style={{ animationDuration: '5s', animationDirection: 'reverse' }} />
         </motion.button>
       </div>
 
