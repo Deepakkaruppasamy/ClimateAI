@@ -1,0 +1,12 @@
+const mongoose = require('mongoose');
+
+const QuizQuestionSchema = new mongoose.Schema({
+  question: { type: String, required: true },
+  options: { type: [String], default: [] }, // array of possible answers
+  answer: { type: String, required: true }, // correct answer text
+  expl: { type: String, default: '' },      // explanation shown after answering
+  type: { type: String, enum: ['multiple-choice', 'true-false', 'short-answer'], default: 'multiple-choice' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('QuizQuestion', QuizQuestionSchema);

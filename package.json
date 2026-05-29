@@ -1,0 +1,12 @@
+{
+  "name": "climateai",
+  "version": "2.0.0",
+  "description": "AI-Powered Climate Intelligence Platform",
+  "scripts": {
+    "install:all": "npm install --prefix client && npm install --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev": "start /B npm run dev:server && npm run dev:client",
+    "build": "npm run build --prefix client"
+  }
+}

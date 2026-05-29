@@ -1,0 +1,212 @@
+require('dotenv').config()
+
+// ── Terminate Ghost Processes occupying the Server Port ────
+if (process.platform === 'win32') {
+  try {
+    const { execSync } = require('child_process')
+    const portToKill = process.env.PORT || 5000
+    console.log(`🔍 Checking port ${portToKill} for active conflicts...`)
+    const stdout = execSync(`netstat -ano | findstr :${portToKill}`).toString()
+    const lines = stdout.split('\n')
+    for (const line of lines) {
+      if (line.includes('LISTENING')) {
+        const tokens = line.trim().split(/\s+/)
+        const pid = tokens[tokens.length - 1]
+        if (pid && pid !== '0' && parseInt(pid) !== process.pid) {
+          console.log(`💀 Terminating ghost process ${pid} holding port ${portToKill}...`)
+          execSync(`taskkill /F /PID ${pid}`)
+        }
+      }
+    }
+  } catch (e) {
+    // findstr returns exit code 1 if no matches are found, which throws. Ignore.
+  }
+}
+
+console.log('📡 ClimateAI Booting... Loaded MONGODB_URI:', process.env.MONGODB_URI || '(not set)')
+const express = require('express')
+const cors = require('cors')
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
+const { createServer } = require('http')
+const { Server } = require('socket.io')
+const mongoose = require('mongoose')
+
+const app = express()
+const httpServer = createServer(app)
+
+// ── Socket.IO ─────────────────────────────────────────────
+const io = new Server(httpServer, {
+  cors: {
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST'],
+  }
+})
+
+// ── Middleware ────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false }))
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }))
+app.use(express.json())
+
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 })
+app.use('/api/', limiter)
+
+// ── Expose io + stress test flags + activity log on app.locals ─
+app.locals.io = io
+app.locals.stressTest = { enabled: false, latencyMs: 3000, rateLimitChance: 0.5 }
+// Activity log ring buffer — max 100 entries across the app
+app.locals.activityLog = []
+// Stress-test middleware (no-op unless enabled)
+app.use(require('./middleware/stressTest'))
+
+// ── Routes ────────────────────────────────────────────────
+try {
+  app.use('/api/weather', require('./routes/weather'))
+  app.use('/api/ai', require('./routes/ai'))
+  app.use('/api/alerts', require('./routes/alerts'))
+  app.use('/api/admin', require('./routes/admin'))
+  app.use('/api/auth', require('./routes/auth'))
+  app.use('/api/news', require('./routes/news'))
+  app.use('/api/quiz', require('./routes/quiz'))
+  app.use('/api/carbon', require('./routes/carbon'))
+  app.use('/api/stress', require('./routes/stress'))
+  app.use('/api/notifications', require('./routes/notifications'))
+  app.use('/api/profile', require('./routes/profile'))
+} catch (err) {
+  const fs = require('fs')
+  fs.writeFileSync('c:\\ClimateAI\\server_error.log', 'ROUTE LOAD ERROR:\n' + err.stack)
+  console.error('❌ Route load error, written to server_error.log:', err.message)
+  throw err
+}
+
+
+// ── Health Check ──────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'operational',
+    version: '2.0.0',
+    timestamp: new Date().toISOString(),
+    services: {
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      weather_api: 'operational',
+      ai_engine: 'operational',
+      realtime: 'operational',
+      custom_auth: 'active',
+    }
+  })
+})
+
+// ── Socket.IO Real-time ───────────────────────────────────
+let connectedClients = 0
+
+io.on('connection', (socket) => {
+  connectedClients++
+  console.log(`Client connected: ${socket.id} | Total: ${connectedClients}`)
+
+  // Send initial weather update
+  socket.emit('weather:update', { message: 'Connected to ClimateAI real-time server', timestamp: Date.now() })
+
+  // Broadcast weather updates every 30s
+  const weatherInterval = setInterval(async () => {
+    socket.emit('weather:tick', { timestamp: Date.now(), connectedClients })
+  }, 30000)
+
+  // Handle location subscription
+  socket.on('weather:subscribe', async (data) => {
+    console.log('Subscribed to weather:', data)
+    socket.join(`weather:${data.lat}:${data.lon}`)
+    socket.emit('weather:subscribed', { success: true, location: data })
+  })
+
+  // Handle alert subscriptions
+  socket.on('alerts:subscribe', (data) => {
+    socket.join('alerts')
+    socket.emit('alerts:subscribed', { success: true })
+  })
+
+  // Handle Admin broadcast alert dispatcher
+  socket.on('admin:dispatch-alert', (alertData) => {
+    console.log('📢 Admin broadcast dispatched:', alertData)
+    io.emit('broadcast:alert', alertData)
+    app.locals.activityLog.push({ type: 'alert', event: `Admin broadcast: ${alertData.title || 'Alert'}`, timestamp: Date.now() })
+    if (app.locals.activityLog.length > 100) app.locals.activityLog.shift()
+  })
+
+  // Handle Admin IoT simulation
+  socket.on('admin:simulate-iot', (iotData) => {
+    console.log('🎛️ Admin IoT simulation dispatched:', iotData)
+    io.emit('broadcast:iot', iotData)
+  })
+
+  socket.on('disconnect', () => {
+    connectedClients--
+    clearInterval(weatherInterval)
+    console.log(`Client disconnected: ${socket.id} | Total: ${connectedClients}`)
+  })
+})
+
+// ── Periodic alert simulation ─────────────────────────────
+setInterval(() => {
+  const alerts = [
+    { type: 'uv', severity: 'moderate', message: 'UV Index reaching 7+ in metropolitan areas' },
+    { type: 'wind', severity: 'high', message: 'Wind gusts expected up to 60 km/h coastal regions' },
+    { type: 'rain', severity: 'low', message: 'Scattered showers expected this evening' },
+  ]
+  const alert = alerts[Math.floor(Math.random() * alerts.length)]
+  io.to('alerts').emit('alert:new', { ...alert, timestamp: Date.now() })
+}, 60000)
+
+// ── MongoDB Connection ────────────────────────────────────
+async function connectDB() {
+  if (process.env.MONGODB_URI) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000
+      })
+      console.log('✅ MongoDB connected')
+
+      // Drop stale unique index on googleId if it exists to allow multiple null/empty registrations
+      try {
+        const db = mongoose.connection.db;
+        const collections = await db.listCollections({ name: 'users' }).toArray();
+        if (collections.length > 0) {
+          const indexes = await db.collection('users').indexes();
+          if (indexes.some(idx => idx.name === 'googleId_1')) {
+            console.log('⚠️ Found stale unique googleId_1 index on users collection. Dropping it...');
+            await db.collection('users').dropIndex('googleId_1');
+            console.log('✅ Successfully dropped googleId_1 unique index');
+          }
+        }
+      } catch (idxErr) {
+        console.warn('⚠️ Could not check/drop googleId index:', idxErr.message);
+      }
+
+    } catch (err) {
+      console.warn('⚠️  MongoDB connection failed — running without DB:', err.message)
+    }
+  } else {
+    console.log('ℹ️  No MONGODB_URI set — running without database')
+  }
+}
+
+// ── Start Server ──────────────────────────────────────────
+const PORT = process.env.PORT || 5000
+connectDB().then(() => {
+  httpServer.listen(PORT, () => {
+    try {
+      const fs = require('fs')
+      fs.writeFileSync('c:\\ClimateAI\\server_started.log', `ClimateAI Server running on port ${PORT} at ${new Date().toISOString()}`)
+    } catch (e) {
+      console.error('Failed to write startup log:', e)
+    }
+    console.log(`\n🚀 ClimateAI Server running on http://localhost:${PORT}`)
+    console.log(`📡 Socket.IO ready for real-time connections`)
+    console.log(`🌍 Weather API proxy: /api/weather`)
+    console.log(`🤖 AI endpoint: /api/ai`)
+    console.log(`🔔 Alerts: /api/alerts`)
+    console.log(`⚙️  Admin: /api/admin\n`)
+  })
+})
+
+
+module.exports = { app, io }
