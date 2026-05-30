@@ -456,7 +456,7 @@ export default function News() {
                   )
                 })}
               </div>
-            )}
+            ))}
           </div>
 
           {/* Discussion comments area */}
