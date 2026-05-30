@@ -20,6 +20,7 @@ export default function PremiumEffectsCore() {
 
   const trailTimerRef = useRef(null)
   const activeMagneticRef = useRef(null)
+  const cursorRef = useRef(null)
   const rafRef = useRef(null)
 
   // 1. Scroll Progress Ribbon Tracker
