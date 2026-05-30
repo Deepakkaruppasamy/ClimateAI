@@ -56,7 +56,7 @@ export default function Navbar() {
           scrolled ? 'glass-nav py-2' : 'bg-transparent py-4'
         }`}
       >
-        <div className="max-w-[88%] mx-auto px-6 sm:px-12 lg:px-24">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
 
             <div className="flex items-center gap-6 xl:gap-8">
