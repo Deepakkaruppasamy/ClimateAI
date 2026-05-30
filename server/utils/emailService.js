@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const nodemailer = require('nodemailer')
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
@@ -9,10 +8,9 @@ let localEmailsSent = 0
 
 /**
  * Broadcasts an alert email to all registered users.
- * Supports three delivery methods:
+ * Supports two delivery methods:
  * 1. 'sendgrid' -> Direct HTTP SendGrid API delivery (requires SENDGRID_API_KEY)
- * 2. 'smtp'     -> Standard SMTP transporter (requires SMTP_HOST)
- * 3. 'file'     -> Writes local HTML preview files to server/mail-outbox/ (No server needed, perfect for local demo!)
+ * 2. 'file'     -> Writes local HTML preview files to server/mail-outbox/ (No server needed, perfect for local dev!)
  */
 const sendAlertEmailToAllUsers = async (app, alert) => {
   try {
@@ -34,9 +32,7 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
     let method = 'file' // Default developer fallback
     if (configMethod === 'sendgrid' || (process.env.SENDGRID_API_KEY && !configMethod)) {
       method = 'sendgrid'
-    } else if (configMethod === 'smtp' || (process.env.SMTP_HOST && !configMethod)) {
-      method = 'smtp'
-    } else if (configMethod === 'file') {
+    } else {
       method = 'file'
     }
 
@@ -97,45 +93,6 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
 
       await Promise.allSettled(emailPromises)
       console.log(`✉️ [EMAIL SERVICE] SendGrid Web API Broadcast Complete.\n`)
-
-    } else if (method === 'smtp') {
-      console.log(`\n✉️ [EMAIL SERVICE] SMTP Transporter selected! Broadcasting to ${users.length} users...`)
-      
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-        timeout: 8000
-      })
-
-      const emailPromises = users.map(async (u) => {
-        if (!u.email) return
-        try {
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || `"ClimateAI System" <${process.env.SMTP_USER}>`,
-            to: u.email,
-            subject: emailSubject,
-            text: `${emailBody}\n\n---\nThis is an automated ecological alert warning sent by ClimateAI.`,
-            html: getHtmlBody(u.name, u.email)
-          })
-          
-          localEmailsSent++
-          if (app) {
-            if (app.locals.emailsSentCount === undefined) app.locals.emailsSentCount = 0
-            app.locals.emailsSentCount++
-          }
-          console.log(`   ✅ SMTP delivered mail to: ${u.email}`)
-        } catch (e) {
-          console.error(`   ❌ SMTP failed to deliver to: ${u.email} | Error: ${e.message}`)
-        }
-      })
-
-      await Promise.allSettled(emailPromises)
-      console.log(`✉️ [EMAIL SERVICE] SMTP Transporter Broadcast Complete.\n`)
 
     } else {
       // Local File Outbox Mode (Perfect for zero-setup developer visualization)
