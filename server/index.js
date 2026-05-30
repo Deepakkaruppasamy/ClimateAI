@@ -162,6 +162,22 @@ try {
   throw err
 }
 
+// ── Serve Frontend Static Files in Production ─────────────
+const path = require('path')
+app.use(express.static(path.join(__dirname, 'public')))
+
+// Fallback all other non-API GET routes to React's index.html
+app.get('*', (req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
+    return res.status(404).json({ error: 'API endpoint not found' })
+  }
+  try {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  } catch (err) {
+    res.status(404).send('Static assets not built yet. Run npm run build.')
+  }
+})
+
 
 // ── Health Check ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {
