@@ -9,8 +9,8 @@ let localEmailsSent = 0
 /**
  * Broadcasts an alert email to all registered users.
  * Supports two delivery methods:
- * 1. 'sendgrid' -> Direct HTTP SendGrid API delivery (requires SENDGRID_API_KEY)
- * 2. 'file'     -> Writes local HTML preview files to server/mail-outbox/ (No server needed, perfect for local dev!)
+ * 1. 'resend' -> Direct HTTP Resend API delivery (requires RESEND_API_KEY)
+ * 2. 'file'   -> Writes local HTML preview files to server/mail-outbox/ (No server needed, perfect for local dev!)
  */
 const sendAlertEmailToAllUsers = async (app, alert) => {
   try {
@@ -30,8 +30,8 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
     const configMethod = (process.env.MAIL_METHOD || '').toLowerCase()
     
     let method = 'file' // Default developer fallback
-    if (configMethod === 'sendgrid' || (process.env.SENDGRID_API_KEY && !configMethod)) {
-      method = 'sendgrid'
+    if (configMethod === 'resend' || (process.env.RESEND_API_KEY && !configMethod)) {
+      method = 'resend'
     } else {
       method = 'file'
     }
@@ -51,29 +51,24 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
       </div>
     `
 
-    if (method === 'sendgrid') {
-      console.log(`\n✉️ [EMAIL SERVICE] SendGrid Web API selected! Broadcasting to ${users.length} users...`)
+    if (method === 'resend') {
+      console.log(`\n✉️ [EMAIL SERVICE] Resend API selected! Broadcasting to ${users.length} users...`)
       
       const emailPromises = users.map(async (u) => {
         if (!u.email) return
         try {
           await axios.post(
-            'https://api.sendgrid.com/v3/mail/send',
+            'https://api.resend.com/emails',
             {
-              personalizations: [{ to: [{ email: u.email }] }],
-              from: {
-                email: process.env.SENDGRID_FROM || 'no-reply@climateai.org',
-                name: 'ClimateAI Alerts'
-              },
+              from: process.env.RESEND_FROM || 'ClimateAI Alerts <onboarding@resend.dev>',
+              to: [u.email],
               subject: emailSubject,
-              content: [
-                { type: 'text/plain', value: emailBody },
-                { type: 'text/html', value: getHtmlBody(u.name, u.email) }
-              ]
+              html: getHtmlBody(u.name, u.email),
+              text: `${emailBody}\n\n---\nThis is an automated ecological alert warning sent by ClimateAI.`
             },
             {
               headers: {
-                Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
                 'Content-Type': 'application/json'
               }
             }
@@ -84,15 +79,15 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
             if (app.locals.emailsSentCount === undefined) app.locals.emailsSentCount = 0
             app.locals.emailsSentCount++
           }
-          console.log(`   ✅ SendGrid API delivered mail to: ${u.email}`)
+          console.log(`   ✅ Resend API delivered mail to: ${u.email}`)
         } catch (e) {
           const apiError = e.response && e.response.data ? JSON.stringify(e.response.data) : e.message
-          console.error(`   ❌ SendGrid failed to deliver to: ${u.email} | Error: ${apiError}`)
+          console.error(`   ❌ Resend failed to deliver to: ${u.email} | Error: ${apiError}`)
         }
       })
 
       await Promise.allSettled(emailPromises)
-      console.log(`✉️ [EMAIL SERVICE] SendGrid Web API Broadcast Complete.\n`)
+      console.log(`✉️ [EMAIL SERVICE] Resend API Broadcast Complete.\n`)
 
     } else {
       // Local File Outbox Mode (Perfect for zero-setup developer visualization)
