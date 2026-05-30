@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Cloud, BarChart2, MessageSquare, Map, Bell, Settings, 
-  Menu, X, Zap, Globe, Wind, Thermometer, LogIn, LogOut, User, BellDot
+  Menu, X, Zap, Globe, Wind, Thermometer, LogIn, LogOut, User, BellDot,
+  TrendingUp, ShieldAlert
 } from 'lucide-react'
 import { useWeather } from '../../context/WeatherContext'
 import { useAuth } from '../../context/AuthContext'
@@ -13,11 +14,12 @@ const navLinks = [
   { path: '/',               label: 'Home',          icon: Globe },
   { path: '/dashboard',      label: 'Dashboard',     icon: Cloud },
   { path: '/hub',            label: 'Climate Hub',   icon: Zap },
+  { path: '/map',            label: 'Maps',          icon: Map },
+  { path: '/invest',         label: 'Green Invest',  icon: TrendingUp },
+  { path: '/emergency',      label: 'Disaster Room', icon: ShieldAlert },
   { path: '/assistant',      label: 'AI Chat',       icon: MessageSquare },
   { path: '/analytics',      label: 'Analytics',     icon: BarChart2 },
   { path: '/alerts',         label: 'Alerts',        icon: Bell },
-  { path: '/notifications',  label: 'Notifications', icon: BellDot },
-  { path: '/map',            label: 'Maps',          icon: Map },
 ]
 
 export default function Navbar() {

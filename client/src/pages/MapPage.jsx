@@ -26,6 +26,10 @@ export default function MapPage() {
   const [aqiPoints, setAqiPoints] = useState([])
   const [layerLoading, setLayerLoading] = useState(false)
 
+  // Cyclone Threat Radar states
+  const [cyclones, setCyclones] = useState([])
+  const [loadingCyclones, setLoadingCyclones] = useState(false)
+
   // Terminal telemetry cycle state
   const [telemetryIndex, setTelemetryIndex] = useState(0)
   const telemetryLogs = [
@@ -39,9 +43,9 @@ export default function MapPage() {
   // Dynamic import Leaflet on component mount to prevent SSR conflicts
   useEffect(() => {
     import('leaflet').then(L => {
-      import('react-leaflet').then(({ MapContainer, TileLayer, CircleMarker, Popup, useMap }) => {
+      import('react-leaflet').then(({ MapContainer, TileLayer, CircleMarker, Popup, useMap, Polyline, Circle }) => {
         setMapLoaded(true)
-        setMapComponent({ MapContainer, TileLayer, CircleMarker, Popup, L: L.default, useMap })
+        setMapComponent({ MapContainer, TileLayer, CircleMarker, Popup, L: L.default, useMap, Polyline, Circle })
       })
     }).catch(() => setMapLoaded(false))
   }, [])
@@ -123,10 +127,76 @@ export default function MapPage() {
     }
   }
 
+  const fetchCyclones = async () => {
+    if (cyclones.length > 0) return
+    setLayerLoading(true)
+    try {
+      setCyclones([
+        {
+          id: 'cyc_mawar',
+          name: 'Typhoon Mawar',
+          category: 'Category 4 Super Typhoon',
+          center: [14.2, 136.5], // Philippine Sea
+          pressure: '935 hPa',
+          windSpeed: '220 km/h',
+          status: 'Active / Warning Issued',
+          path: [
+            [11.5, 142.1], // Genesis
+            [12.8, 139.5],
+            [14.2, 136.5], // Active center
+            [15.8, 132.2], // 12h projection
+            [18.1, 127.4], // 24h projection
+            [21.5, 123.8], // 48h projection
+          ],
+          coneRadius: 180000,
+        },
+        {
+          id: 'cyc_biparjoy',
+          name: 'Cyclone Biparjoy',
+          category: 'Category 3 Severe Storm',
+          center: [16.5, 68.2], // Arabian Sea
+          pressure: '960 hPa',
+          windSpeed: '160 km/h',
+          status: 'Active / Coastal Alert',
+          path: [
+            [12.1, 66.5],
+            [14.3, 67.2],
+            [16.5, 68.2], // Active center
+            [19.2, 69.1], // 12h projection
+            [21.8, 69.8], // 24h projection
+          ],
+          coneRadius: 120000,
+        },
+        {
+          id: 'cyc_arthur',
+          name: 'Hurricane Arthur',
+          category: 'Category 2 Hurricane',
+          center: [26.4, -72.8], // Atlantic Ocean
+          pressure: '972 hPa',
+          windSpeed: '175 km/h',
+          status: 'Active / Precautionary Alert',
+          path: [
+            [20.5, -68.4],
+            [23.2, -70.9],
+            [26.4, -72.8], // Active center
+            [29.5, -74.5], // 12h projection
+            [32.8, -75.2], // 24h projection
+          ],
+          coneRadius: 90000,
+        }
+      ])
+    } catch (e) {
+      console.warn('⚠️ Failed to fetch cyclone tracks:', e)
+    } finally {
+      setLayerLoading(false)
+    }
+  }
+
   // Trigger data fetch when layer changes
   useEffect(() => {
     if (activeLayer === 'wildfire') fetchWildfires()
     if (activeLayer === 'airquality') fetchAQI()
+    if (activeLayer === 'cyclone') fetchCyclones()
   }, [activeLayer])
 
   // Fly/pan Leaflet map view component
@@ -177,6 +247,7 @@ export default function MapPage() {
     { id: 'wind', label: 'Wind Velocity', icon: Wind, color: '#06ffd4' },
     { id: 'wildfire', label: 'Wildfires 🔥', icon: Activity, color: '#ff4400' },
     { id: 'airquality', label: 'Air Quality 💨', icon: Wind, color: '#ff8800' },
+    { id: 'cyclone', label: 'Threat Radar 🌀', icon: Compass, color: '#ff0055' },
   ]
 
   const weatherPoints = [
@@ -463,6 +534,94 @@ export default function MapPage() {
                     )
                   })}
 
+                  {/* Cyclone Threat Radar Overlays */}
+                  {activeLayer === 'cyclone' && cyclones.map((c) => (
+                    <Fragment key={c.id}>
+                      {/* 1. Track Path Line */}
+                      <MapComponent.Polyline
+                        positions={c.path}
+                        color="#ff0055"
+                        weight={2}
+                        dashArray="6 6"
+                        opacity={0.7}
+                      />
+
+                      {/* 2. Projected Track Points (Small dots along path) */}
+                      {c.path.map((pos, idx) => (
+                        <MapComponent.CircleMarker
+                          key={`${c.id}-path-${idx}`}
+                          center={pos}
+                          radius={3}
+                          color="#ff0055"
+                          fillColor="#ff0055"
+                          fillOpacity={0.4}
+                          weight={0}
+                        />
+                      ))}
+
+                      {/* 3. Hazard Cone/Radius */}
+                      <MapComponent.Circle
+                        center={c.center}
+                        radius={c.coneRadius}
+                        color="#ff0055"
+                        fillColor="#ff0055"
+                        fillOpacity={0.12}
+                        weight={1.5}
+                        dashArray="4 4"
+                      />
+
+                      {/* 4. Secondary Concentric Pulsing Ring */}
+                      <MapComponent.CircleMarker
+                        center={c.center}
+                        radius={22}
+                        color="#ff0055"
+                        fillColor="transparent"
+                        weight={1.5}
+                        dashArray="3 3"
+                        opacity={0.6}
+                      />
+
+                      {/* 5. Storm Core Marker */}
+                      <MapComponent.CircleMarker
+                        center={c.center}
+                        radius={11}
+                        color="#ff0055"
+                        fillColor="#110206"
+                        fillOpacity={0.9}
+                        weight={3}
+                      >
+                        <MapComponent.Popup>
+                          <div className="font-mono p-1 min-w-[200px]">
+                            <div className="flex items-center gap-1.5 border-b border-white/10 pb-1 mb-2">
+                              <span className="text-sm animate-spin" style={{ animationDuration: '4s' }}>🌀</span>
+                              <span className="text-sm font-bold text-white uppercase">{c.name}</span>
+                              <span className="ml-auto px-1.5 py-0.5 rounded bg-red-500/20 text-red-500 text-[8px] font-bold animate-pulse">CRITICAL</span>
+                            </div>
+                            <span className="text-xs text-red-400 font-bold block mb-2">{c.category}</span>
+                            <div className="space-y-1 bg-black/40 p-2 rounded-lg border border-red-500/20">
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-gray-400">BARO_PRESSURE:</span>
+                                <span className="text-white font-bold">{c.pressure}</span>
+                              </div>
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-gray-400">WIND_VELOCITY:</span>
+                                <span className="text-neon-cyan font-bold">{c.windSpeed}</span>
+                              </div>
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-gray-400">STATUS:</span>
+                                <span className="text-red-400 font-bold">{c.status}</span>
+                              </div>
+                              <div className="flex justify-between text-[10px]">
+                                <span className="text-gray-400">RADAR_DOPPLER:</span>
+                                <span className="text-white">SCANNING...</span>
+                              </div>
+                            </div>
+                          </div>
+                        </MapComponent.Popup>
+                      </MapComponent.CircleMarker>
+                    </Fragment>
+                  ))}
+
                   {/* Standard weather markers (only for temp/wind/precip) */}
                   {['temperature', 'precipitation', 'wind'].includes(activeLayer) && weatherPoints.map((p, i) => {
                     const settings = getMarkerSettings(p, activeLayer)
@@ -558,53 +717,111 @@ export default function MapPage() {
           {/* HUD Sidebar and Diagnostics Console */}
           <div className="lg:col-span-3 space-y-4">
             
-            {/* World Stations list */}
+            {/* World Stations list / Cyclone Doppler / Wildfire Hotspots */}
             <div className="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-4">
               <h3 className="text-xs font-mono text-neon-blue uppercase tracking-widest flex items-center gap-2 select-none">
-                <Compass size={14} className="animate-spin" style={{ animationDuration: '10s' }} /> WORLD_TELEM_STATIONS
+                <Compass size={14} className="animate-spin" style={{ animationDuration: '10s' }} />{' '}
+                {activeLayer === 'cyclone' ? 'CYCLONE_DOPPLER_ROSTER' : activeLayer === 'wildfire' ? 'NASA_FIRMS_HOTSPOTS' : 'WORLD_TELEM_STATIONS'}
               </h3>
               
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
-                {/* Active user position shortcut */}
-                <motion.div
-                  whileHover={{ scale: 1.01, x: 2 }}
-                  onClick={() => triggerFly(userPoint.lat, userPoint.lon)}
-                  onMouseEnter={playHover}
-                  className="flex items-center justify-between p-2.5 rounded-xl border border-neon-cyan/20 bg-neon-cyan/5 hover:bg-neon-cyan/10 cursor-pointer transition-colors text-xs font-mono"
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <span>📍</span>
-                    <span className="text-white font-bold truncate">LOCAL_NODE (YOU)</span>
-                  </div>
-                  <span className="text-[10px] text-neon-cyan font-bold font-mono">
-                    {activeLayer === 'temperature' ? `${userPoint.temp}°C` : activeLayer === 'wind' ? `${userPoint.wind}km` : `${userPoint.rain}mm`}
-                  </span>
-                </motion.div>
-
-                {/* City list loops */}
-                {weatherPoints.map((p, i) => {
-                  const settings = getMarkerSettings(p, activeLayer)
-                  return (
+                {activeLayer === 'cyclone' ? (
+                  cyclones.map((c, i) => (
                     <motion.div
-                      key={i}
+                      key={c.id}
                       initial={{ opacity: 0, x: 15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
                       whileHover={{ scale: 1.01, x: 2 }}
-                      onClick={() => triggerFly(p.lat, p.lon)}
+                      onClick={() => triggerFly(c.center[0], c.center[1])}
                       onMouseEnter={playHover}
-                      className="flex items-center justify-between p-2.5 rounded-xl border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer transition-all text-xs font-mono group"
+                      className="p-2.5 rounded-xl border border-red-500/20 bg-red-950/10 hover:bg-red-950/20 cursor-pointer transition-all text-xs font-mono space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold flex items-center gap-1.5">
+                          <span className="animate-spin" style={{ animationDuration: '6s' }}>🌀</span>
+                          {c.name}
+                        </span>
+                        <span className="text-[10px] text-red-500 font-bold px-1.5 py-0.5 rounded bg-red-500/10">
+                          {c.windSpeed}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-gray-400">
+                        <span className="truncate max-w-[120px]">{c.category}</span>
+                        <span className="text-neon-cyan font-bold">{c.pressure}</span>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : activeLayer === 'wildfire' ? (
+                  <>
+                    <div className="p-2 text-[10px] font-mono text-orange-400 border border-orange-500/20 bg-orange-950/15 rounded-xl text-center select-none mb-2">
+                      🔥 ACTIVE DETECTED SATELLITE HOTSPOTS
+                    </div>
+                    {wildfirePoints.slice(0, 10).map((p, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 15 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        whileHover={{ scale: 1.01, x: 2 }}
+                        onClick={() => triggerFly(p.lat, p.lon)}
+                        onMouseEnter={playHover}
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer transition-all text-xs font-mono group"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span>🔥</span>
+                          <span className="text-gray-300 group-hover:text-white transition-colors truncate">Lat: {p.lat.toFixed(2)}° | Lon: {p.lon.toFixed(2)}°</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-orange-500">
+                          {p.brightness.toFixed(0)}K
+                        </span>
+                      </motion.div>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {/* Active user position shortcut */}
+                    <motion.div
+                      whileHover={{ scale: 1.01, x: 2 }}
+                      onClick={() => triggerFly(userPoint.lat, userPoint.lon)}
+                      onMouseEnter={playHover}
+                      className="flex items-center justify-between p-2.5 rounded-xl border border-neon-cyan/20 bg-neon-cyan/5 hover:bg-neon-cyan/10 cursor-pointer transition-colors text-xs font-mono"
                     >
                       <div className="flex items-center gap-2 truncate">
-                        <span>{p.icon}</span>
-                        <span className="text-gray-300 group-hover:text-white transition-colors truncate">{p.city}</span>
+                        <span>📍</span>
+                        <span className="text-white font-bold truncate">LOCAL_NODE (YOU)</span>
                       </div>
-                      <span className="text-[10px] font-bold" style={{ color: settings.color }}>
-                        {settings.value}
+                      <span className="text-[10px] text-neon-cyan font-bold font-mono">
+                        {activeLayer === 'temperature' ? `${userPoint.temp}°C` : activeLayer === 'wind' ? `${userPoint.wind}km` : `${userPoint.rain}mm`}
                       </span>
                     </motion.div>
-                  )
-                })}
+
+                    {/* City list loops */}
+                    {weatherPoints.map((p, i) => {
+                      const settings = getMarkerSettings(p, activeLayer)
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileHover={{ scale: 1.01, x: 2 }}
+                          onClick={() => triggerFly(p.lat, p.lon)}
+                          onMouseEnter={playHover}
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer transition-all text-xs font-mono group"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span>{p.icon}</span>
+                            <span className="text-gray-300 group-hover:text-white transition-colors truncate">{p.city}</span>
+                          </div>
+                          <span className="text-[10px] font-bold" style={{ color: settings.color }}>
+                            {settings.value}
+                          </span>
+                        </motion.div>
+                      )
+                    })}
+                  </>
+                )}
               </div>
             </div>
 
@@ -634,7 +851,13 @@ export default function MapPage() {
             {/* Tactical dynamic Legend */}
             <div className="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-4">
               <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest select-none">
-                {activeLayer === 'temperature' ? '[ THERMAL_LEGEND ]' : activeLayer === 'wind' ? '[ VELOCITY_LEGEND ]' : '[ PRECIP_LEGEND ]'}
+                {activeLayer === 'temperature' 
+                  ? '[ THERMAL_LEGEND ]' 
+                  : activeLayer === 'wind' 
+                  ? '[ VELOCITY_LEGEND ]' 
+                  : activeLayer === 'cyclone'
+                  ? '[ CYCLONE_SCALE_LEGEND ]'
+                  : '[ PRECIP_LEGEND ]'}
               </h3>
               
               <div 
@@ -643,7 +866,9 @@ export default function MapPage() {
                   background: activeLayer === 'temperature'
                     ? 'linear-gradient(90deg, #0055ff, #00d4ff, #06ffd4, #ffcc00, #ff0090)'
                     : activeLayer === 'wind'
-                    ? 'linear-gradient(90deg, rgba(255,255,255,0.1), #7c3aed, #06ffd4, #ff0090)'
+                    ? 'linear-gradient(90deg, rgba(255,255,255,0.1), #06ffd4, #a78bfa, #ff0055)'
+                    : activeLayer === 'cyclone'
+                    ? 'linear-gradient(90deg, #ffdd00, #ff8800, #ff4400, #ff0055)'
                     : 'linear-gradient(90deg, rgba(255,255,255,0.1), #06ffd4, #0055ff, #7c3aed)'
                 }} 
               />
@@ -653,6 +878,8 @@ export default function MapPage() {
                   <><span>-10°C</span><span>15°C</span><span>45°C</span></>
                 ) : activeLayer === 'wind' ? (
                   <><span>0 km/h</span><span>25 km/h</span><span>50+ km/h</span></>
+                ) : activeLayer === 'cyclone' ? (
+                  <><span>Cat 1/2</span><span>Cat 3</span><span>Cat 4/5 Super</span></>
                 ) : (
                   <><span>0 mm</span><span>8 mm</span><span>15+ mm</span></>
                 )}

@@ -23,6 +23,8 @@ import Iot from './pages/Iot'
 import Quiz from './pages/Quiz'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
+import GreenInvest from './pages/GreenInvest'
+import EmergencyCommand from './pages/EmergencyCommand'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import AdminRoute from './components/layout/AdminRoute'
 import { WeatherProvider } from './context/WeatherContext'
@@ -51,6 +53,8 @@ function AnimatedRoutes() {
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/invest" element={<ProtectedRoute><GreenInvest /></ProtectedRoute>} />
+        <Route path="/emergency" element={<ProtectedRoute><EmergencyCommand /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       </Routes>
     </AnimatePresence>

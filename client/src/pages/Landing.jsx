@@ -7,11 +7,12 @@ import { useInView } from 'react-intersection-observer'
 import { 
   ArrowRight, Zap, Wind, Droplets, Eye, Shield, 
   Brain, BarChart2, Map, Bell, Cloud, Sun, Thermometer,
-  TrendingUp, Globe, Activity, Layers, ChevronRight, Play
+  TrendingUp, Globe, Activity, Layers, ChevronRight, Play, Sparkles
 } from 'lucide-react'
 import VideoBackground from '../components/ui/VideoBackground'
 import WeatherParticles from '../components/hero/WeatherParticles'
 import AnimatedGlobe from '../components/hero/AnimatedGlobe'
+import WebXRHologram from '../components/ui/WebXRHologram'
 import { useWeather } from '../context/WeatherContext'
 import use3dTilt from '../utils/use3dTilt'
 import useQuantumFloat from '../utils/useQuantumFloat'
@@ -703,6 +704,74 @@ export default function Landing() {
             </motion.div>
 
           </div>
+
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          WEBXR TABLETOP HOLOGRAM SHOWCASE — New Premium Section
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-28 relative overflow-hidden">
+        {/* Subtle video background */}
+        <VideoBackground
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260319_055001_8e16d972-3b2b-441c-86ad-2901a54682f9.mp4"
+          overlay="dark"
+          kenBurns={true}
+          grain={true}
+        />
+        <div className="absolute inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
+
+        <div className="max-w-[95%] mx-auto px-6 lg:px-12 relative z-[10]">
+          
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 mb-8 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,212,255,0.1)]"
+            >
+              <Sparkles size={13} className="text-neon-cyan animate-pulse" />
+              <span className="label-overline">Spatial Computing VR</span>
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-white mb-5"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+                fontWeight: 400,
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Spatial Hologram{' '}
+              <em style={{
+                fontStyle: 'italic',
+                background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                Tabletop VR
+              </em>
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+            >
+              Experience high-impact tabletop AR portals bringing key ecological threat vector coordinates straight to your physical space.
+            </motion.p>
+          </div>
+
+          {/* Hologram Core Simulator */}
+          <WebXRHologram />
 
         </div>
       </section>
