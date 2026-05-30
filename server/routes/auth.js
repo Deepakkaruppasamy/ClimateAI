@@ -71,7 +71,7 @@ router.post('/register', async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       avatar: avatarUrl,
-      role: ['elena.rostova@gmail.com', 'deep@gmail.com', 'deepakk.23it@kongu.edu'].includes(normalizedEmail) ? 'admin' : 'user',
+      role: ['deep@gmail.com', 'deepakk.23it@kongu.edu'].includes(normalizedEmail) ? 'admin' : 'user',
       quizStats: { xp: 0, completed: 0, streak: 0 },
       badges: [],
       createdAt: new Date(),
@@ -110,8 +110,8 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid email or password' })
       }
 
-      // Auto-elevate Elena or custom user if they exist in DB with standard user role
-      if (['elena.rostova@gmail.com', 'deep@gmail.com', 'deepakk.23it@kongu.edu'].includes(normalizedEmail) && user.role !== 'admin') {
+      // Auto-elevate custom user if they exist in DB with standard user role
+      if (['deep@gmail.com', 'deepakk.23it@kongu.edu'].includes(normalizedEmail) && user.role !== 'admin') {
         user.role = 'admin'
       }
 
