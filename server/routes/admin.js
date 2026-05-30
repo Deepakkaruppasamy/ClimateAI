@@ -28,6 +28,7 @@ router.get('/metrics', (req, res) => {
       apiCallsToday: Math.floor(Math.random() * 5000) + 80000,
       alertsDispatched: 47,
       avgLatency: Math.floor(Math.random() * 50) + 100,
+      emailsSent: req.app.locals.emailsSentCount || 0
     }
   })
 })

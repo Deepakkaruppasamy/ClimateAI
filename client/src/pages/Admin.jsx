@@ -219,6 +219,27 @@ export default function Admin() {
   const [customSeverity, setCustomSeverity] = useState('critical')
   const [targetCity, setTargetCity] = useState('')
 
+  // ── Emails Sent State & Polling ────────────────────────────
+  const [emailsSentCount, setEmailsSentCount] = useState(0)
+
+  const fetchBackendMetrics = async () => {
+    try {
+      const res = await fetch('/api/admin/metrics')
+      const data = await res.json()
+      if (res.ok && data.stats) {
+        setEmailsSentCount(data.stats.emailsSent || 0)
+      }
+    } catch (e) {
+      console.warn('Backend metrics fetch failed:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchBackendMetrics()
+    const interval = setInterval(fetchBackendMetrics, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
   // IoT Simulator states
   const [uvSim, setUvSim] = useState(5)
   const [soilSim, setSoilSim] = useState('normal')
@@ -393,6 +414,7 @@ export default function Admin() {
   const sparkMem = generateHistory(20, metrics.memory, 8)
   const sparkReq = generateHistory(20, metrics.requests / 100, 5)
   const sparkLat = generateHistory(20, metrics.latency, 30)
+  const sparkEmails = generateHistory(20, emailsSentCount > 0 ? emailsSentCount : 0, 3)
 
   const handleRefresh = () => {
     setRefreshing(true)
@@ -550,11 +572,12 @@ export default function Admin() {
         </div>
 
         {/* ── Sparkline Metrics ────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <AdminMetricCard icon={Cpu} label="CPU Utilization" value={Math.round(metrics.cpu)} unit="%" color="#00d4ff" trend={2.1} sparkData={sparkCpu} />
           <AdminMetricCard icon={Database} label="Memory Usage" value={Math.round(metrics.memory)} unit="%" color="#7c3aed" trend={-0.5} sparkData={sparkMem} />
           <AdminMetricCard icon={Activity} label="Requests/min" value={metrics.requests} unit="" color="#06ffd4" trend={12.3} sparkData={sparkReq} />
           <AdminMetricCard icon={Clock} label="Response Time" value={metrics.latency} unit="ms" color="#ff8800" trend={-8.1} sparkData={sparkLat} />
+          <AdminMetricCard icon={Zap} label="Alert Emails Sent" value={emailsSentCount} unit="mails" color="#ff0090" trend={emailsSentCount > 0 ? 100 : 0} sparkData={sparkEmails} />
         </div>
 
         {/* ── Traffic Charts ───────────────────────────── */}

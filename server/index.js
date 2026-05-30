@@ -208,11 +208,22 @@ io.on('connection', (socket) => {
   })
 
   // Handle Admin broadcast alert dispatcher
-  socket.on('admin:dispatch-alert', (alertData) => {
+  socket.on('admin:dispatch-alert', async (alertData) => {
     console.log('📢 Admin broadcast dispatched:', alertData)
     io.emit('broadcast:alert', alertData)
     app.locals.activityLog.push({ type: 'alert', event: `Admin broadcast: ${alertData.title || 'Alert'}`, timestamp: Date.now() })
     if (app.locals.activityLog.length > 100) app.locals.activityLog.shift()
+    
+    // Automatically email all users when Admin broadcasts!
+    try {
+      const { sendAlertEmailToAllUsers } = require('./utils/emailService')
+      await sendAlertEmailToAllUsers(app, {
+        title: alertData.title,
+        text: alertData.text
+      })
+    } catch (e) {
+      console.error('Failed to broadcast custom alert emails:', e)
+    }
   })
 
   // Handle Admin IoT simulation
@@ -229,7 +240,7 @@ io.on('connection', (socket) => {
 })
 
 // ── Periodic alert simulation ─────────────────────────────
-setInterval(() => {
+setInterval(async () => {
   const alerts = [
     { type: 'uv', severity: 'moderate', message: 'UV Index reaching 7+ in metropolitan areas' },
     { type: 'wind', severity: 'high', message: 'Wind gusts expected up to 60 km/h coastal regions' },
@@ -237,6 +248,17 @@ setInterval(() => {
   ]
   const alert = alerts[Math.floor(Math.random() * alerts.length)]
   io.emit('alert:new', { ...alert, timestamp: Date.now() })
+
+  // Automatically email all users when a periodic warning ticks!
+  try {
+    const { sendAlertEmailToAllUsers } = require('./utils/emailService')
+    await sendAlertEmailToAllUsers(app, {
+      title: `Meteorological Alert: ${alert.type.toUpperCase()}`,
+      text: alert.message
+    })
+  } catch (e) {
+    console.error('Failed to broadcast periodic alert emails:', e)
+  }
 }, 60000)
 
 // ── MongoDB Connection ────────────────────────────────────
