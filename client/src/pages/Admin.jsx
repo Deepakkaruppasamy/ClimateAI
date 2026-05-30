@@ -219,8 +219,9 @@ export default function Admin() {
   const [customSeverity, setCustomSeverity] = useState('critical')
   const [targetCity, setTargetCity] = useState('')
 
-  // ── Emails Sent State & Polling ────────────────────────────
+  // ── Emails Sent & Realtime Active Users State & Polling ──────
   const [emailsSentCount, setEmailsSentCount] = useState(0)
+  const [realtimeActiveUsers, setRealtimeActiveUsers] = useState(1)
 
   const fetchBackendMetrics = async () => {
     try {
@@ -228,6 +229,7 @@ export default function Admin() {
       const data = await res.json()
       if (res.ok && data.stats) {
         setEmailsSentCount(data.stats.emailsSent || 0)
+        setRealtimeActiveUsers(data.stats.activeUsers || 0)
       }
     } catch (e) {
       console.warn('Backend metrics fetch failed:', e)
@@ -560,7 +562,7 @@ export default function Admin() {
             </div>
             <div className="flex flex-col items-center gap-3">
               <div className="text-center">
-                <div className="text-3xl font-bold font-outfit text-neon-purple">{metrics.activeUsers.toLocaleString()}</div>
+                <div className="text-3xl font-bold font-outfit text-neon-purple">{realtimeActiveUsers.toLocaleString()}</div>
                 <div className="text-xs text-gray-500 mt-1">Active Users</div>
               </div>
               <div className="text-center">

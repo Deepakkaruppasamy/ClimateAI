@@ -24,7 +24,7 @@ router.get('/metrics', (req, res) => {
       memoryUsage: process.memoryUsage(),
     },
     stats: {
-      activeUsers: Math.floor(Math.random() * 500) + 2500,
+      activeUsers: req.app.locals.io ? req.app.locals.io.sockets.sockets.size : 0,
       apiCallsToday: Math.floor(Math.random() * 5000) + 80000,
       alertsDispatched: 47,
       avgLatency: Math.floor(Math.random() * 50) + 100,
