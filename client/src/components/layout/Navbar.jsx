@@ -59,63 +59,65 @@ export default function Navbar() {
         <div className="max-w-[88%] mx-auto px-6 sm:px-12 lg:px-24">
           <div className="flex items-center justify-between">
 
-            {/* ── Logo ─────────────────────────────────────── */}
-            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="relative">
-                <motion.div
-                  className="w-10 h-10 flex items-center justify-center overflow-hidden"
-                  animate={{ boxShadow: [
-                    '0 0 10px rgba(0,212,255,0.2)',
-                    '0 0 20px rgba(0,212,255,0.4)',
-                    '0 0 10px rgba(0,212,255,0.2)',
-                  ]}}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                >
-                  <img src="/logo.png" alt="logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]" />
-                </motion.div>
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-neon-cyan rounded-full animate-pulse" />
-              </div>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-white font-semibold text-xl" style={{ fontFamily: 'var(--font-display)' }}>
-                  Climate
-                </span>
-                <span className="text-xl font-semibold gradient-text" style={{ fontFamily: 'var(--font-display)' }}>
-                  AI
-                </span>
-              </div>
-            </Link>
-
-            {/* ── Desktop Navigation ───────────────────────── */}
-            <div className="hidden lg:flex items-center gap-0.5">
-              {navLinks.map(({ path, label, icon: Icon }) => {
-                const active = location.pathname === path
-                return (
-                  <Link
-                    key={path}
-                    to={path}
-                    onClick={playTap}
-                    onMouseEnter={playHover}
-                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                      active ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
-                    }`}
+            <div className="flex items-center gap-6 xl:gap-8">
+              {/* ── Logo ─────────────────────────────────────── */}
+              <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+                <div className="relative">
+                  <motion.div
+                    className="w-10 h-10 flex items-center justify-center overflow-hidden"
+                    animate={{ boxShadow: [
+                      '0 0 10px rgba(0,212,255,0.2)',
+                      '0 0 20px rgba(0,212,255,0.4)',
+                      '0 0 10px rgba(0,212,255,0.2)',
+                    ]}}
+                    transition={{ duration: 2.5, repeat: Infinity }}
                   >
-                    {active && (
-                      <motion.div
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-xl"
-                        style={{
-                          background: 'rgba(0,212,255,0.08)',
-                          border: '1px solid rgba(0,212,255,0.2)',
-                          boxShadow: '0 0 20px rgba(0,212,255,0.1)',
-                        }}
-                        transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
-                      />
-                    )}
-                    <Icon size={14} className="relative z-10" />
-                    <span className="relative z-10">{label}</span>
-                  </Link>
-                )
-              })}
+                    <img src="/logo.png" alt="logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]" />
+                  </motion.div>
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-neon-cyan rounded-full animate-pulse" />
+                </div>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-white font-semibold text-xl" style={{ fontFamily: 'var(--font-display)' }}>
+                    Climate
+                  </span>
+                  <span className="text-xl font-semibold gradient-text" style={{ fontFamily: 'var(--font-display)' }}>
+                    AI
+                  </span>
+                </div>
+              </Link>
+
+              {/* ── Desktop Navigation ───────────────────────── */}
+              <div className="hidden lg:flex items-center gap-0.5">
+                {navLinks.map(({ path, label, icon: Icon }) => {
+                  const active = location.pathname === path
+                  return (
+                    <Link
+                      key={path}
+                      to={path}
+                      onClick={playTap}
+                      onMouseEnter={playHover}
+                      className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                        active ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {active && (
+                        <motion.div
+                          layoutId="nav-pill"
+                          className="absolute inset-0 rounded-xl"
+                          style={{
+                            background: 'rgba(0,212,255,0.08)',
+                            border: '1px solid rgba(0,212,255,0.2)',
+                            boxShadow: '0 0 20px rgba(0,212,255,0.1)',
+                          }}
+                          transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
+                        />
+                      )}
+                      <Icon size={14} className="relative z-10" />
+                      <span className="relative z-10">{label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
 
             {/* ── Right Side ───────────────────────────────── */}
