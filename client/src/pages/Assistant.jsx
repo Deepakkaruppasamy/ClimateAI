@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, MicOff, Zap, Cloud, Thermometer, Wind } from 'lucide-react'
+import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell } from 'lucide-react'
 import { useWeather } from '../context/WeatherContext'
+import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || ''
 
-const suggestions = [
-  "What should I wear today?",
-  "Will it rain this weekend?",
-  "Is it safe to go hiking tomorrow?",
-  "What's the UV risk today?",
-  "Give me farming advice for today",
-  "Any storm alerts I should know about?",
+const QUICK_PROMPTS = [
+  { icon: Thermometer, label: 'AQI Risk', text: 'What is my current air quality risk and how does it affect my health today?' },
+  { icon: Leaf, label: 'Reduce Footprint', text: 'Based on my carbon footprint, give me 3 specific actions I can take this week to reduce it.' },
+  { icon: Bell, label: 'Explain Alert', text: 'Explain the most recent climate alert in my region and what I should do.' },
+  { icon: BookOpen, label: 'Climate Tip', text: 'Give me one surprising climate science fact and what it means for daily life.' },
 ]
 
 function MessageBubble({ msg }) {
@@ -72,23 +71,46 @@ function TypingIndicator() {
 
 export default function Assistant() {
   const { weather, forecast, aqi } = useWeather()
+  const { user } = useAuth()
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: `Hello! I'm ClimateAI, your intelligent weather assistant. 🌍\n\nI can help you with:\n• Real-time weather insights\n• Smart clothing & travel recommendations\n• Health & safety alerts\n• Farming and outdoor activity guidance\n\nWhat would you like to know about today's weather?`,
+      content: `Hello${user ? ` ${user.name.split(' ')[0]}` : ''}! I'm ClimateAI, your intelligent weather assistant. 🌍\n\nI can help you with:\n• Real-time weather insights\n• Smart clothing & travel recommendations\n• Health & safety alerts\n• Farming and outdoor activity guidance\n\nWhat would you like to know about today's weather?`,
       time: Date.now(),
     }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [historyLoaded, setHistoryLoaded] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
 
+  // Load chat history on mount
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+    if (!user?._id || historyLoaded) return
+    const loadHistory = async () => {
+      try {
+        const res = await fetch(`/api/ai/history/${user._id}`)
+        const data = await res.json()
+        if (res.ok && data.history?.length > 0) {
+          const restored = data.history.map(m => ({
+            role: m.role,
+            content: m.content,
+            time: new Date(m.createdAt).getTime()
+          }))
+          setMessages(prev => [
+            prev[0], // keep the greeting
+            ...restored
+          ])
+        }
+      } catch (e) { /* silent fail */ } finally {
+        setHistoryLoaded(true)
+      }
+    }
+    loadHistory()
+  }, [user])
 
   const buildSystemPrompt = () => {
     const w = weather
@@ -122,13 +144,19 @@ Guidelines:
     setInput('')
     setLoading(true)
 
+    // Save user message to history
+    if (user?._id) {
+      fetch(`/api/ai/history/${user._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'user', content: text })
+      }).catch(() => {})
+    }
+
     try {
-      // Fetch from our backend proxy endpoint
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [
             ...messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
@@ -144,13 +172,30 @@ Guidelines:
             uvIndex: weather.uvIndex,
             aqi: aqi?.aqi,
             aqiCategory: aqi?.category,
+          } : null,
+          // Inject user context for personalized responses
+          userContext: user ? {
+            name: user.name,
+            city: weather?.city,
+            footprint: user.footprint,
+            badges: user.badges,
+            xp: user.quizStats?.xp
           } : null
         }),
       })
 
       const data = await response.json()
       if (response.ok && data.content) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.content, time: Date.now() }])
+        const assistantMsg = { role: 'assistant', content: data.content, time: Date.now() }
+        setMessages(prev => [...prev, assistantMsg])
+        // Save assistant reply to history
+        if (user?._id) {
+          fetch(`/api/ai/history/${user._id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: 'assistant', content: data.content })
+          }).catch(() => {})
+        }
       } else {
         throw new Error(data.error || 'Failed to fetch AI response')
       }
@@ -275,22 +320,26 @@ Guidelines:
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggestions */}
-          {messages.length <= 1 && (
-            <div className="px-6 pb-4">
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((s, i) => (
+          {/* Quick Prompts — always visible */}
+          <div className="px-6 pb-4">
+            <p className="text-[10px] font-mono text-gray-600 uppercase tracking-wider mb-2">Quick Climate Queries</p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_PROMPTS.map((p, i) => {
+                const Icon = p.icon
+                return (
                   <button
                     key={i}
-                    onClick={() => sendMessage(s)}
-                    className="text-xs glass px-3 py-1.5 rounded-full text-gray-300 hover:text-neon-blue hover:neon-border-blue transition-all"
+                    onClick={() => sendMessage(p.text)}
+                    disabled={loading}
+                    className="flex items-center gap-1.5 text-xs glass px-3 py-1.5 rounded-full text-gray-300 hover:text-neon-blue hover:neon-border-blue transition-all disabled:opacity-50"
                   >
-                    {s}
+                    <Icon size={11} />
+                    {p.label}
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
-          )}
+          </div>
 
           {/* Input */}
           <div className="p-4 border-t border-white/5">

@@ -5,9 +5,18 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'rec
 import VideoBackground from '../components/ui/VideoBackground'
 
 export default function Sandbox() {
+  const [sandboxTab, setSandboxTab] = useState('projections') // 'projections' | 'policy'
   const [year, setYear] = useState(2026)
   const [rcp, setRcp] = useState('rcp45') // rcp26 (net zero), rcp45 (moderate), rcp85 (high)
   
+  // Policy simulator states
+  const [coalPhaseout, setCoalPhaseout] = useState(30)   // % phased out
+  const [evAdoption, setEvAdoption] = useState(20)       // % of vehicles
+  const [deforestation, setDeforestation] = useState(0)  // -100=reforestation, +100=mass deforestation
+  const [renewableGrid, setRenewableGrid] = useState(25) // % of grid
+  const [policyAiAnalysis, setPolicyAiAnalysis] = useState('')
+  const [loadingPolicyAi, setLoadingPolicyAi] = useState(false)
+
   // AI analysis states
   const [aiAnalysis, setAiAnalysis] = useState('')
   const [loadingAi, setLoadingAi] = useState(false)
@@ -125,11 +134,52 @@ export default function Sandbox() {
 
   // Reload AI analysis when year or RCP changes
   useEffect(() => {
+    if (sandboxTab !== 'projections') return
     const delayDebounce = setTimeout(() => {
       fetchAiSimulation()
     }, 1500) // Debounce requests to prevent spam
     return () => clearTimeout(delayDebounce)
   }, [year, rcp])
+
+  // Policy scenario calculation
+  const calcPolicyImpact = () => {
+    // Each slider reduces or increases warming
+    const coalReduction = (coalPhaseout / 100) * 0.8    // max 0.8°C reduction
+    const evReduction = (evAdoption / 100) * 0.3         // max 0.3°C
+    const defoImpact = (deforestation / 100) * 0.5       // +/-0.5°C
+    const renewableReduction = (renewableGrid / 100) * 0.5 // max 0.5°C
+    const totalReduction = coalReduction + evReduction - defoImpact + renewableReduction
+    const baseTemp2050 = 1.8  // baseline RCP4.5 2050 temp anomaly
+    const projectedTemp = Math.max(0.8, parseFloat((baseTemp2050 - totalReduction).toFixed(2)))
+    const co2Reduction = Math.round((coalPhaseout * 0.8 + evAdoption * 0.4 + renewableGrid * 1.2) / 3)
+    const seaLevelBenefit = Math.round(totalReduction * 8)
+    return { projectedTemp, co2Reduction, seaLevelBenefit, totalReduction: parseFloat(totalReduction.toFixed(2)) }
+  }
+
+  const policyImpact = calcPolicyImpact()
+
+  const fetchPolicyAiAnalysis = async () => {
+    setLoadingPolicyAi(true)
+    setPolicyAiAnalysis('')
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: `Analyze this climate policy scenario in exactly 2 sentences: Coal phase-out: ${coalPhaseout}%, EV adoption: ${evAdoption}%, Deforestation rate: ${deforestation > 0 ? '+' : ''}${deforestation}%, Renewable grid share: ${renewableGrid}%. Projected temperature anomaly: ${policyImpact.projectedTemp}°C by 2050.`
+          }]
+        })
+      })
+      const data = await response.json()
+      setPolicyAiAnalysis(data.content || 'Analysis unavailable. Try adding GROQ_API_KEY to .env.')
+    } catch {
+      setPolicyAiAnalysis(`This policy mix would reduce ${policyImpact.co2Reduction}% of CO₂ emissions, keeping temperature anomaly at approximately ${policyImpact.projectedTemp}°C by 2050. ${policyImpact.totalReduction > 1 ? 'Excellent ambition — this scenario is consistent with the 1.5°C Paris target.' : 'Moderate progress — additional policies needed for Paris Agreement compliance.'}`)
+    } finally {
+      setLoadingPolicyAi(false)
+    }
+  }
 
   // Live Canvas Carbon Bubble Visualizer
   useEffect(() => {
@@ -250,8 +300,8 @@ export default function Sandbox() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title */}
-        <div className="mb-10 text-center md:text-left">
+        {/* Title + Tab Switcher */}
+        <div className="mb-8 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Ecological Projections</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
             Climate Projections <span className="gradient-text">Sandbox</span>
@@ -259,9 +309,120 @@ export default function Sandbox() {
           <p className="text-gray-400 text-sm max-w-xl mt-1">
             Simulate and graph annual temperature anomalies, ocean displacements, and arctic ice levels based on IPCC emission pathways.
           </p>
+          <div className="flex gap-2 mt-5">
+            <button
+              onClick={() => setSandboxTab('projections')}
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl border text-xs font-mono transition-all ${
+                sandboxTab === 'projections'
+                  ? 'bg-neon-blue/15 border-neon-blue text-neon-blue font-bold'
+                  : 'glass border-white/10 text-gray-400 hover:text-white'
+              }`}
+            >
+              <Compass size={12} /> PROJECTIONS
+            </button>
+            <button
+              onClick={() => setSandboxTab('policy')}
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl border text-xs font-mono transition-all ${
+                sandboxTab === 'policy'
+                  ? 'bg-neon-purple/15 border-neon-purple text-neon-purple font-bold'
+                  : 'glass border-white/10 text-gray-400 hover:text-white'
+              }`}
+            >
+              <Sparkles size={12} /> POLICY SIMULATOR
+            </button>
+          </div>
         </div>
 
-        {/* Projections Telemetry Cards */}
+        {/* ── POLICY SIMULATOR TAB ── */}
+        {sandboxTab === 'policy' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Policy impact cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Projected Temp 2050', value: `+${policyImpact.projectedTemp}°C`, color: policyImpact.projectedTemp < 1.5 ? '#06ffd4' : policyImpact.projectedTemp < 2.0 ? '#ffcc00' : '#ff4400' },
+                { label: 'CO₂ Reduction', value: `${policyImpact.co2Reduction}%`, color: '#a78bfa' },
+                { label: 'Sea Level Benefit', value: `-${policyImpact.seaLevelBenefit} cm`, color: '#00d4ff' },
+                { label: 'Total Mitigation', value: `${policyImpact.totalReduction}°C`, color: '#22c55e' },
+              ].map(item => (
+                <div key={item.label} className="glass rounded-2xl p-4 border border-white/5 text-center">
+                  <span className="text-[9px] font-mono text-gray-500 block mb-1">{item.label}</span>
+                  <span className="text-2xl font-mono font-bold" style={{ color: item.color }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Policy sliders */}
+            <div className="glass-strong rounded-3xl p-8 border border-white/5 shadow-2xl">
+              <h3 className="text-white font-display text-lg mb-6">Adjust Policy Variables</h3>
+              <div className="space-y-6">
+                {[
+                  { label: 'Coal Phase-out Speed', value: coalPhaseout, set: setCoalPhaseout, color: '#ff8800', unit: '%', hint: 'Higher = faster coal exit' },
+                  { label: 'EV Adoption Rate', value: evAdoption, set: setEvAdoption, color: '#06ffd4', unit: '%', hint: '% of new vehicles that are electric' },
+                  { label: 'Deforestation Rate', value: deforestation, set: setDeforestation, color: '#22c55e', unit: '%', min: -100, hint: 'Negative = reforestation' },
+                  { label: 'Renewable Grid Share', value: renewableGrid, set: setRenewableGrid, color: '#a78bfa', unit: '%', hint: '% of electricity from renewables' },
+                ].map(slider => (
+                  <div key={slider.label} className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <div>
+                        <span className="text-white font-medium">{slider.label}</span>
+                        <span className="text-gray-500 text-[10px] font-mono ml-2">{slider.hint}</span>
+                      </div>
+                      <span className="font-mono font-bold" style={{ color: slider.color }}>
+                        {slider.value > 0 && slider.min !== undefined && slider.min < 0 ? '+' : ''}{slider.value}{slider.unit}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={slider.min ?? 0}
+                      max={100}
+                      step={5}
+                      value={slider.value}
+                      onChange={e => slider.set(parseInt(e.target.value))}
+                      className="w-full h-1.5 rounded-lg appearance-none cursor-pointer bg-white/5"
+                      style={{ accentColor: slider.color }}
+                    />
+                    <div className="flex justify-between text-[9px] font-mono text-gray-600">
+                      <span>{slider.min !== undefined ? slider.min : 0}%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI Scenario Button */}
+              <button
+                onClick={fetchPolicyAiAnalysis}
+                disabled={loadingPolicyAi}
+                className="mt-8 w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-neon-purple/30 bg-neon-purple/10 text-neon-purple font-mono text-sm hover:bg-neon-purple/20 transition-all disabled:opacity-50"
+              >
+                {loadingPolicyAi ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                Ask AI to Analyze This Scenario
+              </button>
+
+              {policyAiAnalysis && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-4 rounded-xl bg-neon-purple/5 border border-neon-purple/20 text-sm text-gray-300 leading-relaxed"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles size={12} className="text-neon-purple" />
+                    <span className="text-[10px] font-mono text-neon-purple uppercase tracking-wider">AI Scenario Analysis</span>
+                  </div>
+                  {policyAiAnalysis}
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── PROJECTIONS TAB ── */}
+        {sandboxTab === 'projections' && (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'TEMP ANOMALY', value: `+${temp}°C`, sub: 'Above 1850 base', color: 'text-red-400' },

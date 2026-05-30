@@ -10,10 +10,18 @@ export default function News() {
   const { user } = useAuth()
   const { socket } = useSocket()
   
+  // Tab state
+  const [activeTab, setActiveTab] = useState('articles') // 'articles' | 'live'
+
   // News articles states
   const [articles, setArticles] = useState([])
   const [loadingArticles, setLoadingArticles] = useState(true)
   const [errorArticles, setErrorArticles] = useState('')
+  
+  // Live feed state
+  const [liveArticles, setLiveArticles] = useState([])
+  const [loadingLive, setLoadingLive] = useState(false)
+  const [liveError, setLiveError] = useState('')
   
   // Likes state (local UI simulation)
   const [likedArticles, setLikedArticles] = useState([])
@@ -157,9 +165,36 @@ export default function News() {
     }
   }
 
+  // Fetch live climate news
+  const fetchLiveNews = async () => {
+    setLoadingLive(true)
+    setLiveError('')
+    try {
+      const res = await fetch('/api/news/live')
+      const data = await res.json()
+      if (res.ok && data.articles) {
+        setLiveArticles(data.articles)
+      } else {
+        setLiveError('Failed to load live feed.')
+      }
+    } catch (e) {
+      setLiveError('Could not connect to live news stream.')
+    } finally {
+      setLoadingLive(false)
+    }
+  }
+
   useEffect(() => {
     fetchArticles()
   }, [])
+
+  // Fetch live news when tab switches to live, then auto-refresh every 30 min
+  useEffect(() => {
+    if (activeTab !== 'live') return
+    if (liveArticles.length === 0) fetchLiveNews()
+    const timer = setInterval(fetchLiveNews, 30 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [activeTab])
 
   // Real-time socket sync
   useEffect(() => {
@@ -207,7 +242,7 @@ export default function News() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title */}
+        {/* Title + Tab selector */}
         <div className="mb-10 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Global Intelligence Hub</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -216,14 +251,98 @@ export default function News() {
           <p className="text-gray-400 text-sm max-w-xl mt-1">
             Browse aggregated news reports, updates, and innovations on carbon capturing systems, global treaties, and participate in discussion threads.
           </p>
+          {/* Tab pills */}
+          <div className="flex gap-2 mt-6">
+            <button
+              onClick={() => { playTap(); setActiveTab('articles') }}
+              onMouseEnter={playHover}
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl border text-xs font-mono transition-all ${
+                activeTab === 'articles'
+                  ? 'bg-neon-blue/15 border-neon-blue text-neon-blue font-bold shadow-[0_0_15px_rgba(0,212,255,0.15)]'
+                  : 'glass hover:bg-white/10 border-white/10 text-gray-400'
+              }`}
+            >
+              <Newspaper size={12} />
+              CURATED ARTICLES
+            </button>
+            <button
+              onClick={() => { playTap(); setActiveTab('live') }}
+              onMouseEnter={playHover}
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl border text-xs font-mono transition-all ${
+                activeTab === 'live'
+                  ? 'bg-neon-cyan/15 border-neon-cyan text-neon-cyan font-bold shadow-[0_0_15px_rgba(6,255,212,0.15)]'
+                  : 'glass hover:bg-white/10 border-white/10 text-gray-400'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
+              LIVE FEED
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
           {/* Articles Feed */}
           <div className={`${activeArticle ? 'xl:col-span-7' : 'xl:col-span-12'} space-y-6 transition-all duration-300`}>
-            
-            {loadingArticles ? (
+
+            {/* ── LIVE FEED TAB ── */}
+            {activeTab === 'live' && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
+                    <span className="text-xs font-mono text-neon-cyan uppercase tracking-wider">Live Climate Intelligence Stream</span>
+                  </div>
+                  <button onClick={fetchLiveNews} className="glass px-3 py-1.5 rounded-xl text-[10px] font-mono text-gray-400 hover:text-white border border-white/5 hover:border-white/10 transition-all">
+                    ↺ REFRESH
+                  </button>
+                </div>
+                {loadingLive ? (
+                  <div className="py-16 text-center space-y-4">
+                    <Loader2 size={32} className="animate-spin text-neon-cyan mx-auto" />
+                    <span className="text-xs font-mono text-gray-500">Scanning global climate news streams...</span>
+                  </div>
+                ) : liveError ? (
+                  <div className="py-16 text-center text-red-400 text-sm font-mono border border-red-500/10 bg-red-500/5 rounded-3xl">{liveError}</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {liveArticles.map((art) => (
+                      <motion.div
+                        key={art.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-strong rounded-3xl p-6 border border-neon-cyan/10 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:border-neon-cyan/25 transition-all"
+                      >
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-neon-cyan/10 text-neon-cyan uppercase tracking-wider border border-neon-cyan/20">{art.category}</span>
+                              <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />LIVE
+                              </span>
+                            </div>
+                            <span>{art.date}</span>
+                          </div>
+                          <h2 className="text-white text-base font-normal mb-3 font-display leading-snug group-hover:text-neon-cyan transition-colors">{art.title}</h2>
+                          <p className="text-gray-400 text-xs leading-normal mb-4">{art.summary}</p>
+                        </div>
+                        {art.url && (
+                          <a href={art.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                            className="flex items-center justify-between border-t border-white/5 pt-4 mt-2 text-xs font-mono text-neon-blue hover:text-white transition-colors">
+                            <span>READ FULL STORY</span>
+                            <ArrowRight size={12} />
+                          </a>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── CURATED ARTICLES TAB ── */}
+            {activeTab === 'articles' && (
+              loadingArticles ? (
               <div className="py-24 text-center space-y-4">
                 <Loader2 size={36} className="animate-spin text-neon-blue mx-auto" />
                 <span className="text-xs font-mono text-gray-500">Querying international news registries...</span>

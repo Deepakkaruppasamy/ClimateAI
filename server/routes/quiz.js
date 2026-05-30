@@ -3,16 +3,48 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const QuizQuestion = require('../models/QuizQuestion');
 
-// GET all quiz questions
+// GET all quiz questions (with optional category/difficulty filter)
 router.get('/questions', async (req, res) => {
   try {
-    const questions = await QuizQuestion.find();
-    return res.json({ success: true, questions });
+    const { category, difficulty } = req.query
+    const filter = {}
+    if (category && category !== 'all') filter.category = category
+    if (difficulty) filter.difficulty = difficulty
+    const questions = await QuizQuestion.find(filter)
+    return res.json({ success: true, questions })
   } catch (err) {
-    console.error('❌ Quiz fetch error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch quiz questions' });
+    console.error('❌ Quiz fetch error:', err.message)
+    return res.status(500).json({ error: 'Failed to fetch quiz questions' })
   }
 });
+
+// GET /daily — 5 questions seeded by today's date (deterministic)
+router.get('/daily', async (req, res) => {
+  try {
+    const allQuestions = await QuizQuestion.find()
+    if (!allQuestions.length) return res.json({ success: true, questions: [] })
+    // Deterministic seed based on date
+    const today = new Date().toISOString().split('T')[0]
+    const seed = today.split('-').reduce((a, b) => a + parseInt(b), 0)
+    const shuffled = [...allQuestions].sort((a, b) => {
+      const hashA = (parseInt(a._id.toString().slice(-4), 16) + seed) % 1000
+      const hashB = (parseInt(b._id.toString().slice(-4), 16) + seed) % 1000
+      return hashA - hashB
+    })
+    return res.json({ success: true, questions: shuffled.slice(0, 5), date: today })
+  } catch (err) {
+    // Fallback mock daily questions
+    const mockDailyQuestions = [
+      { _id: 'd1', question: 'What is the main greenhouse gas emitted by human activity?', options: ['CO₂', 'N₂', 'O₂', 'H₂'], answer: 'CO₂', expl: 'Carbon dioxide from fossil fuels is the primary driver of climate change.', category: 'climate-science', difficulty: 'easy' },
+      { _id: 'd2', question: 'The Paris Agreement aims to limit warming to what temperature above pre-industrial levels?', options: ['1.5°C', '2°C', '3°C', '0.5°C'], answer: '1.5°C', expl: 'The Paris Agreement targets 1.5°C to prevent the worst climate impacts.', category: 'policy', difficulty: 'medium' },
+      { _id: 'd3', question: 'Which renewable energy source is currently the fastest growing globally?', options: ['Solar', 'Wind', 'Hydro', 'Geothermal'], answer: 'Solar', expl: 'Solar PV capacity has grown exponentially due to falling costs.', category: 'renewable-energy', difficulty: 'easy' },
+      { _id: 'd4', question: 'Approximately what percentage of global emissions come from the food system?', options: ['10%', '25%', '35%', '50%'], answer: '25%', expl: 'The food system including agriculture and land use contributes ~25% of global GHG.', category: 'climate-science', difficulty: 'hard' },
+      { _id: 'd5', question: 'Which biome stores the most carbon per unit area?', options: ['Mangroves', 'Tropical rainforest', 'Tundra', 'Grasslands'], answer: 'Mangroves', expl: 'Mangroves store up to 4x more carbon than tropical rainforests per unit area.', category: 'ecosystems', difficulty: 'hard' },
+    ]
+    return res.json({ success: true, questions: mockDailyQuestions, date: new Date().toISOString().split('T')[0] })
+  }
+});
+
 
 // POST create quiz question
 router.post('/questions', async (req, res) => {

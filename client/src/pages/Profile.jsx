@@ -6,6 +6,9 @@ import {
   Calendar, Zap, Award, TrendingUp, Activity, Crown, AlertCircle,
   ChevronRight, LogOut, RefreshCw
 } from 'lucide-react'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import VideoBackground from '../components/ui/VideoBackground'
@@ -102,6 +105,11 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Carbon history state
+  const [activeHistoryTab, setActiveHistoryTab] = useState('quiz') // 'quiz' | 'carbon'
+  const [footprintHistory, setFootprintHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
   // Edit mode
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
@@ -174,6 +182,26 @@ export default function Profile() {
     fetchProfile()
     if (isAdmin && isOwnProfile) fetchAllUsers()
   }, [targetId, user])
+
+  useEffect(() => {
+    if (activeHistoryTab === 'carbon' && targetId) {
+      const fetchHistory = async () => {
+        setHistoryLoading(true)
+        try {
+          const res = await fetch(`/api/profile/${targetId}/footprint-history`)
+          const data = await res.json()
+          if (res.ok && data.history) {
+            setFootprintHistory(data.history)
+          }
+        } catch (e) {
+          console.error('Failed to fetch footprint history:', e)
+        } finally {
+          setHistoryLoading(false)
+        }
+      }
+      fetchHistory()
+    }
+  }, [activeHistoryTab, targetId])
 
   // Socket.IO real-time synchronization
   useEffect(() => {
@@ -311,6 +339,10 @@ export default function Profile() {
     ? Math.round(scores.reduce((acc, s) => acc + s.score, 0) / scores.length)
     : 0
   const approvedCarbon = carbonReqs.filter(r => r.status === 'approved').reduce((acc, r) => acc + (r.amount || 0), 0)
+  const carbonChartData = footprintHistory.map(entry => ({
+    date: new Date(entry.date).toLocaleDateString('en-US', { month: 'short' }),
+    footprint: entry.value
+  }))
 
   return (
     <div className="min-h-screen pt-24 pb-16 relative overflow-hidden bg-[#070a13] text-white">
@@ -649,68 +681,149 @@ export default function Profile() {
                 <h2 className="text-lg font-display text-white">Achievement Badges</h2>
                 <span className="text-xs font-mono text-gray-500 ml-1">({profile.badges?.length || 0} earned)</span>
               </div>
-              {(profile.badges?.length || 0) === 0 ? (
-                <div className="py-8 text-center">
-                  <Trophy size={32} className="text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-600 font-mono">No badges yet — complete quizzes and offset carbon to earn them!</p>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-3">
-                  {(profile.badges || []).map(badge => {
-                    const cfg = BADGE_CONFIG[badge] || { color: '#00d4ff', bg: 'rgba(0,212,255,0.1)', icon: Star, desc: '' }
+              <div className="flex flex-wrap gap-3">
+                {/* Earned Badges */}
+                {(profile.badges || []).map(badge => {
+                  const cfg = BADGE_CONFIG[badge] || { color: '#00d4ff', bg: 'rgba(0,212,255,0.1)', icon: Star, desc: '' }
+                  const Icon = cfg.icon
+                  return (
+                    <motion.div
+                      key={badge}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border group cursor-default"
+                      style={{ background: cfg.bg, borderColor: `${cfg.color}30` }}
+                      title={cfg.desc}
+                    >
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${cfg.color}20` }}>
+                        <Icon size={14} style={{ color: cfg.color }} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-white">{badge}</div>
+                        {cfg.desc && <div className="text-[10px] text-gray-500">{cfg.desc}</div>}
+                      </div>
+                    </motion.div>
+                  )
+                })}
+
+                {/* Locked Badges */}
+                {Object.entries(BADGE_CONFIG)
+                  .filter(([name]) => name !== 'Admin' && !(profile.badges || []).includes(name))
+                  .map(([name, cfg]) => {
                     const Icon = cfg.icon
                     return (
-                      <motion.div
-                        key={badge}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border group cursor-default"
-                        style={{ background: cfg.bg, borderColor: `${cfg.color}30` }}
-                        title={cfg.desc}
+                      <div
+                        key={name}
+                        className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/5 opacity-40 cursor-help"
+                        title={`Locked: ${cfg.desc}`}
                       >
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: `${cfg.color}20` }}>
-                          <Icon size={14} style={{ color: cfg.color }} />
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/5">
+                          <Icon size={14} className="text-gray-500" />
                         </div>
                         <div>
-                          <div className="text-xs font-semibold text-white">{badge}</div>
-                          {cfg.desc && <div className="text-[10px] text-gray-500">{cfg.desc}</div>}
+                          <div className="text-xs font-semibold text-gray-400">{name}</div>
+                          <div className="text-[10px] text-gray-600 font-mono">Unlock: {cfg.desc}</div>
                         </div>
-                      </motion.div>
+                      </div>
                     )
                   })}
-                </div>
-              )}
+              </div>
             </motion.div>
 
             {/* ── Bottom grid: Quiz History + Carbon History ──────── */}
             <div className="grid lg:grid-cols-2 gap-6">
 
-              {/* Quiz Score History */}
+              {/* Quiz & Carbon Journey History */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
                 className="glass-strong rounded-3xl p-6 border border-white/5"
               >
-                <div className="flex items-center gap-2 mb-5">
-                  <BarChart2 size={16} className="text-neon-purple" />
-                  <h2 className="text-lg font-display text-white">Quiz History</h2>
-                  <span className="text-xs font-mono text-gray-500">({scores.length} sessions)</span>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setActiveHistoryTab('quiz')}
+                      className={`flex items-center gap-2 pb-1.5 border-b-2 font-display text-sm transition-all ${
+                        activeHistoryTab === 'quiz' ? 'border-neon-purple text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      <BarChart2 size={15} />
+                      Quiz History
+                    </button>
+                    <button
+                      onClick={() => setActiveHistoryTab('carbon')}
+                      className={`flex items-center gap-2 pb-1.5 border-b-2 font-display text-sm transition-all ${
+                        activeHistoryTab === 'carbon' ? 'border-neon-cyan text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      <TrendingUp size={15} />
+                      Carbon Journey
+                    </button>
+                  </div>
+                  <span className="text-xs font-mono text-gray-500">
+                    {activeHistoryTab === 'quiz' ? `(${scores.length} sessions)` : `(${footprintHistory.length} entries)`}
+                  </span>
                 </div>
-                {scores.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <BookOpen size={28} className="text-gray-700 mx-auto mb-2" />
-                    <p className="text-xs text-gray-600 font-mono">No quiz sessions yet. Take your first quiz!</p>
-                  </div>
+
+                {activeHistoryTab === 'quiz' ? (
+                  scores.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <BookOpen size={28} className="text-gray-700 mx-auto mb-2" />
+                      <p className="text-xs text-gray-600 font-mono">No quiz sessions yet. Take your first quiz!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {scores.slice(0, 8).map((s, i) => (
+                        <ScoreBar key={i} score={s.score} createdAt={s.createdAt} />
+                      ))}
+                      {scores.length > 8 && (
+                        <p className="text-[10px] text-gray-600 font-mono pt-2 text-center">+{scores.length - 8} more sessions</p>
+                      )}
+                    </div>
+                  )
                 ) : (
-                  <div className="space-y-1">
-                    {scores.slice(0, 8).map((s, i) => (
-                      <ScoreBar key={i} score={s.score} createdAt={s.createdAt} />
-                    ))}
-                    {scores.length > 8 && (
-                      <p className="text-[10px] text-gray-600 font-mono pt-2 text-center">+{scores.length - 8} more sessions</p>
-                    )}
-                  </div>
+                  historyLoading ? (
+                    <div className="flex items-center justify-center gap-2 py-16 text-xs text-gray-500 font-mono">
+                      <Loader2 size={14} className="animate-spin text-neon-cyan" />
+                      Loading history...
+                    </div>
+                  ) : (
+                    carbonChartData.length === 0 ? (
+                      <div className="py-12 text-center">
+                        <Leaf size={32} className="text-gray-700 mx-auto mb-2" />
+                        <p className="text-xs text-gray-600 font-mono mb-4">No footprint history logged yet.</p>
+                        <button
+                          onClick={() => navigate('/calculator')}
+                          className="px-4 py-2 text-xs font-mono bg-neon-cyan/20 border border-neon-cyan/40 hover:bg-neon-cyan/30 text-neon-cyan rounded-xl transition-all"
+                        >
+                          Calculate Footprint
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={carbonChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="carbonGlow" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#06ffd4" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#06ffd4" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                            <XAxis dataKey="date" stroke="rgba(255,255,255,0.4)" fontSize={10} fontFamily="monospace" />
+                            <YAxis stroke="rgba(255,255,255,0.4)" fontSize={10} fontFamily="monospace" unit="t" />
+                            <Tooltip
+                              contentStyle={{ background: '#0d1222', borderColor: 'rgba(6,255,212,0.2)', borderRadius: '12px' }}
+                              labelStyle={{ color: '#aaa', fontFamily: 'monospace', fontSize: '11px' }}
+                              itemStyle={{ color: '#06ffd4', fontFamily: 'monospace', fontSize: '12px' }}
+                            />
+                            <Area type="monotone" dataKey="footprint" stroke="#06ffd4" fillOpacity={1} fill="url(#carbonGlow)" strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )
+                  )
                 )}
               </motion.div>
 

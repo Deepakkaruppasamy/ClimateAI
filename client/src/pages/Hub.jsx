@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -223,7 +223,8 @@ export default function Hub() {
               { id: 'pillars', label: 'Core Pillars', icon: Layers },
               { id: 'datasets', label: 'Data Frameworks', icon: Database },
               { id: 'ml', label: 'ML Architectures', icon: Cpu },
-              { id: 'green_ai', label: 'Green AI Paradox', icon: ShieldAlert }
+              { id: 'green_ai', label: 'Green AI Paradox', icon: ShieldAlert },
+              { id: 'learning_paths', label: 'Learning Paths', icon: Zap }
             ].map(tab => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -446,10 +447,180 @@ export default function Hub() {
                   </div>
                 </motion.div>
               )}
+              {activeTab === 'learning_paths' && (
+                <LearningPathsPanel />
+              )}
             </AnimatePresence>
           </div>
         </motion.div>
       </div>
     </div>
+  )
+}
+
+const LEARNING_PATHS = [
+  {
+    id: 'basics',
+    title: 'Climate Basics',
+    color: '#06ffd4',
+    description: 'Foundation knowledge: greenhouse gases, warming drivers, and feedback loops.',
+    modules: [
+      { title: 'The Greenhouse Effect', time: '8 min', videoId: 'SN5-DnOHQmE' },
+      { title: 'Carbon Cycle Deep Dive', time: '12 min', videoId: 'E8Y6L5TI9Mo' },
+      { title: 'Tipping Points & Feedback', time: '10 min', videoId: 'wJANa6n3yGg' },
+    ]
+  },
+  {
+    id: 'carbon',
+    title: 'Carbon Science',
+    color: '#00d4ff',
+    description: 'How carbon moves, how we measure it, and how to capture it.',
+    modules: [
+      { title: 'How CO₂ Measurements Work', time: '7 min', videoId: 'Z4FBvmHlTBs' },
+      { title: 'Direct Air Capture Tech', time: '11 min', videoId: 'kKTNi_bwIaM' },
+      { title: 'Carbon Offset Markets', time: '9 min', videoId: 'B_YjNIpHo2E' },
+    ]
+  },
+  {
+    id: 'policy',
+    title: 'Policy & Action',
+    color: '#a78bfa',
+    description: 'From the Paris Agreement to local climate action.',
+    modules: [
+      { title: 'Paris Agreement Explained', time: '6 min', videoId: 'xd6bMioTlCk' },
+      { title: 'Net Zero Pathways', time: '14 min', videoId: 'IrYlY8gKbPo' },
+      { title: 'Individual vs Systemic Change', time: '10 min', videoId: 'ea9PAlSjmFU' },
+    ]
+  },
+  {
+    id: 'greentech',
+    title: 'Green Technology',
+    color: '#22c55e',
+    description: 'Solar, wind, EVs, and the innovations shaping the clean future.',
+    modules: [
+      { title: 'Solar PV Revolution', time: '9 min', videoId: 'bJ3oTTm_Pdo' },
+      { title: 'Wind Power at Scale', time: '8 min', videoId: 'xy9nj94BVcw' },
+      { title: 'EV Grid Integration', time: '11 min', videoId: 'cbyP4YXm98I' },
+    ]
+  }
+]
+
+function LearningPathsPanel() {
+  const [progress, setProgress] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('climateai_learning_progress') || '{}') } catch { return {} }
+  })
+  const [activePathId, setActivePathId] = useState(null)
+  const [celebration, setCelebration] = useState(null)
+
+  const saveProgress = (newProgress) => {
+    setProgress(newProgress)
+    localStorage.setItem('climateai_learning_progress', JSON.stringify(newProgress))
+  }
+
+  const toggleModule = (pathId, moduleIdx) => {
+    const key = `${pathId}_${moduleIdx}`
+    const newProgress = { ...progress, [key]: !progress[key] }
+    saveProgress(newProgress)
+    // Check if path is fully complete
+    const path = LEARNING_PATHS.find(p => p.id === pathId)
+    const allComplete = path.modules.every((_, i) => newProgress[`${pathId}_${i}`])
+    if (allComplete && !celebration) {
+      setCelebration(pathId)
+      setTimeout(() => setCelebration(null), 3000)
+    }
+  }
+
+  const getPathProgress = (pathId) => {
+    const path = LEARNING_PATHS.find(p => p.id === pathId)
+    const done = path.modules.filter((_, i) => progress[`${pathId}_${i}`]).length
+    return { done, total: path.modules.length, pct: Math.round((done / path.modules.length) * 100) }
+  }
+
+  return (
+    <motion.div key="learning_paths" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.3 }}>
+      {celebration && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="mb-4 p-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 text-center text-yellow-300 font-mono text-sm"
+        >
+          🎉 Path Complete! You've mastered <strong>{LEARNING_PATHS.find(p => p.id === celebration)?.title}</strong>!
+        </motion.div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {LEARNING_PATHS.map(path => {
+          const { done, total, pct } = getPathProgress(path.id)
+          const isExpanded = activePathId === path.id
+          return (
+            <div key={path.id} className="glass rounded-2xl border border-white/5 overflow-hidden">
+              {/* Path header */}
+              <button
+                onClick={() => { playTap(); setActivePathId(isExpanded ? null : path.id) }}
+                className="w-full p-5 text-left hover:bg-white/3 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-medium font-display" style={{ textShadow: `0 0 10px ${path.color}30` }}>{path.title}</h3>
+                  <span className="text-[10px] font-mono" style={{ color: path.color }}>{done}/{total} Done</span>
+                </div>
+                <p className="text-gray-500 text-xs mb-3">{path.description}</p>
+                {/* Progress bar */}
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: path.color }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
+              </button>
+              {/* Expanded module list */}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t border-white/5 overflow-hidden"
+                  >
+                    <div className="p-4 space-y-2">
+                      {path.modules.map((mod, i) => {
+                        const done = progress[`${path.id}_${i}`]
+                        return (
+                          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/3 hover:bg-white/5 transition-colors group">
+                            <button
+                              onClick={() => toggleModule(path.id, i)}
+                              className="w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all"
+                              style={{ borderColor: done ? path.color : 'rgba(255,255,255,0.2)', background: done ? path.color : 'transparent' }}
+                            >
+                              {done && <span className="text-[8px] text-black font-bold flex items-center justify-center w-full h-full">✓</span>}
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm text-white group-hover:text-neon-cyan transition-colors">{mod.title}</div>
+                              <div className="text-[10px] text-gray-500 font-mono">{mod.time} · YouTube</div>
+                            </div>
+                            <a
+                              href={`https://youtube.com/watch?v=${mod.videoId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ color: path.color }}
+                            >
+                              <ArrowRight size={14} />
+                            </a>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })}
+      </div>
+    </motion.div>
   )
 }

@@ -43,6 +43,13 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  footprintHistory: {
+    type: [{
+      value: { type: Number, required: true },
+      date: { type: Date, default: Date.now }
+    }],
+    default: []
+  },
   bio: {
     type: String,
     default: ''

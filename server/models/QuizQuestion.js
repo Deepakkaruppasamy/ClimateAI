@@ -6,6 +6,16 @@ const QuizQuestionSchema = new mongoose.Schema({
   answer: { type: String, required: true }, // correct answer text
   expl: { type: String, default: '' },      // explanation shown after answering
   type: { type: String, enum: ['multiple-choice', 'true-false', 'short-answer'], default: 'multiple-choice' },
+  category: {
+    type: String,
+    enum: ['all', 'renewable-energy', 'climate-science', 'policy', 'ecosystems'],
+    default: 'climate-science'
+  },
+  difficulty: {
+    type: String,
+    enum: ['easy', 'medium', 'hard'],
+    default: 'medium'
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

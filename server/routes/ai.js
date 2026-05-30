@@ -1,9 +1,59 @@
 const express = require('express')
+const mongoose = require('mongoose')
 const router = express.Router()
+
+// ── In-memory chat history fallback (for demo mode) ──────────────
+const mockChatHistory = {} // { userId: [{ role, content, createdAt }] }
+
+// GET /api/ai/history/:userId — load chat history
+router.get('/history/:userId', async (req, res) => {
+  const { userId } = req.params
+  const isDBConnected = mongoose.connection.readyState === 1
+
+  if (isDBConnected) {
+    try {
+      const ChatMessage = require('../models/ChatMessage')
+      const history = await ChatMessage.find({ userId })
+        .sort({ createdAt: 1 })
+        .limit(30)
+        .select('role content createdAt')
+      return res.json({ success: true, history })
+    } catch (err) {
+      return res.json({ success: true, history: [] })
+    }
+  } else {
+    return res.json({ success: true, history: mockChatHistory[userId] || [], warning: 'DB offline' })
+  }
+})
+
+// POST /api/ai/history/:userId — save a message
+router.post('/history/:userId', async (req, res) => {
+  const { userId } = req.params
+  const { role, content } = req.body
+  if (!role || !content) return res.status(400).json({ error: 'Missing role or content' })
+
+  const isDBConnected = mongoose.connection.readyState === 1
+  if (isDBConnected) {
+    try {
+      const ChatMessage = require('../models/ChatMessage')
+      const msg = new ChatMessage({ userId, role, content })
+      await msg.save()
+      return res.json({ success: true })
+    } catch (err) {
+      return res.json({ success: true, warning: 'Save failed silently' })
+    }
+  } else {
+    if (!mockChatHistory[userId]) mockChatHistory[userId] = []
+    mockChatHistory[userId].push({ role, content, createdAt: new Date() })
+    // Keep last 30
+    if (mockChatHistory[userId].length > 30) mockChatHistory[userId].shift()
+    return res.json({ success: true, warning: 'DB offline — saved in memory' })
+  }
+})
 
 // ── AI Chat Endpoint (Groq) ────────────────────────────────
 router.post('/chat', async (req, res) => {
-  const { messages, weatherContext } = req.body
+  const { messages, weatherContext, userContext } = req.body
 
   if (!process.env.GROQ_API_KEY) {
     return res.json({
@@ -16,9 +66,22 @@ router.post('/chat', async (req, res) => {
     const Groq = require('groq-sdk')
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+    // Build enriched system prompt with user context
+    let userContextStr = ''
+    if (userContext) {
+      userContextStr = `
+User Profile:
+- Name: ${userContext.name || 'Climate User'}
+- Location: ${userContext.city || weatherContext?.city || 'Unknown'}
+- Carbon Footprint: ${userContext.footprint || 'Not calculated'} tonnes CO₂/year
+- Badges Earned: ${userContext.badges?.join(', ') || 'None yet'}
+- Quiz XP: ${userContext.xp || 0}
+`
+    }
+
     const systemPrompt = `You are ClimateAI, an advanced climate and weather intelligence assistant.
-Current Weather: ${JSON.stringify(weatherContext)}
-Be helpful, precise, and use weather emojis. Keep responses concise.`
+Current Weather: ${JSON.stringify(weatherContext)}${userContextStr}
+Personalize responses to this specific user when relevant. Be helpful, precise, and use weather emojis. Keep responses concise.`
 
     const completion = await groq.chat.completions.create({
       messages: [

@@ -5,6 +5,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recha
 import confetti from 'canvas-confetti'
 import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
+import ShareCard from '../components/ui/ShareCard'
 import { playTap, playHover, playSuccess, playError } from '../utils/audio'
 
 const OFFSET_PROJECTS = [
@@ -17,17 +18,28 @@ export default function Calculator() {
   const { user } = useAuth()
   const [step, setStep] = useState(1) // 1: Home, 2: Transit, 3: Diet, 4: Results
   const [calculating, setCalculating] = useState(false)
+  const [savedStatus, setSavedStatus] = useState('idle') // 'idle' | 'saving' | 'saved'
 
   const saveFootprint = async (footprintVal) => {
     if (!user?._id) return
+    setSavedStatus('saving')
     try {
-      await fetch(`/api/profile/${user._id}/footprint`, {
+      const res = await fetch(`/api/profile/${user._id}/footprint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ footprint: footprintVal })
       })
+      if (res.ok) {
+        setSavedStatus('saved')
+        playSuccess()
+      } else {
+        setSavedStatus('idle')
+        playError()
+      }
     } catch (err) {
       console.warn('Failed to save carbon footprint calculation:', err)
+      setSavedStatus('idle')
+      playError()
     }
   }
 
@@ -37,9 +49,6 @@ export default function Calculator() {
     setTimeout(() => {
       setStep(nextStep)
       setCalculating(false)
-      if (nextStep === 4) {
-        saveFootprint(total)
-      }
     }, 550)
   }
   
@@ -124,6 +133,7 @@ export default function Calculator() {
     setCarMpg(25)
     setFlights(3)
     setDietFactor('average')
+    setSavedStatus('idle')
     setStep(1)
   }
 
@@ -380,13 +390,42 @@ export default function Calculator() {
                         An average global footprint is ~4.8 tonnes. To meet global climate targets, the average target footprint must decrease below 2.0 tonnes per year.
                       </p>
 
-                      <button
-                        onClick={resetCalculator}
-                        className="inline-flex items-center gap-2 text-xs font-mono text-neon-purple hover:text-white transition-colors border border-neon-purple/20 bg-neon-purple/5 px-4 py-2 rounded-xl"
-                      >
-                        <RefreshCw size={12} />
-                        <span>RECALCULATE AUDIT</span>
-                      </button>
+                      <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                        {savedStatus === 'saved' ? (
+                          <div className="text-xs font-mono text-neon-cyan p-3 bg-neon-cyan/10 border border-neon-cyan/20 rounded-xl flex items-center justify-center gap-2">
+                            <CheckCircle2 size={14} />
+                            <span>Saved to Carbon Journey!</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => saveFootprint(total)}
+                            disabled={savedStatus === 'saving'}
+                            className="w-full py-3 bg-neon-cyan text-[#070a13] font-mono text-xs uppercase tracking-wider font-bold rounded-xl shadow-lg hover:shadow-neon-cyan/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                          >
+                            {savedStatus === 'saving' ? 'Saving telemetry...' : 'Save & Track footprint'}
+                          </button>
+                        )}
+
+                        <button
+                          onClick={resetCalculator}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neon-purple/20 bg-neon-purple/5 text-xs font-mono text-neon-purple hover:text-white transition-colors"
+                        >
+                          <RefreshCw size={12} />
+                          <span>RECALCULATE AUDIT</span>
+                        </button>
+                      </div>
+
+                      {/* Branded ShareCard */}
+                      <div className="mt-8 pt-6 border-t border-white/5 text-left max-w-sm mx-auto">
+                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-4 text-center">Share Your Sustainability Metrics</span>
+                        <ShareCard
+                          type="carbon"
+                          value={`${total}t`}
+                          label="Annual Carbon Footprint"
+                          userName={user?.name || "Eco Champion"}
+                          extraLines={[`Household Energy: ${home}t`, `Transit Commute: ${transit}t`, `Diet & Lifestyle: ${diet}t`]}
+                        />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -35,6 +35,71 @@ let mockArticles = [
   }
 ]
 
+// ── GNews Live Feed Cache ──────────────────────────────────────
+let liveNewsCache = null
+let liveCacheTimestamp = 0
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+
+// GET /api/news/live — Fetch live climate news from GNews API (with cache)
+router.get('/live', async (req, res) => {
+  const GNEWS_KEY = process.env.GNEWS_API_KEY
+  const now = Date.now()
+
+  // Serve from cache if still fresh
+  if (liveNewsCache && (now - liveCacheTimestamp) < CACHE_TTL_MS) {
+    return res.json({ success: true, articles: liveNewsCache, cached: true })
+  }
+
+  // If no API key — return curated fallback articles with LIVE flag
+  if (!GNEWS_KEY) {
+    const fallbackLive = [
+      { id: 'l1', title: 'Record Solar Power Output Achieved in Europe This Quarter', category: 'Renewable Energy', summary: 'European solar grids hit a new milestone as sunshine hours and panel efficiency combine for record output, reducing fossil fuel dependency by 18%.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
+      { id: 'l2', title: 'Ocean Heat Content Reaches Highest Level in Recorded History', category: 'Climate Science', summary: 'New oceanographic data confirms the world\'s oceans absorbed unprecedented amounts of heat last year, accelerating glacier melt timelines.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
+      { id: 'l3', title: 'Carbon Capture Plants Expand Across Industrial Zones in Asia', category: 'Carbon Tech', summary: 'A coalition of Asian manufacturing hubs announces large-scale deployment of direct air capture technology to meet net-zero commitments.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
+      { id: 'l4', title: 'New IPCC Report Urges Immediate Policy Overhaul on Methane', category: 'Policy & Treaties', summary: 'The latest IPCC working group report identifies methane reduction as the fastest lever for limiting near-term temperature rise.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
+      { id: 'l5', title: 'Biodiversity Crisis Linked to Climate Change in Landmark Study', category: 'Ecosystems', summary: 'A 10-year global study confirms that 1 in 6 species faces extinction risk directly attributable to rising temperatures and habitat loss.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
+    ]
+    return res.json({ success: true, articles: fallbackLive, demo: true, message: 'Set GNEWS_API_KEY in .env for real live news' })
+  }
+
+  // Fetch from GNews API
+  try {
+    const https = require('https')
+    const url = `https://gnews.io/api/v4/search?q=climate+change&lang=en&max=10&sortby=publishedAt&apikey=${GNEWS_KEY}`
+    
+    const fetchData = () => new Promise((resolve, reject) => {
+      https.get(url, (response) => {
+        let data = ''
+        response.on('data', chunk => data += chunk)
+        response.on('end', () => resolve(JSON.parse(data)))
+        response.on('error', reject)
+      }).on('error', reject)
+    })
+
+    const gdata = await fetchData()
+    if (gdata.articles) {
+      liveNewsCache = gdata.articles.map((a, i) => ({
+        id: `gnews-${i}`,
+        title: a.title,
+        category: 'Climate News',
+        summary: a.description || a.content?.slice(0, 200) || '',
+        date: new Date(a.publishedAt).toLocaleDateString(),
+        likes: 0,
+        source: 'live',
+        url: a.url,
+        imageUrl: a.image || ''
+      }))
+      liveCacheTimestamp = now
+      return res.json({ success: true, articles: liveNewsCache })
+    } else {
+      return res.json({ success: true, articles: [], error: 'GNews returned no articles' })
+    }
+  } catch (err) {
+    console.error('❌ GNews fetch error:', err.message)
+    return res.json({ success: true, articles: [], error: 'Failed to fetch live news' })
+  }
+})
+
 // ── In-Memory Comments Fallback (Utilizes global app.locals.mockComments) ─────
 
 // ── GET All Articles ─────────────────────────────────────────

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Star, ShieldCheck, Loader2, ArrowRight, RefreshCw, Award, Sparkles } from 'lucide-react'
+import { Trophy, Star, ShieldCheck, Loader2, ArrowRight, RefreshCw, Award, Sparkles, Calendar, Play } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
+import ShareCard from '../components/ui/ShareCard'
 import { playTap, playHover, playSuccess, playError } from '../utils/audio'
 
 const QUIZ_QUESTIONS = [
@@ -49,13 +50,19 @@ export default function Quiz() {
 
   // Quiz game states
   const [questions, setQuestions] = useState(QUIZ_QUESTIONS)
-  const [loadingQuestions, setLoadingQuestions] = useState(true)
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [activeQuestion, setActiveQuestion] = useState(0)
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [score, setScore] = useState(0)
   const [completed, setCompleted] = useState(false)
   const [savingScore, setSavingScore] = useState(false)
+
+  // Filters & Hub Configuration
+  const [quizStarted, setQuizStarted] = useState(false)
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('all') // 'all' | 'renewable-energy' | 'climate-science' | 'policy' | 'ecosystems'
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all') // 'all' | 'easy' | 'medium' | 'hard'
 
   // Gamified States
   const [timeLeft, setTimeLeft] = useState(15)
@@ -64,19 +71,40 @@ export default function Quiz() {
   const [gambleSuccess, setGambleSuccess] = useState(null)
   const [gambleCardChoice, setGambleCardChoice] = useState(null)
 
-  // Fetch custom questions from DB
-  const fetchQuestions = async () => {
+  // Start normal quiz with category/difficulty filters
+  const startNormalQuiz = async () => {
+    playTap()
+    setIsDailyChallenge(false)
     setLoadingQuestions(true)
+    setQuizStarted(true)
+    setCompleted(false)
+    setActiveQuestion(0)
+    setScore(0)
+    setStreak(0)
+    setTimeLeft(15)
+    setGamblePlayed(false)
+
     try {
-      const res = await fetch('/api/quiz/questions')
+      const categoryQuery = selectedCategory !== 'all' ? `category=${selectedCategory}` : ''
+      const difficultyQuery = selectedDifficulty !== 'all' ? `difficulty=${selectedDifficulty}` : ''
+      const queryString = [categoryQuery, difficultyQuery].filter(Boolean).join('&')
+      
+      const res = await fetch(`/api/quiz/questions${queryString ? `?${queryString}` : ''}`)
       const data = await res.json()
+      
       if (res.ok && data.questions && data.questions.length > 0) {
         const mapped = data.questions.map(q => {
-          const answerIndex = q.options.indexOf(q.answer)
+          let answerIndex = 0
+          if (typeof q.answer === 'number') {
+            answerIndex = q.answer
+          } else {
+            const idx = q.options.indexOf(q.answer)
+            answerIndex = idx !== -1 ? idx : 0
+          }
           return {
             question: q.question,
             options: q.options,
-            answer: answerIndex !== -1 ? answerIndex : 0,
+            answer: answerIndex,
             expl: q.expl || 'Review ecological guidelines and study materials to learn more.'
           }
         })
@@ -86,6 +114,50 @@ export default function Quiz() {
       }
     } catch (e) {
       console.warn('⚠️ Failed to load questions from database, using fallback defaults:', e.message)
+      setQuestions(QUIZ_QUESTIONS)
+    } finally {
+      setLoadingQuestions(false)
+    }
+  }
+
+  // Start daily deterministic challenge seeded by date
+  const startDailyChallenge = async () => {
+    playTap()
+    setIsDailyChallenge(true)
+    setLoadingQuestions(true)
+    setQuizStarted(true)
+    setCompleted(false)
+    setActiveQuestion(0)
+    setScore(0)
+    setStreak(0)
+    setTimeLeft(15)
+    setGamblePlayed(false)
+
+    try {
+      const res = await fetch('/api/quiz/daily')
+      const data = await res.json()
+      if (res.ok && data.questions && data.questions.length > 0) {
+        const mapped = data.questions.map(q => {
+          let answerIndex = 0
+          if (typeof q.answer === 'number') {
+            answerIndex = q.answer
+          } else {
+            const idx = q.options.indexOf(q.answer)
+            answerIndex = idx !== -1 ? idx : 0
+          }
+          return {
+            question: q.question,
+            options: q.options,
+            answer: answerIndex,
+            expl: q.expl || 'Review ecological guidelines and study materials to learn more.'
+          }
+        })
+        setQuestions(mapped)
+      } else {
+        setQuestions(QUIZ_QUESTIONS)
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to load daily questions:', e.message)
       setQuestions(QUIZ_QUESTIONS)
     } finally {
       setLoadingQuestions(false)
@@ -214,6 +286,7 @@ export default function Quiz() {
     setStreak(0)
     setGamblePlayed(false)
     setGambleSuccess(null)
+    setQuizStarted(false)
     playTap()
   }
 
@@ -255,7 +328,6 @@ export default function Quiz() {
   }
 
   useEffect(() => {
-    fetchQuestions()
     fetchLeaderboard()
   }, [])
 
@@ -291,10 +363,92 @@ export default function Quiz() {
             >
               <div className="absolute -top-10 left-1/4 w-32 h-32 bg-yellow-500/10 rounded-full blur-[40px] pointer-events-none" />
 
-              {loadingQuestions ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-2 py-12 text-xs font-mono text-gray-500">
-                  <Loader2 size={16} className="animate-spin text-neon-blue" />
-                  <span>Loading quiz database...</span>
+              {!quizStarted ? (
+                // Start Screen Hub
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <Trophy className="text-yellow-400" />
+                    <h2 className="text-xl font-display text-white">Climate Challenge Portal</h2>
+                  </div>
+
+                  <p className="text-xs text-gray-400 leading-normal">
+                    Select a scientific domain category and difficulty tier to begin, or challenge yourself in the daily seeded puzzle.
+                  </p>
+
+                  {/* Category Selection */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Select Category Domain</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: 'all', label: 'All Domains' },
+                        { id: 'renewable-energy', label: 'Renewable Energy' },
+                        { id: 'climate-science', label: 'Climate Science' },
+                        { id: 'policy', label: 'Environmental Policy' },
+                        { id: 'ecosystems', label: 'Ecosystem Ecology' }
+                      ].map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => { playTap(); setSelectedCategory(cat.id) }}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-mono border transition-all ${
+                            selectedCategory === cat.id
+                              ? 'bg-yellow-500/10 border-yellow-400 text-yellow-400 shadow-md shadow-yellow-500/5'
+                              : 'bg-white/5 border-white/10 hover:border-white/20 text-gray-400'
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Difficulty Selection */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Select Difficulty Tier</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: 'all', label: 'All Levels' },
+                        { id: 'easy', label: 'Easy' },
+                        { id: 'medium', label: 'Medium' },
+                        { id: 'hard', label: 'Hard' }
+                      ].map(diff => (
+                        <button
+                          key={diff.id}
+                          onClick={() => { playTap(); setSelectedDifficulty(diff.id) }}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-mono border transition-all ${
+                            selectedDifficulty === diff.id
+                              ? 'bg-yellow-500/10 border-yellow-400 text-yellow-400 shadow-md shadow-yellow-500/5'
+                              : 'bg-white/5 border-white/10 hover:border-white/20 text-gray-400'
+                          }`}
+                        >
+                          {diff.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Main Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
+                    <button
+                      onClick={startNormalQuiz}
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-[#070a13] font-mono font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-yellow-400/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Play size={14} fill="currentColor" />
+                      Start Standard Quiz
+                    </button>
+
+                    <button
+                      onClick={startDailyChallenge}
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-mono text-xs uppercase tracking-wider rounded-2xl transition-all"
+                    >
+                      <Calendar size={14} />
+                      Daily Challenge 📅
+                    </button>
+                  </div>
+                </div>
+              ) : loadingQuestions ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-2 py-16 text-xs font-mono text-gray-500">
+                  <Loader2 size={16} className="animate-spin text-yellow-400" />
+                  <span>Configuring environmental telemetry...</span>
                 </div>
               ) : (
                 <AnimatePresence mode="wait">
@@ -459,8 +613,24 @@ export default function Quiz() {
                         className="inline-flex items-center gap-2 text-xs font-mono text-neon-blue hover:text-white transition-colors border border-neon-blue/20 bg-neon-blue/5 px-4 py-2.5 rounded-xl mt-6"
                       >
                         <RefreshCw size={12} />
-                        <span>TRY AGAIN</span>
+                        <span>RETURN TO HUB</span>
                       </button>
+
+                      {/* Branded ShareCard */}
+                      <div className="mt-8 pt-6 border-t border-white/5 text-left w-full max-w-sm mx-auto">
+                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-4 text-center">Share Your Ecological Mastery</span>
+                        <ShareCard
+                          type="quiz"
+                          value={`${Math.round((score / questions.length) * 100)}%`}
+                          label={isDailyChallenge ? "Daily deterministic climate challenge score" : `Category: ${selectedCategory.toUpperCase()} Quiz`}
+                          userName={user?.name || "Eco Scholar"}
+                          badge={score === questions.length ? "Quiz Champion" : undefined}
+                          extraLines={[
+                            `Correct Answers: ${score}/${questions.length}`,
+                            `Challenge Mode: ${isDailyChallenge ? 'Daily seeded challenge' : 'Standard filter mode'}`
+                          ]}
+                        />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -147,7 +147,7 @@ router.patch('/:userId', async (req, res) => {
   }
 })
 
-// ── POST /api/profile/:userId/footprint — Update footprint calculation ──────
+// ── POST /api/profile/:userId/footprint — Update footprint + save to history ──
 router.post('/:userId/footprint', async (req, res) => {
   const { userId } = req.params
   const { footprint } = req.body
@@ -155,7 +155,19 @@ router.post('/:userId/footprint', async (req, res) => {
 
   if (isDBConnected) {
     try {
-      const updated = await User.findByIdAndUpdate(userId, { footprint }, { new: true }).select('-password')
+      const updated = await User.findByIdAndUpdate(
+        userId,
+        {
+          footprint,
+          $push: {
+            footprintHistory: {
+              $each: [{ value: footprint, date: new Date() }],
+              $slice: -24 // Keep last 24 entries (2 years monthly)
+            }
+          }
+        },
+        { new: true }
+      ).select('-password')
       if (!updated) return res.status(404).json({ error: 'User not found' })
       if (req.app?.locals?.io) {
         req.app.locals.io.emit('profile:updated', { userId, footprint: updated.footprint })
@@ -171,12 +183,75 @@ router.post('/:userId/footprint', async (req, res) => {
     const index = mockUsers.findIndex(u => u._id === userId || u.id === userId)
     if (index !== -1) {
       mockUsers[index].footprint = footprint
+      if (!mockUsers[index].footprintHistory) mockUsers[index].footprintHistory = []
+      mockUsers[index].footprintHistory.push({ value: footprint, date: new Date() })
       if (req.app?.locals?.io) {
         req.app.locals.io.emit('profile:updated', { userId, footprint })
       }
       return res.json({ success: true, user: mockUsers[index], warning: 'DB offline — updated in memory' })
     }
     return res.json({ success: true, warning: 'DB offline' })
+  }
+})
+
+// ── GET /api/profile/:userId/footprint-history ────────────────
+router.get('/:userId/footprint-history', async (req, res) => {
+  const { userId } = req.params
+  const isDBConnected = mongoose.connection.readyState === 1
+
+  if (isDBConnected) {
+    try {
+      const user = await User.findById(userId).select('footprintHistory footprint')
+      if (!user) return res.status(404).json({ error: 'User not found' })
+      return res.json({ success: true, history: user.footprintHistory || [], current: user.footprint || 0 })
+    } catch (err) {
+      return res.status(500).json({ error: 'Failed to fetch history' })
+    }
+  } else {
+    const mockUsers = req.app.locals.mockUsers || []
+    const user = mockUsers.find(u => u._id === userId || u.id === userId)
+    if (!user) return res.json({ success: true, history: [], current: 0 })
+    // Generate mock history for demo
+    const mockHistory = Array.from({ length: 6 }, (_, i) => ({
+      value: parseFloat((Math.random() * 6 + 4).toFixed(1)),
+      date: new Date(Date.now() - (5 - i) * 30 * 24 * 60 * 60 * 1000)
+    }))
+    return res.json({ success: true, history: user.footprintHistory?.length ? user.footprintHistory : mockHistory, current: user.footprint || 0, warning: 'DB offline' })
+  }
+})
+
+// ── POST /api/profile/:userId/badge — Award a badge ──────────
+router.post('/:userId/badge', async (req, res) => {
+  const { userId } = req.params
+  const { badge } = req.body
+  const validBadges = ['Climate Scholar', 'Eco-Guardian', 'Carbon Neutral', 'Quiz Champion', 'Streak Master', 'Climate Defender', 'Admin']
+  if (!badge || !validBadges.includes(badge)) return res.status(400).json({ error: 'Invalid badge' })
+
+  const isDBConnected = mongoose.connection.readyState === 1
+  if (isDBConnected) {
+    try {
+      const user = await User.findById(userId)
+      if (!user) return res.status(404).json({ error: 'User not found' })
+      if (!user.badges.includes(badge)) {
+        user.badges.push(badge)
+        await user.save()
+        if (req.app?.locals?.io) {
+          req.app.locals.io.emit('profile:updated', { userId, badges: user.badges })
+        }
+      }
+      return res.json({ success: true, badges: user.badges })
+    } catch (err) {
+      return res.status(500).json({ error: 'Failed to award badge' })
+    }
+  } else {
+    const mockUsers = req.app.locals.mockUsers || []
+    const user = mockUsers.find(u => u._id === userId || u.id === userId)
+    if (user) {
+      if (!user.badges) user.badges = []
+      if (!user.badges.includes(badge)) user.badges.push(badge)
+      return res.json({ success: true, badges: user.badges, warning: 'DB offline' })
+    }
+    return res.json({ success: true, badges: [badge], warning: 'DB offline' })
   }
 })
 
