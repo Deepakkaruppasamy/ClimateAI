@@ -116,6 +116,31 @@ export default function Navbar() {
                   </Link>
                 )
               })}
+              {user && user.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={playTap}
+                  onMouseEnter={playHover}
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    location.pathname === '/admin' ? 'text-neon-cyan' : 'text-neon-blue/80 hover:text-neon-blue'
+                  }`}
+                >
+                  {location.pathname === '/admin' && (
+                    <motion.div
+                      layoutId="nav-pill"
+                      className="absolute inset-0 rounded-xl"
+                      style={{
+                        background: 'rgba(0,212,255,0.08)',
+                        border: '1px solid rgba(0,212,255,0.2)',
+                        boxShadow: '0 0 20px rgba(0,212,255,0.1)',
+                      }}
+                      transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
+                    />
+                  )}
+                  <Settings size={14} className="relative z-10 animate-spin-slow" />
+                  <span className="relative z-10 font-semibold">Admin Panel</span>
+                </Link>
+              )}
             </div>
 
             {/* ── Right Side ───────────────────────────────── */}
@@ -279,6 +304,30 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+              {user && user.role === 'admin' && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navLinks.length * 0.04 }}
+                >
+                  <Link
+                    to="/admin"
+                    onClick={() => { playTap(); setMobileOpen(false); }}
+                    onMouseEnter={playHover}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-all ${
+                      location.pathname === '/admin'
+                        ? 'text-neon-cyan neon-border-blue bg-neon-blue/10'
+                        : 'text-neon-blue/80 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Settings size={17} className="animate-spin-slow" />
+                    <span className="font-bold text-sm">Admin Panel</span>
+                    {location.pathname === '/admin' && (
+                      <span className="ml-auto label-overline">Active</span>
+                    )}
+                  </Link>
+                </motion.div>
+              )}
               {weather && (
                 <div className="mt-2 pt-3 border-t border-white/5 px-4 flex items-center gap-2">
                   <Thermometer size={13} className="text-neon-blue" />
