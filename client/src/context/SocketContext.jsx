@@ -2,12 +2,14 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
 import { toast } from 'react-hot-toast'
 import { ShieldAlert, X } from 'lucide-react'
+import { useAuth } from './AuthContext'
 
 const SocketContext = createContext(null)
 
 export const useSocket = () => useContext(SocketContext)
 
 export const SocketProvider = ({ children }) => {
+  const { user } = useAuth()
   const socketRef = useRef(null)
   const [activeGlobalAlert, setActiveGlobalAlert] = useState(null)
   const [iotSimulationData, setIotSimulationData] = useState(null)
@@ -51,6 +53,13 @@ export const SocketProvider = ({ children }) => {
 
     socket.on('connect', () => {
       console.log('📡 Connected to ClimateAI web socket server')
+      if (user) {
+        socket.emit('user:register', {
+          email: user.email,
+          name: user.name,
+          userId: user._id || user.googleId
+        })
+      }
     })
 
     socket.on('broadcast:iot', (data) => {
@@ -107,6 +116,16 @@ export const SocketProvider = ({ children }) => {
       if (socket) socket.disconnect()
     }
   }, [])
+
+  useEffect(() => {
+    if (socketRef.current && socketRef.current.connected && user) {
+      socketRef.current.emit('user:register', {
+        email: user.email,
+        name: user.name,
+        userId: user._id || user.googleId
+      })
+    }
+  }, [user])
 
   return (
     <SocketContext.Provider value={{ socket: socketRef.current, activeGlobalAlert, setActiveGlobalAlert, iotSimulationData }}>

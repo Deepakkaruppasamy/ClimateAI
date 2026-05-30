@@ -14,13 +14,43 @@ let localEmailsSent = 0
  */
 const sendAlertEmailToAllUsers = async (app, alert) => {
   try {
-    const isDBConnected = mongoose.connection.readyState === 1
     let users = []
     
+    // 1. Fetch registered users from MongoDB if database is connected
+    const isDBConnected = mongoose.connection.readyState === 1
     if (isDBConnected) {
-      users = await User.find({}, 'email name')
-    } else {
+      try {
+        const dbUsers = await User.find({}, 'email name')
+        for (const u of dbUsers) {
+          if (u.email && !users.some(usr => usr.email === u.email)) {
+            users.push({ email: u.email, name: u.name })
+          }
+        }
+      } catch (dbErr) {
+        console.error('Failed to query database users for alert broadcast:', dbErr.message)
+      }
+    }
+
+    // 2. Fetch currently connected Socket.io real-time clients!
+    if (app && app.locals.io) {
+      const sockets = app.locals.io.sockets.sockets
+      for (const [id, s] of sockets) {
+        if (s.userData && s.userData.email) {
+          if (!users.some(u => u.email === s.userData.email)) {
+            users.push(s.userData)
+          }
+        }
+      }
+    }
+
+    // 3. Fallback to mock users if no active or registered users are found
+    if (users.length === 0) {
       users = app ? app.locals.mockUsers : []
+    }
+
+    if (users.length === 0) {
+      console.log(`✉️ [EMAIL SERVICE] No active users found. Email broadcast bypassed.`)
+      return 0
     }
 
     const emailSubject = `⚠️ ClimateAI ALERT: ${alert.title || alert.type?.toUpperCase() || 'Emergency advisory'}`

@@ -207,6 +207,12 @@ io.on('connection', (socket) => {
     socket.emit('alerts:subscribed', { success: true })
   })
 
+  // Handle active user socket registration
+  socket.on('user:register', (userData) => {
+    socket.userData = userData
+    console.log(`👤 Active realtime user registered on socket ${socket.id}: ${userData.email}`)
+  })
+
   // Handle Admin broadcast alert dispatcher
   socket.on('admin:dispatch-alert', async (alertData) => {
     console.log('📢 Admin broadcast dispatched:', alertData)
