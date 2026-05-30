@@ -236,7 +236,7 @@ setInterval(() => {
     { type: 'rain', severity: 'low', message: 'Scattered showers expected this evening' },
   ]
   const alert = alerts[Math.floor(Math.random() * alerts.length)]
-  io.to('alerts').emit('alert:new', { ...alert, timestamp: Date.now() })
+  io.emit('alert:new', { ...alert, timestamp: Date.now() })
 }, 60000)
 
 // ── MongoDB Connection ────────────────────────────────────
