@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Cloud, Sun, Wind, Droplets, Eye, Gauge, Download, Share2, X, Copy, Twitter, Facebook } from 'lucide-react'
+import { X, Copy, Twitter, Share2 } from 'lucide-react'
 import { useWeather } from '../../context/WeatherContext'
 import toast from 'react-hot-toast'
 
@@ -116,17 +116,21 @@ export default function ShareWeatherCard({ onClose }) {
 
   const handleDownload = async () => {
     try {
-      const { default: html2canvas } = await import('html2canvas')
-      const el = document.getElementById('weather-share-card')
-      const canvas = await html2canvas(el, { backgroundColor: null, scale: 2 })
-      const link = document.createElement('a')
-      link.download = `climateai-weather-${weather?.city || 'card'}.png`
-      link.href = canvas.toDataURL()
-      link.click()
-      toast.success('Weather card downloaded!')
+      // Try using the native Web Share API (works great on mobile)
+      if (navigator.share) {
+        await navigator.share({
+          title: `Weather in ${weather?.city}`,
+          text: `Current weather in ${weather?.city}: ${weather?.temp}°C, ${weather?.description}. UV Index: ${weather?.uvIndex}. Tracked with ClimateAI 🌍`,
+          url: window.location.href,
+        })
+      } else {
+        // Fallback: copy a rich text description
+        handleCopyLink()
+      }
     } catch (err) {
-      // Fallback: try native share
-      toast.error('Download unavailable. Try sharing the link instead.')
+      if (err.name !== 'AbortError') {
+        handleCopyLink()
+      }
     }
   }
 
@@ -167,8 +171,8 @@ export default function ShareWeatherCard({ onClose }) {
             onClick={handleDownload}
             className="flex flex-col items-center gap-1.5 p-3 rounded-xl glass hover:bg-white/10 transition-all text-gray-300 hover:text-white"
           >
-            <Download size={18} />
-            <span className="text-xs">Download</span>
+            <Share2 size={18} />
+            <span className="text-xs">Share</span>
           </button>
           <button
             onClick={handleCopyLink}
