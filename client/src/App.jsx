@@ -25,11 +25,13 @@ import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import GreenInvest from './pages/GreenInvest'
 import EmergencyCommand from './pages/EmergencyCommand'
+import Footprint from './pages/Footprint'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import AdminRoute from './components/layout/AdminRoute'
 import { WeatherProvider } from './context/WeatherContext'
 import { AuthProvider } from './context/AuthContext'
 import { SocketProvider } from './context/SocketContext'
+import { ThemeProvider } from './context/ThemeContext'
 import CosmosOrrery from './components/ui/CosmosOrrery'
 
 function AnimatedRoutes() {
@@ -55,6 +57,7 @@ function AnimatedRoutes() {
         <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/invest" element={<ProtectedRoute><GreenInvest /></ProtectedRoute>} />
         <Route path="/emergency" element={<ProtectedRoute><EmergencyCommand /></ProtectedRoute>} />
+        <Route path="/footprint" element={<ProtectedRoute><Footprint /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       </Routes>
     </AnimatePresence>
@@ -69,6 +72,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <SocketProvider>
+            <ThemeProvider>
             <WeatherProvider>
               <AnimatePresence mode="wait">
                 {!appReady && (
@@ -104,6 +108,7 @@ export default function App() {
                 </div>
               )}
             </WeatherProvider>
+            </ThemeProvider>
           </SocketProvider>
         </AuthProvider>
       </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell } from 'lucide-react'
+import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell, Volume2, VolumeX } from 'lucide-react'
 import { useWeather } from '../context/WeatherContext'
 import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
@@ -14,14 +14,14 @@ const QUICK_PROMPTS = [
   { icon: BookOpen, label: 'Climate Tip', text: 'Give me one surprising climate science fact and what it means for daily life.' },
 ]
 
-function MessageBubble({ msg }) {
+function MessageBubble({ msg, onSpeak, speaking }) {
   const isUser = msg.role === 'user'
   return (
     <motion.div
       initial={{ opacity: 0, y: 15, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 group`}
     >
       {!isUser && (
         <div className="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center mr-3 flex-shrink-0 mt-1 overflow-hidden">
@@ -34,8 +34,19 @@ function MessageBubble({ msg }) {
           : 'glass text-gray-200'
       }`}>
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-        <div className="text-xs text-gray-500 mt-1 text-right">
-          {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <div className="flex items-center justify-between mt-1">
+          <div className="text-xs text-gray-500">
+            {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+          {!isUser && (
+            <button
+              onClick={() => onSpeak(msg.content)}
+              className="ml-2 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-neon-cyan"
+              title={speaking ? 'Stop speaking' : 'Read aloud'}
+            >
+              {speaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
@@ -82,10 +93,28 @@ export default function Assistant() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
+
+  const speak = (text) => {
+    if (!('speechSynthesis' in window)) return
+    if (isSpeaking) {
+      window.speechSynthesis.cancel()
+      setIsSpeaking(false)
+      return
+    }
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 0.95
+    utterance.pitch = 1
+    utterance.lang = 'en-US'
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+    setIsSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }
 
   // Load chat history on mount
   useEffect(() => {
@@ -313,7 +342,7 @@ Guidelines:
         <div className="glass-strong rounded-3xl flex flex-col flex-1 overflow-hidden" style={{ minHeight: '60vh' }}>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6">
-            {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
+            {messages.map((msg, i) => <MessageBubble key={i} msg={msg} onSpeak={speak} speaking={isSpeaking} />)}
             <AnimatePresence>
               {loading && <TypingIndicator />}
             </AnimatePresence>

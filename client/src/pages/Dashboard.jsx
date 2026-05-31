@@ -4,7 +4,7 @@ import {
   Thermometer, Wind, Droplets, Eye, Sun, Cloud, 
   Activity, Zap, Brain, Shield, TrendingUp, ArrowUp,
   ArrowDown, Gauge, Sunset, Sunrise, CloudRain, Snowflake,
-  RefreshCw, MapPin, Compass, ShieldAlert, Cpu
+  RefreshCw, MapPin, Compass, ShieldAlert, Cpu, Share2
 } from 'lucide-react'
 import { 
   LineChart, Line, AreaChart, Area, BarChart, Bar, 
@@ -15,6 +15,7 @@ import { useSocket } from '../context/SocketContext'
 import WeatherParticles from '../components/hero/WeatherParticles'
 import CitySearch from '../components/ui/CitySearch'
 import VideoBackground from '../components/ui/VideoBackground'
+import ShareWeatherCard from '../components/ui/ShareWeatherCard'
 import { playTap, playHover } from '../utils/audio'
 
 const DASHBOARD_VIDEO = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260514_102933_4e8f73b5-775a-4179-b2fb-472f59063dcd.mp4'
@@ -184,6 +185,7 @@ export default function Dashboard() {
   
   // Dashboard Sub-navigation tabs: metrics overview vs. interactive neural vortex simulator
   const [activeTab, setActiveTab] = useState('metrics') // 'metrics' | 'vortex'
+  const [showShareCard, setShowShareCard] = useState(false)
 
   // Neural Vortex Simulator controls state variables
   const [vortexEnergy, setVortexEnergy] = useState(65) // range 10-120
@@ -513,6 +515,13 @@ export default function Dashboard() {
               {new Date().toLocaleString()}
             </div>
             <button
+              onClick={() => { playTap(); setShowShareCard(true) }}
+              className="glass p-2 rounded-xl hover:neon-border-blue transition-all"
+              title="Share weather card"
+            >
+              <Share2 size={16} className="text-neon-pink" />
+            </button>
+            <button
               onClick={() => fetchWeather(location.lat, location.lon)}
               className="glass p-2 rounded-xl hover:neon-border-blue transition-all"
               title="Refresh weather data"
@@ -521,6 +530,11 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Share Weather Card Modal */}
+        <AnimatePresence>
+          {showShareCard && <ShareWeatherCard onClose={() => setShowShareCard(false)} />}
+        </AnimatePresence>
 
         {/* Current Weather Hero */}
         <motion.div

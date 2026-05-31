@@ -4,22 +4,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Cloud, BarChart2, MessageSquare, Map, Bell, Settings, 
   Menu, X, Zap, Globe, Wind, Thermometer, LogIn, LogOut, User, BellDot,
-  TrendingUp, ShieldAlert
+  TrendingUp, ShieldAlert, Leaf, Sun, Moon
 } from 'lucide-react'
 import { useWeather } from '../../context/WeatherContext'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import { isSoundEnabled, setSoundEnabled, playTap, playHover } from '../../utils/audio'
 
 const navLinks = [
-  { path: '/',               label: 'Home',          icon: Globe },
-  { path: '/dashboard',      label: 'Dashboard',     icon: Cloud },
-  { path: '/hub',            label: 'Climate Hub',   icon: Zap },
-  { path: '/map',            label: 'Maps',          icon: Map },
-  { path: '/invest',         label: 'Green Invest',  icon: TrendingUp },
-  { path: '/emergency',      label: 'Disaster Room', icon: ShieldAlert },
-  { path: '/assistant',      label: 'AI Chat',       icon: MessageSquare },
-  { path: '/analytics',      label: 'Analytics',     icon: BarChart2 },
-  { path: '/alerts',         label: 'Alerts',        icon: Bell },
+  { path: '/',               label: 'Home',           icon: Globe },
+  { path: '/dashboard',      label: 'Dashboard',      icon: Cloud },
+  { path: '/hub',            label: 'Climate Hub',    icon: Zap },
+  { path: '/map',            label: 'Maps',           icon: Map },
+  { path: '/footprint',      label: 'Carbon Tracker', icon: Leaf },
+  { path: '/invest',         label: 'Green Invest',   icon: TrendingUp },
+  { path: '/emergency',      label: 'Disaster Room',  icon: ShieldAlert },
+  { path: '/assistant',      label: 'AI Chat',        icon: MessageSquare },
+  { path: '/analytics',      label: 'Analytics',      icon: BarChart2 },
+  { path: '/alerts',         label: 'Alerts',         icon: Bell },
 ]
 
 export default function Navbar() {
@@ -28,6 +30,7 @@ export default function Navbar() {
   const location  = useLocation()
   const { weather } = useWeather()
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [audioOn, setAudioOn] = useState(isSoundEnabled())
 
   const toggleAudio = () => {
@@ -147,6 +150,15 @@ export default function Navbar() {
                   )}
                 </div>
                 <span className="text-[10px] font-mono tracking-wider">{audioOn ? "SFX" : "MUTE"}</span>
+              </button>
+
+              {/* Theme Toggle */}
+              <button
+                onClick={() => { toggleTheme(); playTap() }}
+                className="flex items-center justify-center glass w-9 h-9 rounded-xl border border-white/5 hover:border-neon-blue/30 transition-all hover:bg-neon-blue/5 text-gray-400 hover:text-white"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
               </button>
 
               {weather && (

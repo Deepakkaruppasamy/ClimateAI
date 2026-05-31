@@ -2,6 +2,51 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const CarbonRequest = require('../models/CarbonRequest');
+const User = require('../models/User');
+
+// ── POST Log Daily Footprint ─────────────────────────────────
+router.post('/log', async (req, res) => {
+  const { userId, footprint } = req.body;
+  if (!userId || footprint === undefined) {
+    return res.status(400).json({ error: 'Missing userId or footprint' });
+  }
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (isDBConnected && mongoose.Types.ObjectId.isValid(userId)) {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        $push: { footprintHistory: { value: footprint, date: new Date() } },
+        $set: { footprint }
+      });
+      console.log(`🌱 Footprint logged for user ${userId}: ${footprint} kg CO₂`);
+      return res.json({ success: true });
+    } catch (err) {
+      console.error('❌ Footprint log error:', err.message);
+      return res.status(500).json({ error: 'Failed to log footprint' });
+    }
+  } else {
+    // In-memory fallback
+    return res.json({ success: true, warning: 'Footprint logged in memory only (DB offline)' });
+  }
+});
+
+// ── GET Leaderboard ──────────────────────────────────────────
+router.get('/leaderboard', async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (isDBConnected) {
+    try {
+      const users = await User.find({ footprint: { $gt: 0 } })
+        .select('name avatar footprint quizStats badges')
+        .sort({ footprint: 1 })
+        .limit(20);
+      return res.json({ success: true, leaderboard: users });
+    } catch (err) {
+      return res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+  } else {
+    return res.json({ success: true, leaderboard: [], warning: 'DB offline' });
+  }
+});
+
 
 // Badge calculation helper
 function recalculateBadges(userObj, approvedCarbonTotal) {
