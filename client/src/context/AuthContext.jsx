@@ -34,7 +34,8 @@ export function AuthProvider({ children }) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed')
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Authentication failed')
+        throw new Error(errorMsg)
       }
 
       setUser(data.user)
@@ -60,7 +61,8 @@ export function AuthProvider({ children }) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Registration failed')
+        throw new Error(errorMsg)
       }
 
       setUser(data.user)
