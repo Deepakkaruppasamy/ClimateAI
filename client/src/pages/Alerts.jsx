@@ -299,6 +299,63 @@ export default function Alerts() {
   const [activeAlerts, setActiveAlerts] = useState([])
   const [broadcastAlerts, setBroadcastAlerts] = useState([])
 
+  // Push Notifications state
+  const [pushStatus, setPushStatus] = useState('default')
+  const [vapidPublicKey, setVapidPublicKey] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/notifications/vapidPublicKey')
+      .then(res => res.text())
+      .then(key => setVapidPublicKey(key))
+      .catch(err => console.error('Failed to get VAPID key', err))
+      
+    if ('Notification' in window && Notification.permission === 'granted') {
+      setPushStatus('granted')
+    }
+  }, [])
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  const handleEnablePush = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Push notifications are not supported by your browser.')
+      return
+    }
+    try {
+      const permission = await Notification.requestPermission()
+      setPushStatus(permission)
+
+      if (permission === 'granted' && vapidPublicKey) {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        })
+
+        await fetch('/api/notifications/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            subscription, 
+            userId: user?._id || user?.googleId || 'mock' 
+          })
+        })
+        console.log('Successfully subscribed to push notifications')
+      }
+    } catch (err) {
+      console.error('Failed to subscribe:', err)
+    }
+  }
+
   // Rules state
   const [rules, setRules] = useState([])
   const [loadingRules, setLoadingRules] = useState(true)
@@ -553,6 +610,30 @@ export default function Alerts() {
 
           {/* Right — Smart Rules */}
           <div className="space-y-6">
+            {/* Push Notifications Card */}
+            <div className="glass-strong rounded-3xl p-6 border border-white/5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-white font-display font-normal">Push Notifications</h3>
+                  <p className="text-gray-500 text-xs mt-0.5">Receive alerts on your device</p>
+                </div>
+                <Bell size={18} className={pushStatus === 'granted' ? 'text-neon-cyan' : 'text-gray-500'} />
+              </div>
+              {pushStatus === 'granted' ? (
+                <div className="px-4 py-2.5 bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan rounded-xl text-xs font-mono text-center">
+                  Notifications Enabled ✅
+                </div>
+              ) : (
+                <button
+                  onClick={handleEnablePush}
+                  className="w-full px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white rounded-xl text-xs font-mono transition-all flex items-center justify-center gap-2"
+                >
+                  <BellRing size={14} />
+                  Enable Push Alerts
+                </button>
+              )}
+            </div>
+
             {/* Add Rule */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 space-y-4">
               <div className="flex items-center justify-between">
