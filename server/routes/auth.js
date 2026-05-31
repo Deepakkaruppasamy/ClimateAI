@@ -45,7 +45,8 @@ router.post('/register', async (req, res) => {
         email: normalizedEmail,
         password: hashedPassword,
         avatar: avatarUrl,
-        role: isAdminEmail ? 'admin' : 'user'
+        role: isAdminEmail ? 'admin' : 'user',
+        googleId: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`
       })
 
       await newUser.save()
@@ -53,7 +54,7 @@ router.post('/register', async (req, res) => {
       return res.status(201).json({ success: true, user: serializeUser(newUser) })
     } catch (err) {
       console.error('❌ Database user registration failed:', err.message)
-      return res.status(500).json({ error: 'Database error occurred during registration' })
+      return res.status(500).json({ error: 'Database error occurred during registration', details: err.message })
     }
   } else {
     // MongoDB offline: check in-memory registry

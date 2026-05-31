@@ -640,7 +640,7 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                     <XAxis dataKey="time" stroke="#666" tick={{ fontSize: 10 }} interval={3} />
                     <YAxis stroke="#666" tick={{ fontSize: 10 }} />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={CustomTooltip} />
                     <Area type="monotone" dataKey="temp" stroke="#00d4ff" strokeWidth={2}
                       fill="url(#tempGrad)" name="Temp" unit="°C" dot={false} />
                   </AreaChart>
@@ -655,7 +655,7 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                     <XAxis dataKey="time" stroke="#666" tick={{ fontSize: 9 }} />
                     <YAxis stroke="#666" tick={{ fontSize: 9 }} />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={CustomTooltip} />
                     <Line type="monotone" dataKey="wind" stroke="#7c3aed" strokeWidth={2} dot={false} name="Wind" unit=" km/h" />
                     <Line type="monotone" dataKey="humidity" stroke="#06ffd4" strokeWidth={2} dot={false} name="Humidity" unit="%" />
                   </LineChart>
@@ -679,7 +679,7 @@ export default function Dashboard() {
                     <BarChart data={weeklyData}>
                       <XAxis dataKey="day" stroke="#666" tick={{ fontSize: 11 }} />
                       <YAxis stroke="#666" tick={{ fontSize: 11 }} />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={CustomTooltip} />
                       <Bar dataKey="max" fill="#00d4ff" fillOpacity={0.7} radius={[4,4,0,0]} name="Max" unit="°C" />
                       <Bar dataKey="min" fill="#7c3aed" fillOpacity={0.7} radius={[4,4,0,0]} name="Min" unit="°C" />
                     </BarChart>

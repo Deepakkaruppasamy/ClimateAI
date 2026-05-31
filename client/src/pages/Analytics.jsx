@@ -143,7 +143,7 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="month" stroke="#666" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#666" tick={{ fontSize: 11 }} unit="°" />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <Area type="monotone" dataKey="maxTemp" fill="#00d4ff" fillOpacity={0.1} stroke="none" name="Max" unit="°C" />
                 <Area type="monotone" dataKey="minTemp" fill="#7c3aed" fillOpacity={0.1} stroke="none" name="Min" unit="°C" />
                 <Line type="monotone" dataKey="avgTemp" stroke="#00d4ff" strokeWidth={2.5} dot={false} name="Avg" unit="°C" />
@@ -162,7 +162,7 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="month" stroke="#666" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#666" tick={{ fontSize: 11 }} unit="mm" />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <defs>
                   <linearGradient id="precipGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#00d4ff" stopOpacity={0.9} />
@@ -202,7 +202,7 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="day" stroke="#666" tick={{ fontSize: 9 }} interval={4} />
                 <YAxis stroke="#666" tick={{ fontSize: 11 }} unit="%" domain={[70, 100]} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <Area type="monotone" dataKey="accuracy" stroke="#06ffd4" strokeWidth={2} fill="url(#accGrad)" name="AI Accuracy" unit="%" dot={false} />
                 <Line type="monotone" dataKey="baseline" stroke="#7c3aed" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Baseline" unit="%" />
               </AreaChart>

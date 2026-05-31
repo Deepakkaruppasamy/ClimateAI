@@ -605,7 +605,7 @@ export default function Admin() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="hour" stroke="#555" tick={{ fontSize: 10 }} interval={3} />
                 <YAxis stroke="#555" tick={{ fontSize: 10 }} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <Area type="monotone" dataKey="requests" stroke="#00d4ff" strokeWidth={2}
                   fill="url(#reqGrad)" dot={false} name="Requests" />
                 <Area type="monotone" dataKey="users" stroke="#7c3aed" strokeWidth={2}
@@ -629,7 +629,7 @@ export default function Admin() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="hour" stroke="#555" tick={{ fontSize: 9 }} />
                 <YAxis stroke="#555" tick={{ fontSize: 10 }} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <Bar dataKey="errors" fill="#ff4444" fillOpacity={0.7} radius={[3,3,0,0]} name="Errors" />
               </BarChart>
             </ResponsiveContainer>
