@@ -281,20 +281,25 @@ export default function Landing() {
                 {/* Type animation */}
                 <div className="anim-reveal-up delay-500">
                   <div className="text-gray-400 text-lg font-light min-h-[32px]">
-                    <TypeAnimation
-                      sequence={[
-                        'AI-powered forecasts for every city on Earth.',
-                        2500,
-                        'Smart alerts before the storm hits.',
-                        2500,
-                        'Your personal climate intelligence layer.',
-                        2500,
-                        'Next-generation weather operating system.',
-                        2500,
-                      ]}
-                      repeat={Infinity}
-                      speed={65}
-                    />
+                    {(() => {
+                      const SafeTypeAnimation = TypeAnimation.default || TypeAnimation;
+                      return (
+                        <SafeTypeAnimation
+                          sequence={[
+                            'AI-powered forecasts for every city on Earth.',
+                            2500,
+                            'Smart alerts before the storm hits.',
+                            2500,
+                            'Your personal climate intelligence layer.',
+                            2500,
+                            'Next-generation weather operating system.',
+                            2500,
+                          ]}
+                          repeat={Infinity}
+                          speed={65}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
 

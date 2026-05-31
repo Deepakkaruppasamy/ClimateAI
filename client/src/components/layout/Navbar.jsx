@@ -62,9 +62,9 @@ export default function Navbar() {
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
 
-            <div className="flex items-center gap-3 xl:gap-4">
+            <div className="flex items-center gap-2 xl:gap-4">
               {/* ── Logo ─────────────────────────────────────── */}
-              <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+              <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
                 <div className="relative">
                   <motion.div
                     className="w-10 h-10 flex items-center justify-center overflow-hidden"
@@ -99,7 +99,7 @@ export default function Navbar() {
                       to={path}
                       onClick={playTap}
                       onMouseEnter={playHover}
-                      className={`relative flex items-center gap-1.5 px-2 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${
+                      className={`relative flex items-center gap-1.5 px-1.5 py-1.5 rounded-xl text-[11px] xl:text-xs font-medium transition-all duration-300 ${
                         active ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
                       }`}
                     >
@@ -166,7 +166,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8 }}
-                  className="flex items-center gap-2 glass px-4 py-2 rounded-xl"
+                  className="hidden xl:flex items-center gap-2 glass px-3 py-1.5 rounded-xl"
                 >
                   <Thermometer size={13} className="text-neon-blue" />
                   <span className="text-sm text-gray-400" style={{ fontFamily: 'var(--font-body)' }}>
@@ -221,7 +221,7 @@ export default function Navbar() {
               )}
 
               {/* Live indicator */}
-              <div className="flex items-center gap-2 glass px-3 py-2 rounded-xl">
+              <div className="flex items-center gap-1.5 glass px-2 py-1.5 rounded-xl">
                 <motion.div
                   className="w-1.5 h-1.5 rounded-full bg-neon-cyan"
                   animate={{ opacity: [1, 0.3, 1] }}
