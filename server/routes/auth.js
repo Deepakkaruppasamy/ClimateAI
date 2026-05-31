@@ -45,8 +45,7 @@ router.post('/register', async (req, res) => {
         email: normalizedEmail,
         password: hashedPassword,
         avatar: avatarUrl,
-        role: isAdminEmail ? 'admin' : 'user',
-        googleId: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        role: isAdminEmail ? 'admin' : 'user'
       })
 
       await newUser.save()

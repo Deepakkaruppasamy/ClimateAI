@@ -3,7 +3,11 @@ const mongoose = require('mongoose')
 const UserSchema = new mongoose.Schema({
   googleId: {
     type: String,
-    default: null
+    default: () => `local-google-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  },
+  clerkId: {
+    type: String,
+    default: () => `local-clerk-${Date.now()}-${Math.random().toString(36).slice(2)}`
   },
   email: {
     type: String,
