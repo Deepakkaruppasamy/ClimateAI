@@ -79,7 +79,10 @@ function StatCounter({ value, suffix, label, icon: Icon, color }) {
         <Icon size={22} style={{ color }} />
       </div>
       <div className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
-        {inView && <CountUp end={value} duration={2.5} suffix={suffix} />}
+        {inView && (() => {
+          const SafeCountUp = CountUp.default || CountUp;
+          return <SafeCountUp end={value} duration={2.5} suffix={suffix} />;
+        })()}
       </div>
       <div className="text-sm text-gray-400 mt-1">{label}</div>
     </motion.div>
