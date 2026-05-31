@@ -426,7 +426,7 @@ export default function Landing() {
       ══════════════════════════════════════════════════════ */}
       <section className="py-24 relative">
         <div className="max-w-[95%] mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {stats.map((s, i) => <StatCounter key={i} {...s} />)}
           </div>
         </div>

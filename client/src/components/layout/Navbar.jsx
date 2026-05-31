@@ -288,6 +288,54 @@ export default function Navbar() {
                   <span className="text-sm font-mono text-neon-blue">{weather.temp}°C</span>
                 </div>
               )}
+              
+              <div className="mt-2 pt-3 border-t border-white/5 px-2">
+                {user ? (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-3 px-2 mb-2">
+                      <img className="w-8 h-8 rounded-lg object-cover" src={user.avatar} alt="avatar" />
+                      <div className="min-w-0">
+                        <div className="text-sm text-white font-medium truncate">{user.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                      </div>
+                    </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => { playTap(); setMobileOpen(false); }}
+                      className="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                    >
+                      <User size={15} />
+                      <span>My Profile</span>
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        onClick={() => { playTap(); setMobileOpen(false); }}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-neon-blue bg-neon-blue/5 border border-neon-blue/20 rounded-xl transition-all"
+                      >
+                        <Settings size={15} />
+                        <span>Admin Panel</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { logout(); setMobileOpen(false); }}
+                      className="flex items-center gap-3 px-3 py-2 text-sm text-red-400 bg-red-500/5 hover:bg-red-500/10 rounded-xl transition-all text-left"
+                    >
+                      <LogOut size={15} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => { playTap(); setMobileOpen(false); }}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-neon-blue/10 border border-neon-blue/30 text-neon-blue rounded-xl text-sm font-medium w-full mt-2"
+                  >
+                    <LogIn size={15} />
+                    <span>Sign In</span>
+                  </Link>
+                )}
+              </div>
             </motion.div>
           </>
         )}

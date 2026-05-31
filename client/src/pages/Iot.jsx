@@ -232,7 +232,7 @@ export default function Iot() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                         {[
                           { label: 'PM2.5', value: s.pm25?.toFixed(1), unit: 'µg/m³', color: aqiColor },
                           { label: 'PM10', value: s.pm10?.toFixed(1), unit: 'µg/m³', color: '#a78bfa' },
@@ -270,7 +270,7 @@ export default function Iot() {
         {iotTab === 'simulator' && (
           <>
         {/* Live Telemetry Sensors */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {[
             { label: 'Air Temp', value: `${temperature}°C`, icon: Thermometer, color: 'text-red-400', glow: 'shadow-red-500/5 border-red-500/10' },
             { label: 'Humidity', value: `${humidity}%`, icon: Droplet, color: 'text-blue-400', glow: 'shadow-blue-500/5 border-blue-500/10' },

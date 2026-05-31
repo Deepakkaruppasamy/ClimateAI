@@ -336,7 +336,7 @@ export default function Calculator() {
                       
                       <div>
                         <span className="text-xs font-mono text-gray-400 uppercase tracking-wider block mb-3">Primary Diet Habits</span>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {[
                             { value: 'high', title: 'Heavy Meat', desc: 'Frequent red meat / dairy' },
                             { value: 'average', title: 'Average Omnivore', desc: 'Balanced meat, fish, plants' },
@@ -629,7 +629,7 @@ export default function Calculator() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">Expiry Date</label>
                           <input

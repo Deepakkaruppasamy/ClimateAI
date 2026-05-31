@@ -574,7 +574,7 @@ export default function Admin() {
         </div>
 
         {/* ── Sparkline Metrics ────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <AdminMetricCard icon={Cpu} label="CPU Utilization" value={Math.round(metrics.cpu)} unit="%" color="#00d4ff" trend={2.1} sparkData={sparkCpu} />
           <AdminMetricCard icon={Database} label="Memory Usage" value={Math.round(metrics.memory)} unit="%" color="#7c3aed" trend={-0.5} sparkData={sparkMem} />
           <AdminMetricCard icon={Activity} label="Requests/min" value={metrics.requests} unit="" color="#06ffd4" trend={12.3} sparkData={sparkReq} />
@@ -695,7 +695,7 @@ export default function Admin() {
           <h3 className="heading-section text-lg text-white mb-4 flex items-center gap-2">
             <Globe size={16} className="text-neon-blue" /> User Geography
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             {[
               { region: 'North America', users: 1240, pct: 43, color: '#00d4ff' },
               { region: 'Europe', users: 890, pct: 31, color: '#7c3aed' },
@@ -744,7 +744,7 @@ export default function Admin() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">Metric</label>
                     <select
@@ -919,7 +919,7 @@ export default function Admin() {
               <div className="border-t border-white/10 pt-4 mt-4">
                 <h4 className="text-sm font-semibold text-white mb-2 font-display">Platform-Wide Dispatcher</h4>
                 <form onSubmit={handleCustomBroadcast} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="text"
                       placeholder="Custom Title (e.g. Acid Rain Alert)"

@@ -104,7 +104,7 @@ export default function Analytics() {
         </div>
 
         {/* KPI Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Avg Temperature', val: `${weather?.temp ?? '--'}°C`, change: '+2.1°', color: '#00d4ff', icon: TrendingUp },
             { label: 'Total Precipitation', val: `${forecast.reduce((a, b) => a + b.precip, 0).toFixed(1)}mm`, change: '-12%', color: '#06ffd4', icon: Activity },

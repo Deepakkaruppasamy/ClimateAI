@@ -236,7 +236,7 @@ export default function Notifications() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {FILTER_OPTIONS.map(({ key, label }) => {
             const cfg = TYPE_CONFIG[key]
             const color = cfg?.color || '#aaaaaa'

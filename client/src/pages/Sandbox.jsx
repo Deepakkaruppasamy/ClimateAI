@@ -341,7 +341,7 @@ export default function Sandbox() {
             className="space-y-6"
           >
             {/* Policy impact cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Projected Temp 2050', value: `+${policyImpact.projectedTemp}°C`, color: policyImpact.projectedTemp < 1.5 ? '#06ffd4' : policyImpact.projectedTemp < 2.0 ? '#ffcc00' : '#ff4400' },
                 { label: 'CO₂ Reduction', value: `${policyImpact.co2Reduction}%`, color: '#a78bfa' },

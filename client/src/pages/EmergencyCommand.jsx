@@ -579,7 +579,7 @@ export default function EmergencyCommand() {
               </div>
 
               {/* End Stats report */}
-              <div className="grid grid-cols-3 gap-4 bg-black/40 p-5 rounded-2xl border border-white/5 text-xs font-mono text-left max-w-md mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-black/40 p-5 rounded-2xl border border-white/5 text-xs font-mono text-left max-w-md mx-auto">
                 <div className="space-y-0.5">
                   <span className="text-gray-500 block text-[9px]">SAVED CITIZENS:</span>
                   <span className="text-white font-bold text-sm">+{livesSaved.toLocaleString()}</span>

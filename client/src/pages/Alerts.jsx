@@ -467,7 +467,7 @@ export default function Alerts() {
         </div>
 
         {/* Summary Row */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Active Alerts', val: allActive.length, color: '#ff4444' },
             { label: 'Critical', val: criticalCount, color: '#ff4444' },
@@ -589,7 +589,7 @@ export default function Alerts() {
                         className="w-full px-3 py-2.5 bg-white/5 border border-white/10 focus:border-neon-blue focus:outline-none text-white rounded-xl text-sm placeholder-gray-600"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">Metric</label>
                         <select value={ruleMetric} onChange={e => setRuleMetric(e.target.value)}

@@ -119,15 +119,33 @@ export function WeatherProvider({ children }) {
   }, [])
 
   useEffect(() => {
+    const fallbackToIP = async () => {
+      try {
+        const res = await axios.get('https://ipapi.co/json/')
+        if (res.data && res.data.latitude && res.data.longitude) {
+          fetchWeather(res.data.latitude, res.data.longitude)
+        } else {
+          fetchWeather(location.lat, location.lon)
+        }
+      } catch (err) {
+        console.warn('IP fallback failed, using default location:', err)
+        fetchWeather(location.lat, location.lon)
+      }
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(location.lat, location.lon)
+        (err) => {
+          console.warn('Geolocation blocked/failed. Trying IP fallback.', err)
+          fallbackToIP()
+        },
+        { timeout: 10000, maximumAge: 60000 }
       )
     } else {
-      fetchWeather(location.lat, location.lon)
+      fallbackToIP()
     }
-  }, [])
+  }, [fetchWeather])
 
   return (
     <WeatherContext.Provider value={{ weather, forecast, aqi, location, loading, weatherType, fetchWeather, setLocation }}>

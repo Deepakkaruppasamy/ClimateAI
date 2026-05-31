@@ -77,11 +77,11 @@ export default function App() {
               </AnimatePresence>
 
               {appReady && (
-                <div className="min-h-screen bg-dark-900 flex flex-col">
+                <div className="min-h-screen bg-dark-900 flex flex-col overflow-x-hidden w-full max-w-[100vw]">
                   <GlobalAlertBanner />
                   <PremiumEffectsCore />
                   <Navbar />
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <AnimatedRoutes />
                   </div>
                   <Toaster

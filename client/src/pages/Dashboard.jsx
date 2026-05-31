@@ -531,7 +531,7 @@ export default function Dashboard() {
           <div className="absolute inset-0 opacity-10"
             style={{ background: 'radial-gradient(ellipse at 80% 50%, #00d4ff, transparent 70%)' }} />
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 w-full">
               <div className="text-8xl">{getWeatherEmoji(weather?.code || 0)}</div>
               <div>
                 <div className="text-7xl font-bold font-outfit gradient-text-blue-cyan leading-none">
@@ -541,7 +541,7 @@ export default function Dashboard() {
                 <div className="text-sm text-gray-500 mt-0.5">Feels like {weather?.feelsLike}°C</div>
               </div>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { icon: Droplets, label: 'Humidity', val: `${weather?.humidity}%`, color: '#00d4ff' },
                 { icon: Wind, label: 'Wind', val: `${weather?.windSpeed} km/h`, color: '#7c3aed' },
@@ -593,7 +593,7 @@ export default function Dashboard() {
             className="space-y-6"
           >
             {/* Metric Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard icon={Thermometer} label="Temperature" value={weather?.temp ?? '--'} unit="°C"
                 sub={`Max ${forecast[0]?.maxTemp ?? '--'}° / Min ${forecast[0]?.minTemp ?? '--'}°`}
                 color="#00d4ff" accentClass="stat-accent-blue" trend={2.3} />
@@ -680,7 +680,7 @@ export default function Dashboard() {
                   {aqi ? (
                     <div className="space-y-4">
                       <AQIBar value={aqi.aqi} />
-                      <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                         {[
                           { label: 'PM2.5', val: `${aqi.pm25}μg` },
                           { label: 'PM10', val: `${aqi.pm10}μg` },
@@ -713,7 +713,7 @@ export default function Dashboard() {
             {forecast[0] && (
               <div className="glass rounded-2xl p-6">
                 <h3 className="heading-section text-lg text-white mb-4">Sun Schedule</h3>
-                <div className="flex items-center gap-8">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 md:gap-8">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
                       <Sunrise size={20} className="text-orange-400" />

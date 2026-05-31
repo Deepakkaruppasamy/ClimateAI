@@ -395,7 +395,7 @@ export default function Hub() {
                     {/* Select Model size */}
                     <div className="space-y-2">
                       <label className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Model Parameters</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {[
                           { val: 8, label: '8B (Llama)' },
                           { val: 70, label: '70B' },
