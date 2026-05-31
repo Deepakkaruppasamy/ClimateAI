@@ -298,27 +298,22 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         }
       });
       
-      // 6. Velocity-based Chromatic Aberration & Backdrop Blur effects
+      // 6. Velocity-based Backdrop Blur effects
       const velocity = Math.hypot(vx.current, vy.current);
-      const aberration = Math.min(7, velocity * 0.45);
-      const blur = Math.min(22, 10 + velocity * 0.5);
+      const blur = Math.min(15, 10 + velocity * 0.2); // Cap the blur to prevent excessive blurring
       
-      // Generate box shadows & channel-shifting filters dynamically
+      // Generate box shadows dynamically
       const glowOpacity = Math.min(0.4, 0.05 + proximityGlow * 0.025);
       const dynamicGlow = proximityGlow > 0 
         ? `0 0 ${12 + proximityGlow}px rgba(6, 255, 212, ${glowOpacity})` 
         : '0 8px 32px rgba(0, 0, 0, 0.4)';
-        
-      const chromaticFilter = aberration > 0.6
-        ? `drop-shadow(${aberration.toFixed(2)}px 0px 0px rgba(255, 0, 144, 0.35)) drop-shadow(${-aberration.toFixed(2)}px 0px 0px rgba(6, 255, 212, 0.35))`
-        : 'none';
         
       // Write optimized style matrix
       setStyle({
         transform: `translate3d(${finalX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0px) rotateZ(${floatAngle.toFixed(2)}deg) scale3d(${isDragging.current ? 1.05 : 1.0}, ${isDragging.current ? 1.05 : 1.0}, 1.0)`,
         backdropFilter: `blur(${blur.toFixed(1)}px)`,
         WebkitBackdropFilter: `blur(${blur.toFixed(1)}px)`,
-        filter: chromaticFilter,
+        filter: 'none', // Removed chromatic aberration to keep text crisp
         boxShadow: dynamicGlow,
         cursor: isDragging.current ? 'grabbing' : 'grab',
         userSelect: 'none',
