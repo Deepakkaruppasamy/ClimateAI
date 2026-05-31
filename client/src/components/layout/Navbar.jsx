@@ -62,7 +62,7 @@ export default function Navbar() {
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
 
-            <div className="flex items-center gap-6 xl:gap-8">
+            <div className="flex items-center gap-3 xl:gap-4">
               {/* ── Logo ─────────────────────────────────────── */}
               <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
                 <div className="relative">
@@ -99,7 +99,7 @@ export default function Navbar() {
                       to={path}
                       onClick={playTap}
                       onMouseEnter={playHover}
-                      className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      className={`relative flex items-center gap-1.5 px-2 py-2 rounded-xl text-xs font-medium transition-all duration-300 ${
                         active ? 'text-neon-blue' : 'text-gray-400 hover:text-white'
                       }`}
                     >
@@ -124,7 +124,7 @@ export default function Navbar() {
             </div>
 
             {/* ── Right Side ───────────────────────────────── */}
-            <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+            <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
               {/* Sound Equalizer Switch */}
               <button
                 onClick={toggleAudio}
