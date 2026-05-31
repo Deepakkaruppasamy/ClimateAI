@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useSpring } from 'framer-motion'
 
 export default function PremiumEffectsCore() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [cursorType, setCursorType] = useState('default')
   const [isClicking, setIsClicking] = useState(false)
   const [trail, setTrail] = useState([])
@@ -21,6 +20,7 @@ export default function PremiumEffectsCore() {
   const trailTimerRef = useRef(null)
   const activeMagneticRef = useRef(null)
   const cursorRef = useRef(null)
+  const coreRef = useRef(null)
   const rafRef = useRef(null)
 
   // 1. Scroll Progress Ribbon Tracker
@@ -69,7 +69,14 @@ export default function PremiumEffectsCore() {
       // Linear interpolation (lerp) for smooth easing
       currentX += (targetX - currentX) * 0.25
       currentY += (targetY - currentY) * 0.25
-      setMousePos({ x: currentX, y: currentY })
+      
+      // Update DOM directly to bypass React render cycle!
+      if (cursorRef.current) {
+        cursorRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`
+      }
+      if (coreRef.current) {
+        coreRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`
+      }
 
       // Animate active magnetic target on active frame sync
       const activeEl = activeMagneticRef.current
@@ -235,7 +242,7 @@ export default function PremiumEffectsCore() {
           ref={cursorRef}
           className="fixed pointer-events-none rounded-full z-[99999] hidden md:block"
           style={{
-            transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0) translate(-50%, -50%)`,
+            transform: `translate3d(0px, 0px, 0) translate(-50%, -50%)`,
             width: cursorType === 'clickable' ? '40px' : isClicking ? '12px' : '24px',
             height: cursorType === 'clickable' ? '40px' : isClicking ? '12px' : '24px',
             background: isClicking ? cursorColors[cursorType] : 'transparent',
@@ -250,9 +257,10 @@ export default function PremiumEffectsCore() {
       {/* ── Cursor Core Dot ─────────────────────────────────── */}
       {cursorEnabled && (
         <div
+          ref={coreRef}
           className="fixed pointer-events-none rounded-full z-[99999] hidden md:block"
           style={{
-            transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0) translate(-50%, -50%)`,
+            transform: `translate3d(0px, 0px, 0) translate(-50%, -50%)`,
             width: '6px',
             height: '6px',
             background: cursorType === 'danger' ? '#ff4444' : cursorType === 'success' ? '#06ffd4' : '#00d4ff',

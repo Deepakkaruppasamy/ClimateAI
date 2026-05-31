@@ -85,12 +85,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
   });
   
   // Localized state for responsive styling changes (blur, chromatic aberration, and neon proximity glow)
-  const [style, setStyle] = useState({
+  // Initial style applied once via React
+  const initialStyle = {
     transform: 'translate3d(0px, 0px, 0px) rotate(0deg)',
     backdropFilter: 'blur(10px)',
     filter: 'none',
     boxShadow: 'none',
-  });
+  };
 
   // Track dragging start coordinates
   const handleMouseDown = useCallback((e) => {
@@ -305,12 +306,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         : '0 8px 32px rgba(0, 0, 0, 0.4)';
         
       // Write optimized style matrix
-      setStyle({
-        transform: `translate3d(${finalX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0px) rotateZ(${floatAngle.toFixed(2)}deg) scale3d(${isDragging.current ? 1.05 : 1.0}, ${isDragging.current ? 1.05 : 1.0}, 1.0)`,
-        boxShadow: dynamicGlow,
-        cursor: isDragging.current ? 'grabbing' : 'grab',
-        userSelect: 'none',
-      });
+      // Mutate DOM style directly to bypass React render cycle for 60fps performance
+      if (el) {
+        el.style.transform = `translate3d(${finalX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0px) rotateZ(${floatAngle.toFixed(2)}deg) scale3d(${isDragging.current ? 1.05 : 1.0}, ${isDragging.current ? 1.05 : 1.0}, 1.0)`;
+        el.style.boxShadow = dynamicGlow;
+        el.style.cursor = isDragging.current ? 'grabbing' : 'grab';
+        el.style.userSelect = 'none';
+      }
       
       animationFrameId = requestAnimationFrame(tick);
     };
@@ -329,7 +331,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
   
   return {
     ref: elementRef,
-    style,
+    style: initialStyle,
     onMouseDown: handleMouseDown,
   };
 }
