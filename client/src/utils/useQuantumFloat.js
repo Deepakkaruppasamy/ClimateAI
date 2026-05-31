@@ -298,10 +298,6 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         }
       });
       
-      // 6. Velocity-based Backdrop Blur effects
-      const velocity = Math.hypot(vx.current, vy.current);
-      const blur = Math.min(15, 10 + velocity * 0.2); // Cap the blur to prevent excessive blurring
-      
       // Generate box shadows dynamically
       const glowOpacity = Math.min(0.4, 0.05 + proximityGlow * 0.025);
       const dynamicGlow = proximityGlow > 0 
@@ -311,9 +307,6 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       // Write optimized style matrix
       setStyle({
         transform: `translate3d(${finalX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0px) rotateZ(${floatAngle.toFixed(2)}deg) scale3d(${isDragging.current ? 1.05 : 1.0}, ${isDragging.current ? 1.05 : 1.0}, 1.0)`,
-        backdropFilter: `blur(${blur.toFixed(1)}px)`,
-        WebkitBackdropFilter: `blur(${blur.toFixed(1)}px)`,
-        filter: 'none', // Removed chromatic aberration to keep text crisp
         boxShadow: dynamicGlow,
         cursor: isDragging.current ? 'grabbing' : 'grab',
         userSelect: 'none',
