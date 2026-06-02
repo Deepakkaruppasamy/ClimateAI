@@ -80,6 +80,119 @@ function TypingIndicator() {
   )
 }
 
+function AtmosphericBackground() {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    let animationId
+
+    const resize = () => {
+      if (!canvas) return
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener('resize', resize, { passive: true })
+
+    // Generate lightweight floating thermal/carbon atmospheric particles
+    const particles = []
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 1 + Math.random() * 2.5,
+        speed: 0.15 + Math.random() * 0.35,
+        drift: (Math.random() - 0.5) * 0.15,
+        alpha: 0.15 + Math.random() * 0.45,
+        twinkle: 0.005 + Math.random() * 0.01,
+        twinkleDir: Math.random() > 0.5 ? 1 : -1,
+        color: Math.random() > 0.6 
+          ? 'rgba(6, 255, 212, ' // neon cyan
+          : Math.random() > 0.5 
+          ? 'rgba(124, 58, 237, ' // neon purple
+          : 'rgba(0, 212, 255, ' // neon blue
+      })
+    }
+
+    const render = () => {
+      if (!canvas || !ctx) return
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      particles.forEach(p => {
+        p.y -= p.speed
+        p.x += Math.sin(p.y * 0.004) * p.drift * 2
+        
+        // Twinkle opacity smoothly
+        p.alpha += p.twinkle * p.twinkleDir
+        if (p.alpha > 0.6 || p.alpha < 0.1) p.twinkleDir *= -1
+
+        // Wrap around screen bounds
+        if (p.y < -10) {
+          p.y = canvas.height + 10
+          p.x = Math.random() * canvas.width
+        }
+        if (p.x < -10) p.x = canvas.width + 10
+        if (p.x > canvas.width + 10) p.x = -10
+
+        ctx.save()
+        ctx.fillStyle = `${p.color}${p.alpha.toFixed(2)})`
+        ctx.shadowColor = p.color.replace(', ', ')')
+        ctx.shadowBlur = p.radius * 3
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      })
+
+      animationId = requestAnimationFrame(render)
+    }
+
+    render()
+    return () => {
+      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(animationId)
+    }
+  }, [])
+
+  return (
+    <div className="absolute inset-0 bg-[#02050e] overflow-hidden -z-10 select-none pointer-events-none">
+      {/* 1. Scrolling grid overlay */}
+      <div className="absolute inset-0 bg-animated-grid opacity-15" />
+
+      {/* 2. Hardware-Accelerated Drifting Nebula Gradients */}
+      <style>{`
+        @keyframes drift-nebula-1 {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          50% { transform: translate(80px, 40px) scale(1.15); }
+        }
+        @keyframes drift-nebula-2 {
+          0%, 100% { transform: translate(0px, 0px) scale(1.1); }
+          50% { transform: translate(-60px, -30px) scale(0.9); }
+        }
+        .nebula-1 {
+          background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+          animation: drift-nebula-1 25s ease-in-out infinite;
+          will-change: transform;
+        }
+        .nebula-2 {
+          background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+          animation: drift-nebula-2 30s ease-in-out infinite;
+          will-change: transform;
+        }
+      `}</style>
+      
+      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full nebula-1" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full nebula-2" />
+
+      {/* 3. Glowing particle canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen" />
+    </div>
+  )
+}
+
 export default function Assistant() {
   const { weather, forecast, aqi } = useWeather()
   const { user } = useAuth()
@@ -328,15 +441,7 @@ Guidelines:
       exit={{ opacity: 0 }}
       className="min-h-screen pt-20 pb-6 flex flex-col relative overflow-hidden"
     >
-      <VideoBackground
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260520_133010_cb9c806d-bc9d-47f1-ac4c-b1759134ec8b.mp4"
-        overlay="dark"
-        kenBurns={true}
-        grain={true}
-      />
-      <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[3]" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-5 pointer-events-none z-[3]"
-        style={{ background: 'radial-gradient(circle, #7c3aed, transparent)' }} />
+      <AtmosphericBackground />
 
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 w-full flex flex-col flex-1 relative z-10">
         {/* Header */}
