@@ -6,28 +6,24 @@ import VideoBackground from '../components/ui/VideoBackground'
 import { playTap, playHover } from '../utils/audio'
 
 export default function Iot() {
-  const [iotTab, setIotTab] = useState('simulator') // 'simulator' | 'real'
-  // Telemetry states
+  const [iotTab, setIotTab] = useState('simulator') 
+
   const [temperature, setTemperature] = useState(22.4)
   const [humidity, setHumidity] = useState(58)
   const [moisture, setMoisture] = useState(42)
-  const [solar, setSolar] = useState(650) // W/m2
-  const [wind, setWind] = useState(12.4) // km/h
+  const [solar, setSolar] = useState(650) 
+  const [wind, setWind] = useState(12.4) 
 
-  // Real sensor states
   const [realSensors, setRealSensors] = useState([])
   const [loadingReal, setLoadingReal] = useState(false)
   const [realError, setRealError] = useState('')
 
-  // API Key states
   const [apiKey, setApiKey] = useState('')
   const [copied, setCopied] = useState(false)
 
-  // API Terminal states
   const [terminalOutput, setTerminalOutput] = useState('// Click "SEND REQUEST" below to query the simulated hardware sensor api.')
   const [loadingRequest, setLoadingRequest] = useState(false)
 
-  // Telemetry fluctuation simulator
   useEffect(() => {
     const interval = setInterval(() => {
       setTemperature(t => parseFloat((t + (Math.random() - 0.5) * 0.4).toFixed(1)))
@@ -39,7 +35,6 @@ export default function Iot() {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch real OpenAQ sensors
   const fetchRealSensors = async () => {
     setLoadingReal(true)
     setRealError('')
@@ -62,7 +57,7 @@ export default function Iot() {
       } else throw new Error('No results')
     } catch (e) {
       setRealError('')
-      // Use sample real sensor data
+
       setRealSensors([
         { name: 'Delhi Anand Vihar', city: 'Delhi', country: 'India', lat: 28.65, lon: 77.32, pm25: 145.2, pm10: 210.5, no2: 38.4, lastUpdated: new Date().toISOString(), paramCount: 5 },
         { name: 'Beijing Chaoyang', city: 'Beijing', country: 'China', lat: 39.95, lon: 116.47, pm25: 89.3, pm10: 132.1, no2: 52.7, lastUpdated: new Date().toISOString(), paramCount: 4 },
@@ -80,7 +75,6 @@ export default function Iot() {
     if (iotTab === 'real' && realSensors.length === 0) fetchRealSensors()
   }, [iotTab])
 
-  // Generate API key
   const handleGenerateKey = () => {
     const randomHex = Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join('')
     const key = `sk_live_cl_${randomHex}`
@@ -88,7 +82,6 @@ export default function Iot() {
     toast.success('Developer API Key generated!')
   }
 
-  // Copy API key to clipboard
   const handleCopyKey = () => {
     navigator.clipboard.writeText(apiKey)
     setCopied(true)
@@ -96,7 +89,6 @@ export default function Iot() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Test API endpoint
   const handleTestEndpoint = () => {
     if (loadingRequest) return
     playTap()
@@ -150,7 +142,6 @@ export default function Iot() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title */}
         <div className="mb-8 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Hardware Bridge</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -159,7 +150,6 @@ export default function Iot() {
           <p className="text-gray-400 text-sm max-w-xl mt-1">
             Simulate connection telemetry to local Arduino or Raspberry Pi sensor boards, generate client API tokens, and query developer endpoints.
           </p>
-          {/* Tab switcher */}
           <div className="flex gap-2 mt-6">
             <button
               onClick={() => { playTap(); setIotTab('simulator') }}
@@ -184,7 +174,6 @@ export default function Iot() {
           </div>
         </div>
 
-        {/* ── REAL SENSORS TAB ── */}
         {iotTab === 'real' && (
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -216,7 +205,6 @@ export default function Iot() {
                       transition={{ delay: i * 0.05 }}
                       className="glass-strong rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-all relative overflow-hidden"
                     >
-                      {/* AQI color strip */}
                       <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" style={{ background: aqiColor }} />
                       
                       <div className="flex items-start justify-between mb-4">
@@ -266,10 +254,8 @@ export default function Iot() {
           </div>
         )}
 
-        {/* ── SIMULATOR TAB ── */}
         {iotTab === 'simulator' && (
           <>
-        {/* Live Telemetry Sensors */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {[
             { label: 'Air Temp', value: `${temperature}°C`, icon: Thermometer, color: 'text-red-400', glow: 'shadow-red-500/5 border-red-500/10' },
@@ -299,10 +285,8 @@ export default function Iot() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Key Generator Portal */}
           <div className="xl:col-span-5 space-y-6">
             
-            {/* Live Wind Vector Compass Dial */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative flex flex-col items-center justify-between text-center min-h-[260px] overflow-hidden">
               <div className="absolute inset-0 bg-animated-grid opacity-[0.02] pointer-events-none" />
               <div className="absolute top-4 left-4 text-left pointer-events-none">
@@ -320,7 +304,6 @@ export default function Iot() {
                 <span className="absolute bottom-1 text-[8px] font-mono text-gray-600 font-bold">S</span>
                 <span className="absolute left-1 text-[8px] font-mono text-gray-600 font-bold">W</span>
                 
-                {/* Wind needle */}
                 <motion.div
                   className="w-1.5 h-20 bg-gradient-to-b from-neon-pink via-neon-purple to-transparent rounded-full"
                   style={{ originY: 0.5 }}
@@ -370,7 +353,6 @@ export default function Iot() {
             </div>
           </div>
 
-          {/* Swagger Testing Terminal */}
           <div className="xl:col-span-7">
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
@@ -385,7 +367,6 @@ export default function Iot() {
                 </div>
               </div>
 
-              {/* Console Output Screen */}
               <div className="w-full h-64 bg-[#040914] border border-white/5 rounded-2xl p-4 font-mono text-xs text-neon-cyan overflow-y-auto leading-relaxed shadow-inner">
                 {loadingRequest && terminalOutput === 'CONNECTING TO SIMULATED HARDWARE OVERLAY...\nAUTHENTICATING DEVICE BRIDGE...\n' ? (
                   <div className="h-full flex flex-col items-center justify-center gap-2 text-gray-500">
@@ -397,7 +378,6 @@ export default function Iot() {
                 )}
               </div>
 
-              {/* Execution trigger button */}
               <button
                 onClick={handleTestEndpoint}
                 disabled={loadingRequest}

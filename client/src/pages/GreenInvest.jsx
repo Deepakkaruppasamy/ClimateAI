@@ -22,7 +22,7 @@ const CITIES = [
 ]
 
 export default function GreenInvest() {
-  // Inputs
+
   const [solarKw, setSolarKw] = useState(8)
   const [batteryKwh, setBatteryKwh] = useState(10)
   const [geothermalTons, setGeothermalTons] = useState(0)
@@ -31,7 +31,6 @@ export default function GreenInvest() {
   const [selectedCity, setSelectedCity] = useState('')
   const [hasRebate, setHasRebate] = useState(true)
 
-  // System parameters
   const [chartData, setChartData] = useState([])
   const [breakEvenYear, setBreakEvenYear] = useState(null)
   const [netInvestment, setNetInvestment] = useState(0)
@@ -39,12 +38,11 @@ export default function GreenInvest() {
   const [lifetimeCo2, setLifetimeCo2] = useState(0)
   const [lifetimeTrees, setLifetimeTrees] = useState(0)
 
-  // Set inputs when city is changed
   const handleCitySelect = (cityName) => {
     playTap()
     setSelectedCity(cityName)
     if (cityName === 'gps') {
-      // Simulate GPS reading
+
       setSunlightHours(4.8)
       setRateKwh(0.25)
       return
@@ -56,43 +54,37 @@ export default function GreenInvest() {
     }
   }
 
-  // Live recalculations
   useEffect(() => {
-    // Costs
+
     const solarCost = solarKw * 2200
     const batteryCost = batteryKwh * 600
     const geoCost = geothermalTons * 4200
     const grossCost = solarCost + batteryCost + geoCost
-    const rebateAmount = hasRebate ? grossCost * 0.30 : 0 // 30% Federal ITC
+    const rebateAmount = hasRebate ? grossCost * 0.30 : 0 
     const netCost = grossCost - rebateAmount
     setNetInvestment(netCost)
 
-    // Production & Savings
-    // solarKw * sunlightHours * 365 days * 0.82 (efficiency factor)
     const annualProductionKwh = solarKw * sunlightHours * 365 * 0.82
     
-    // Battery storage boosts self-consumption rate (meaning less energy sold back at low rates)
-    // base self-consumption is 65%, each kWh battery boosts it by 3%, max 95%
+
     const selfConsumptionRate = Math.min(0.95, 0.65 + (batteryKwh * 0.03))
-    const sellBackRate = 0.08 // Net metering export tariff
+    const sellBackRate = 0.08 
     
     const effectiveRate = (selfConsumptionRate * rateKwh) + ((1 - selfConsumptionRate) * sellBackRate)
     const annualSolarSavings = annualProductionKwh * effectiveRate
     
-    // Geothermal offsets heating bills by approx $650 per ton per year
+
     const annualGeoSavings = geothermalTons * 650
     const totalAnnualSavings = annualSolarSavings + annualGeoSavings
 
-    // 25-Year Projection Loop
-    const inflation = 1.035 // Utility rates climb 3.5% annually
-    const degradation = 0.995 // Panels degrade 0.5% annually
+    const inflation = 1.035 
+    const degradation = 0.995 
     
     let tempChartData = []
     let cumulativeSolarSavings = -netCost
     let cumulativeGridSpend = 0
     let tempBreakEvenYear = null
 
-    // Year 0
     tempChartData.push({
       year: 'Year 0',
       yearNum: 0,
@@ -128,13 +120,10 @@ export default function GreenInvest() {
     setBreakEvenYear(tempBreakEvenYear)
     setLifetimeSavings(cumulativeSolarSavings)
 
-    // Ecological calculations (25 years total)
-    // 1 kWh = 0.85 lbs CO2
-    const totalLifetimeKwh = annualProductionKwh * 25 * 0.93 // averaging degradation
+    const totalLifetimeKwh = annualProductionKwh * 25 * 0.93 
     const metricTonsCo2 = (totalLifetimeKwh * 0.85) / 2204.62
     setLifetimeCo2(metricTonsCo2)
 
-    // 1 tree absorbs approx 48 lbs CO2 annually -> ~1200 lbs over 25 yrs
     const equivalentTrees = (totalLifetimeKwh * 0.85) / 1200
     setLifetimeTrees(equivalentTrees)
 
@@ -157,7 +146,6 @@ export default function GreenInvest() {
 
       <div className="max-w-[95%] xl:max-w-[85%] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
         
-        {/* Header Telemetry */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-6">
           <div>
             <span className="label-overline mb-1.5 inline-block text-neon-blue">[ TRANSITION_PORTFOLIO: ACTIVE ]</span>
@@ -184,7 +172,6 @@ export default function GreenInvest() {
           </div>
         </div>
 
-        {/* ROI Key Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -258,10 +245,8 @@ export default function GreenInvest() {
           </motion.div>
         </div>
 
-        {/* Dashboard Panels */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Inputs Console Panel (4 Columns) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="glass-strong rounded-3xl p-6 border border-white/10 space-y-6">
               
@@ -270,7 +255,6 @@ export default function GreenInvest() {
                 <h3 className="text-sm font-mono text-white uppercase tracking-wider">Microgrid Asset Settings</h3>
               </div>
 
-              {/* Solar Array Capacity */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-gray-400">Solar PV Array Size</span>
@@ -291,7 +275,6 @@ export default function GreenInvest() {
                 </div>
               </div>
 
-              {/* Battery Storage Capacity */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-gray-400">Battery Storage Capacity</span>
@@ -312,7 +295,6 @@ export default function GreenInvest() {
                 </div>
               </div>
 
-              {/* Geothermal Heat Pump Load */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-gray-400">Geothermal Heat Pump</span>
@@ -340,7 +322,6 @@ export default function GreenInvest() {
                 <h3 className="text-sm font-mono text-white uppercase tracking-wider">Meteorological Feeds</h3>
               </div>
 
-              {/* Sun Exposure Hours */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-gray-400">Sun Hours / Day (Solar Irradiance)</span>
@@ -361,7 +342,6 @@ export default function GreenInvest() {
                 </div>
               </div>
 
-              {/* Electricity Price Rate */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-gray-400">Grid Utility Cost / kWh</span>
@@ -382,7 +362,6 @@ export default function GreenInvest() {
                 </div>
               </div>
 
-              {/* Tax Credit Toggle */}
               <div className="flex items-center justify-between p-3 rounded-2xl bg-black/40 border border-white/5">
                 <div className="flex flex-col">
                   <span className="text-xs font-mono text-white font-bold">Federal Tax Credit (ITC)</span>
@@ -407,7 +386,6 @@ export default function GreenInvest() {
             </div>
           </div>
 
-          {/* Savings Projection Visualizer (8 Columns) */}
           <div className="lg:col-span-8 space-y-6">
             <div className="glass-strong rounded-3xl p-6 border border-white/10 space-y-4">
               
@@ -433,7 +411,6 @@ export default function GreenInvest() {
                 </div>
               </div>
 
-              {/* Recharts AreaChart Container */}
               <div className="h-[360px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
@@ -477,7 +454,6 @@ export default function GreenInvest() {
                       }}
                     />
 
-                    {/* Break-even indicator line */}
                     {breakEvenYear && (
                       <ReferenceLine 
                         x={`Yr ${breakEvenYear}`} 
@@ -494,7 +470,6 @@ export default function GreenInvest() {
                       />
                     )}
                     
-                    {/* Standard Utility bills */}
                     <Area 
                       type="monotone" 
                       dataKey="Standard Utility Bill" 
@@ -504,7 +479,6 @@ export default function GreenInvest() {
                       strokeWidth={1.5}
                     />
 
-                    {/* Active Transition Savings */}
                     <Area 
                       type="monotone" 
                       dataKey="Investment Balance" 
@@ -517,7 +491,6 @@ export default function GreenInvest() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Bottom Telemetry Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 text-xs font-mono">
                 <div className="bg-black/30 p-4 rounded-2xl border border-white/5 space-y-1">
                   <span className="text-gray-500 block uppercase text-[9px]">Lifetime Solar Output</span>

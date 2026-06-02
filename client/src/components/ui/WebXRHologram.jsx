@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Globe, Smartphone, Eye, Sparkles, Shield, Compass } from 'lucide-react'
 import { playTap, playHover } from '../../utils/audio'
 
-// Telemetry synth sounds
 const triggerSynthChime = (pitch = 880) => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -79,7 +78,6 @@ export default function WebXRHologram() {
   return (
     <div className="glass-strong rounded-3xl p-6 lg:p-8 border border-white/10 relative overflow-hidden bg-black/40 shadow-2xl">
       
-      {/* Sci-Fi UI Overlay Overrides */}
       <style>{`
         @keyframes hologram-spin {
           from { transform: rotateY(0deg) rotateX(15deg); }
@@ -106,9 +104,8 @@ export default function WebXRHologram() {
         }
       `}</style>
 
-      {/* Cybernetic Tech Decals */}
       <div className="absolute top-3 left-4 text-[9px] font-mono text-neon-blue tracking-widest pointer-events-none select-none">
-        SPATIAL_ENGINE // WEBRTC_STREAM
+        SPATIAL_ENGINE 
       </div>
       <div className="absolute top-3 right-4 text-[9px] font-mono text-gray-500 tracking-wider pointer-events-none select-none">
         DEVICE_COMPATIBLE: [VISION_PRO / QUEST_3 / IOS]
@@ -116,59 +113,45 @@ export default function WebXRHologram() {
 
       <div className="grid lg:grid-cols-12 gap-8 items-center">
         
-        {/* LEFT — Tabletop Holo Viewport (7 Columns) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[460px] bg-black/30 rounded-2xl border border-white/5 overflow-hidden py-10">
           
-          {/* Holographic scanner cone (radial background) */}
           <div className="absolute inset-x-0 bottom-0 top-1/4 bg-[radial-gradient(ellipse_at_bottom,rgba(0,212,255,0.06)_0%,transparent_70%)] pointer-events-none" />
           
-          {/* Neon active grid lines table plane */}
           <div className="absolute bottom-6 w-[80%] h-[120px] rounded-full border border-neon-blue/30 bg-neon-blue/5 shadow-[0_0_30px_rgba(0,212,255,0.05)] transform rotateX(60deg) flex items-center justify-center pointer-events-none">
             <div className="w-[85%] h-[85%] rounded-full border border-dashed border-neon-blue/20" />
             <div className="w-[50%] h-[50%] rounded-full border border-neon-blue/15" />
-            {/* Hologram emitter dot */}
             <div className="w-4 h-4 rounded-full bg-neon-cyan shadow-[0_0_15px_#00d4ff] absolute" />
           </div>
 
-          {/* Interactive AR Camera Screen Frame */}
           <div className="absolute top-3.5 left-4 flex items-center gap-2 px-3 py-1.5 rounded-xl border border-neon-cyan/20 bg-neon-cyan/5 text-[9px] font-mono text-neon-cyan select-none pointer-events-none animate-pulse">
             <Eye size={12} />
             <span>AR VIEWPORT SIMULATOR ACTIVE</span>
           </div>
 
-          {/* Floating Tabletop Earth Wireframe Globe */}
           <div className="relative w-64 h-64 flex items-center justify-center mb-16 select-none cursor-grab active:cursor-grabbing">
             
-            {/* Ring projection loops */}
             <div className="absolute w-[300px] h-[300px] rounded-full border border-neon-blue/10 pointer-events-none transform rotateX(75deg)" />
             <div className="absolute w-[240px] h-[240px] rounded-full border border-dashed border-neon-blue/20 pointer-events-none transform rotateX(75deg) pulse-ring" />
 
-            {/* Glowing Globe SVG Container */}
             <div className="w-48 h-48 hologram-globe relative flex items-center justify-center">
               
-              {/* Outer neon glow sphere */}
               <div className="absolute inset-0 rounded-full border-2 border-neon-cyan/25 shadow-[0_0_35px_rgba(0,212,255,0.15)] pointer-events-none" />
 
-              {/* Wireframe Rotating Globe SVG */}
               <svg className="w-full h-full text-neon-cyan opacity-80" viewBox="0 0 100 100" fill="none">
                 <circle cx="50" cy="50" r="48" stroke="rgba(0,212,255,0.15)" strokeWidth="0.5" />
-                {/* Horizontal Latitudinal Lines */}
                 <ellipse cx="50" cy="50" rx="48" ry="12" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
                 <ellipse cx="50" cy="50" rx="48" ry="28" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
                 <line x1="2" y1="50" x2="98" y2="50" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
                 
-                {/* Vertical Longitudinal Curves */}
                 <ellipse cx="50" cy="50" rx="14" ry="48" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
                 <ellipse cx="50" cy="50" rx="32" ry="48" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
                 <line x1="50" y1="2" x2="50" y2="98" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
 
-                {/* Simulated Glowing Continent Shapes */}
                 <path d="M15 45 C17 38 25 35 30 38 C35 40 40 32 45 35 C50 38 52 48 45 52 C38 55 35 62 25 58 Z" fill="rgba(0,212,255,0.12)" stroke="currentColor" strokeWidth="0.5" />
                 <path d="M55 25 C62 22 72 25 78 30 C82 35 75 42 70 45 C65 48 58 45 55 35 Z" fill="rgba(0,212,255,0.08)" stroke="currentColor" strokeWidth="0.5" />
                 <path d="M60 60 C65 58 75 62 70 72 C65 82 55 78 60 60 Z" fill="rgba(0,212,255,0.1)" stroke="currentColor" strokeWidth="0.5" />
               </svg>
 
-              {/* Holographic interactive threat vector hotspots on the globe */}
               {HOTSPOTS.map(h => (
                 <button
                   key={h.id}
@@ -185,7 +168,6 @@ export default function WebXRHologram() {
                     }`}></span>
                   </span>
                   
-                  {/* Miniature tooltip on hover */}
                   <span className="absolute left-1/2 -translate-x-1/2 -top-6 bg-black/85 text-white font-mono text-[7px] px-1.5 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
                     {h.name.toUpperCase()}
                   </span>
@@ -197,10 +179,8 @@ export default function WebXRHologram() {
 
         </div>
 
-        {/* RIGHT — Dynamic Diagnostic HUD & Mobile Pairing QR (5 Columns) */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* Dynamic Hotspot Diagnostic Frame */}
           <div className="glass rounded-3xl p-5 border border-white/10 bg-black/20 space-y-4">
             
             <div className="flex items-center gap-2 border-b border-white/10 pb-3">
@@ -240,7 +220,6 @@ export default function WebXRHologram() {
 
           </div>
 
-          {/* Tabletop AR Pairing / Mobile Scan Code */}
           <div className="glass rounded-3xl p-5 border border-white/10 bg-black/20 space-y-4">
             
             <div className="flex items-center justify-between">
@@ -266,15 +245,12 @@ export default function WebXRHologram() {
                   exit={{ opacity: 0, y: -10 }}
                   className="flex flex-col sm:flex-row items-center gap-4 p-3 rounded-2xl border border-neon-purple/20 bg-neon-purple/5"
                 >
-                  {/* Beautiful Glowing Mock QR Code */}
                   <div className="relative w-28 h-28 bg-[#02050a] p-2.5 rounded-xl border border-neon-purple/30 shrink-0 select-none overflow-hidden shadow-[0_0_15px_rgba(124,58,237,0.15)]">
-                    {/* Glowing QR grid scan line */}
                     <div className="absolute left-0 right-0 h-[1.5px] bg-neon-purple ar-scanline z-10" />
                     
-                    {/* Mock QR details using simple HTML boxes */}
                     <div className="w-full h-full border border-neon-purple/20 flex flex-wrap gap-1 p-1 opacity-70">
                       {Array.from({ length: 49 }).map((_, i) => {
-                        const isSquare = (i < 4 || (i % 7 < 4 && i < 28)) // corner elements
+                        const isSquare = (i < 4 || (i % 7 < 4 && i < 28)) 
                         const isActive = Math.random() > 0.4 || isSquare
                         return (
                           <div 

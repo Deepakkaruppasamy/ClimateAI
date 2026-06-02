@@ -9,12 +9,12 @@ export function WeatherProvider({ children }) {
   const [aqi, setAqi] = useState(null)
   const [location, setLocation] = useState({ lat: 40.7128, lon: -74.0060, name: 'New York' })
   const [loading, setLoading] = useState(true)
-  const [weatherType, setWeatherType] = useState('clear') // clear, rain, storm, snow, cloudy
+  const [weatherType, setWeatherType] = useState('clear') 
 
   const fetchWeather = useCallback(async (lat, lon) => {
     setLoading(true)
     try {
-      // 1. Try our backend proxy route
+
       const response = await axios.get(`/api/weather/current`, {
         params: { lat, lon }
       })
@@ -34,7 +34,7 @@ export function WeatherProvider({ children }) {
       setLocation({ lat, lon, name: current.city })
       setWeatherType(getWeatherType(current.code))
       
-      // Fetch AQI from backend
+
       try {
         const aqiRes = await axios.get(`/api/weather/aqi`, { params: { lat, lon } })
         setAqi(aqiRes.data)
@@ -50,7 +50,7 @@ export function WeatherProvider({ children }) {
       }
     } catch (err) {
       console.warn('Backend proxy fetch failed — falling back to client-side APIs:', err)
-      // 2. Fallback to direct client-side requests (Open-Meteo + Nominatim fallback without header)
+
       try {
         const [currentRes, forecastRes] = await Promise.all([
           axios.get(`https://api.open-meteo.com/v1/forecast`, {

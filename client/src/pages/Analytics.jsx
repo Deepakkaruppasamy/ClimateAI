@@ -30,7 +30,6 @@ export default function Analytics() {
   const { weather, forecast } = useWeather()
   const [period, setPeriod] = useState('week')
 
-  // Generate simulated historical data
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const monthlyData = months.map((m, i) => ({
     month: m,
@@ -80,7 +79,6 @@ export default function Analytics() {
       />
       <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[3]" />
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="heading-display text-3xl text-white">
@@ -103,7 +101,6 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Avg Temperature', val: `${weather?.temp ?? '--'}°C`, change: '+2.1°', color: '#00d4ff', icon: TrendingUp },
@@ -132,9 +129,7 @@ export default function Analytics() {
           ))}
         </div>
 
-        {/* Charts Grid */}
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
-          {/* Annual Temperature Trend */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-1">Annual Temperature Trends</h3>
             <p className="text-xs text-gray-500 mb-4">Monthly averages with min/max range</p>
@@ -153,7 +148,6 @@ export default function Analytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* Precipitation */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-1">Precipitation Analysis</h3>
             <p className="text-xs text-gray-500 mb-4">Monthly rainfall distribution (mm)</p>
@@ -174,7 +168,6 @@ export default function Analytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* Radar Chart */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-1">Current Conditions Radar</h3>
             <p className="text-xs text-gray-500 mb-4">Multi-dimensional weather profile</p>
@@ -187,7 +180,6 @@ export default function Analytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* Forecast Accuracy */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-1">AI Forecast Accuracy</h3>
             <p className="text-xs text-gray-500 mb-4">30-day rolling accuracy vs baseline</p>
@@ -210,7 +202,6 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* 7-day detailed table */}
         <div className="glass rounded-2xl p-6">
           <h3 className="heading-section text-lg text-white mb-4">7-Day Detailed Forecast</h3>
           <div className="overflow-x-auto">

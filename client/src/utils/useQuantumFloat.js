@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { playHover, playTap } from './audio';
 
-// Shared global registries to coordinate card interactions
 if (typeof window !== 'undefined') {
   window.quantumCards = window.quantumCards || [];
   window.quantumMouse = window.quantumMouse || { x: 0, y: 0, vx: 0, vy: 0, lastTime: 0 };
 }
 
-// Global mouse tracker (adds kinetic force vector based on cursor velocity)
 let mouseListenerAdded = false;
 function initGlobalMouse() {
   if (mouseListenerAdded || typeof window === 'undefined') return;
@@ -17,12 +15,12 @@ function initGlobalMouse() {
     const now = performance.now();
     const dt = Math.max(1, now - window.quantumMouse.lastTime);
     
-    // Calculate raw displacement
+
     const dx = e.clientX - window.quantumMouse.x;
     const dy = e.clientY - window.quantumMouse.y;
     
-    // Smooth velocity with a simple exponential filter to prevent noise
-    const rawVx = (dx / dt) * 16.67; // scale to 60fps frame displacement
+
+    const rawVx = (dx / dt) * 16.67; 
     const rawVy = (dy / dt) * 16.67;
     
     window.quantumMouse.vx += (rawVx - window.quantumMouse.vx) * 0.3;
@@ -36,34 +34,25 @@ function initGlobalMouse() {
   window.addEventListener('mousemove', handleMouseMove, { passive: true });
 }
 
-/**
- * Premium Quantum Antigravity Physics Engine Hook
- * Manages spring return forces, viewport collision bounds bouncing,
- * kinetic cursor velocity repulsions, multi-layer sinusoidal drifts,
- * visual chromatic aberration, proximity glows, and automated off-screen dormancy.
- * 
- * @param {number} delay Injected time delay offset.
- * @param {number} zFactor Scroll parallax scale. 1.3: foreground, 1.0: midground, 0.5: background.
- */
 export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
   const elementRef = useRef(null);
   
-  // Unique identification for proximity/collision calculations
+
   const idRef = useRef(`qc-${Math.random().toString(36).substr(2, 9)}`);
   
-  // Physical offsets from original center position (home = 0, 0)
+
   const x = useRef(0);
   const y = useRef(0);
   
-  // Current dynamic velocities
+
   const vx = useRef(0);
   const vy = useRef(0);
   
-  // Tab active and Intersection states for energy conservation
+
   const isTabActive = useRef(true);
   const isIntersecting = useRef(true);
   
-  // Drag states
+
   const isDragging = useRef(false);
   const lastMouseX = useRef(0);
   const lastMouseY = useRef(0);
@@ -71,7 +60,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
   const dragVx = useRef(0);
   const dragVy = useRef(0);
   
-  // Custom unique wave parameters for multi-layered Sin/Cos quantum float
+
   const waveParams = useRef({
     freqX: 0.8 + Math.random() * 0.6,
     freqY: 0.7 + Math.random() * 0.6,
@@ -84,8 +73,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     phaseZ: Math.random() * Math.PI * 2,
   });
   
-  // Localized state for responsive styling changes (blur, chromatic aberration, and neon proximity glow)
-  // Initial style applied once via React
+
   const initialStyle = {
     transform: 'translate3d(0px, 0px, 0px) rotate(0deg)',
     backdropFilter: 'blur(10px)',
@@ -93,15 +81,14 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     boxShadow: 'none',
   };
 
-  // Track dragging start coordinates
   const handleMouseDown = useCallback((e) => {
     if (!elementRef.current) return;
     
-    // Prevent default browser dragging mechanisms
+
     e.preventDefault();
     isDragging.current = true;
     
-    playTap(); // play synthesizer gesture sound on click
+    playTap(); 
     
     lastMouseX.current = e.clientX;
     lastMouseY.current = e.clientY;
@@ -109,7 +96,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     dragVx.current = 0;
     dragVy.current = 0;
     
-    // Stop residual velocity on grab
+
     vx.current = 0;
     vy.current = 0;
     
@@ -121,11 +108,11 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       const dx = moveEvent.clientX - lastMouseX.current;
       const dy = moveEvent.clientY - lastMouseY.current;
       
-      // Update coordinates immediately
+
       x.current += dx;
       y.current += dy;
       
-      // Calculate drag velocity components
+
       const rawVx = (dx / dt) * 16.67;
       const rawVy = (dy / dt) * 16.67;
       dragVx.current += (rawVx - dragVx.current) * 0.4;
@@ -139,7 +126,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     const onMouseUp = () => {
       isDragging.current = false;
       
-      // Launch card with mouse drag velocity (fling physics)
+
       vx.current = dragVx.current;
       vy.current = dragVy.current;
       
@@ -156,19 +143,19 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     const el = elementRef.current;
     if (!el) return;
     
-    // Start tracking tab focus state for tab pauses
+
     const handleVisibility = () => {
       isTabActive.current = !document.hidden;
     };
     document.addEventListener('visibilitychange', handleVisibility);
     
-    // Register visibility observer for sleep state offscreen
+
     const observer = new IntersectionObserver(([entry]) => {
       isIntersecting.current = entry.isIntersecting;
     }, { threshold: 0.05 });
     observer.observe(el);
     
-    // Cache the absolute document page coordinates and size to avoid layout thrashing
+
     const rectRef = { pageLeft: 0, pageTop: 0, width: 0, height: 0 };
     const measure = () => {
       if (!el) return;
@@ -179,7 +166,6 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       rectRef.height = r.height;
     };
 
-    // Initial measurement
     measure();
 
     const handleResize = () => {
@@ -187,7 +173,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     };
     window.addEventListener('resize', handleResize, { passive: true });
     
-    // Unified requestAnimationFrame loop variables
+
     let animationFrameId;
     let lerpedScroll = window.scrollY;
     let homeX = 0;
@@ -197,14 +183,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     const tick = () => {
       if (!el) return;
       
-      // Sleep state check: pause if browser tab is hidden or element is completely off-screen
+
       if (!isTabActive.current || !isIntersecting.current) {
         animationFrameId = requestAnimationFrame(tick);
         return;
       }
       
-      // Low-frequency periodic re-measurement (once per 60 frames / ~1 second)
-      // serves as a zero-overhead fallback for dynamic DOM/flex layout shifts.
+
       frameCount++;
       if (frameCount % 60 === 0) {
         measure();
@@ -213,15 +198,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       const now = performance.now();
       const time = now * 0.001 + delay;
       
-      // 1. Inertial scroll lerp tracking
+
       lerpedScroll += (window.scrollY - lerpedScroll) * 0.07;
       
-      // Calculate depth parallax Y offset
-      // zFactor controls displacement relative to the scroll vector
-      // 1.3 foreground moves 30% faster, 1.0 midground locks, 0.5 background lags half
+
       const parallaxY = -lerpedScroll * (zFactor - 1.0);
       
-      // Derive viewport-relative bounding box mathematically using cached layout coordinates
+
       const rect = {
         left: rectRef.pageLeft - window.scrollX + x.current,
         top: rectRef.pageTop - window.scrollY + y.current,
@@ -231,9 +214,9 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       rect.right = rect.left + rect.width;
       rect.bottom = rect.top + rect.height;
       
-      // 2. Physics logic (only when not dragging)
+
       if (!isDragging.current) {
-        // Kinetic mouse repulsion force vector
+
         const mouse = window.quantumMouse;
         const cardCenterX = rect.left + rect.width / 2;
         const cardCenterY = rect.top + rect.height / 2;
@@ -241,11 +224,11 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         const dx = cardCenterX - mouse.x;
         const dy = cardCenterY - mouse.y;
         const dist = Math.hypot(dx, dy);
-        const repelThreshold = 220; // range of interaction
+        const repelThreshold = 220; 
         
         if (dist < repelThreshold && dist > 8) {
           const forceFactor = (1 - dist / repelThreshold) * 1.6;
-          // Project mouse velocity to add kinetic fling pop
+
           const dot = mouse.vx * (dx / dist) + mouse.vy * (dy / dist);
           const pushForce = (forceFactor * 0.95 + Math.max(0, dot) * 0.2) * 1.5;
           
@@ -253,9 +236,9 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
           vy.current += (dy / dist) * pushForce;
         }
         
-        // Spring attraction vector back to home coordinates (0, 0 offset)
+
         const stiffness = 0.0035;
-        const friction = 0.95; // momentum decay coefficient
+        const friction = 0.95; 
         
         const springX = (homeX - x.current) * stiffness;
         const springY = (homeY - y.current) * stiffness;
@@ -269,13 +252,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         x.current += vx.current;
         y.current += vy.current;
         
-        // Update derived rect after physical displacement changes
+
         rect.left = rectRef.pageLeft - window.scrollX + x.current;
         rect.top = rectRef.pageTop - window.scrollY + y.current;
         rect.right = rect.left + rect.width;
         rect.bottom = rect.top + rect.height;
         
-        // 3. Draggable card boundaries soft bouncing physics
+
         const w = window.innerWidth;
         const h = window.innerHeight;
         const bounceDamping = -0.65;
@@ -283,7 +266,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         if (rect.left < 10) {
           vx.current = Math.abs(vx.current) * bounceDamping * -1.0;
           x.current += 10 - rect.left;
-          playHover(); // play subtle contact bounce chime
+          playHover(); 
         } else if (rect.right > w - 10) {
           vx.current = -Math.abs(vx.current) * bounceDamping * 1.0;
           x.current -= rect.right - (w - 10);
@@ -301,18 +284,17 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         }
       }
       
-      // 4. Advanced Quantum Floating Algorithm (multi-layered Sin/Cos waves)
+
       const p = waveParams.current;
       const floatX = Math.sin(time * p.freqX + p.phaseX) * p.ampX + Math.cos(time * p.freqX * 1.8) * (p.ampX * 0.35);
       const floatY = Math.cos(time * p.freqY + p.phaseY) * p.ampY + Math.sin(time * p.freqY * 1.6) * (p.ampY * 0.3);
       const floatAngle = Math.sin(time * p.freqZ + p.phaseZ) * p.ampZ;
       
-      // Sum physical offsets, scroll parallax, and floating wave layers
+
       const finalX = x.current + floatX;
       const finalY = y.current + floatY + parallaxY;
       
-      // 5. Proximity Glow calculation via global registry
-      // Utilize derived viewport coords to prevent layout thrashing
+
       const cardCenterX = rect.left + rect.width / 2;
       const cardCenterY = rect.top + rect.height / 2;
       
@@ -335,20 +317,19 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         const dx = other.x - cardCenterX;
         const dy = other.y - cardCenterY;
         const distance = Math.hypot(dx, dy);
-        const glowThreshold = 260; // range of proximity glow
+        const glowThreshold = 260; 
         if (distance < glowThreshold) {
           proximityGlow += (1 - distance / glowThreshold) * 12;
         }
       });
       
-      // Generate box shadows dynamically
+
       const glowOpacity = Math.min(0.4, 0.05 + proximityGlow * 0.025);
       const dynamicGlow = proximityGlow > 0 
         ? `0 0 ${12 + proximityGlow}px rgba(6, 255, 212, ${glowOpacity})` 
         : '0 8px 32px rgba(0, 0, 0, 0.4)';
         
-      // Write optimized style matrix
-      // Mutate DOM style directly to bypass React render cycle for 60fps performance
+
       if (el) {
         el.style.transform = `translate3d(${finalX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0px) rotateZ(${floatAngle.toFixed(2)}deg) scale3d(${isDragging.current ? 1.05 : 1.0}, ${isDragging.current ? 1.05 : 1.0}, 1.0)`;
         el.style.boxShadow = dynamicGlow;
@@ -367,7 +348,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       window.removeEventListener('resize', handleResize);
       observer.disconnect();
       
-      // Clean registry
+
       window.quantumCards = window.quantumCards.filter(c => c.id !== idRef.current);
     };
   }, [delay, zFactor]);

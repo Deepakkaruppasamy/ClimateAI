@@ -20,7 +20,6 @@ import { playTap, playHover } from '../utils/audio'
 
 const DASHBOARD_VIDEO = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260514_102933_4e8f73b5-775a-4179-b2fb-472f59063dcd.mp4'
 
-// ─── Custom Tooltip ─────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
@@ -37,7 +36,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null
 }
 
-// ─── Weather Icon ───────────────────────────────────────────
 function getWeatherEmoji(code) {
   if (code === 0) return '☀️'
   if ([1, 2].includes(code)) return '⛅'
@@ -49,7 +47,6 @@ function getWeatherEmoji(code) {
   return '🌤️'
 }
 
-// ─── Metric Card ────────────────────────────────────────────
 function MetricCard({ icon: Icon, label, value, unit, sub, color, accentClass, trend }) {
   return (
     <motion.div
@@ -82,7 +79,6 @@ function MetricCard({ icon: Icon, label, value, unit, sub, color, accentClass, t
   )
 }
 
-// ─── AQI Bar ────────────────────────────────────────────────
 function AQIBar({ value, max = 500 }) {
   const pct = (value / max) * 100
   const color = value < 50 ? '#06ffd4' : value < 100 ? '#ffcc00' : value < 150 ? '#ff8800' : '#ff4444'
@@ -111,7 +107,6 @@ function AQIBar({ value, max = 500 }) {
   )
 }
 
-// ─── Forecast Day ───────────────────────────────────────────
 function ForecastDay({ date, code, maxTemp, minTemp, precip, index }) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const d = new Date(date)
@@ -136,7 +131,6 @@ function ForecastDay({ date, code, maxTemp, minTemp, precip, index }) {
   )
 }
 
-// ─── AI Recommendations ─────────────────────────────────────
 function AIRecommendations({ weather }) {
   const getRecommendations = () => {
     if (!weather) return []
@@ -178,26 +172,23 @@ function AIRecommendations({ weather }) {
   )
 }
 
-// ─── Main Dashboard ──────────────────────────────────────────────
 export default function Dashboard() {
   const { weather, forecast, aqi, loading, location, fetchWeather } = useWeather()
   const { iotSimulationData } = useSocket()
   
-  // Dashboard Sub-navigation tabs: metrics overview vs. interactive neural vortex simulator
-  const [activeTab, setActiveTab] = useState('metrics') // 'metrics' | 'vortex'
+
+  const [activeTab, setActiveTab] = useState('metrics') 
   const [showShareCard, setShowShareCard] = useState(false)
 
-  // Neural Vortex Simulator controls state variables
-  const [vortexEnergy, setVortexEnergy] = useState(65) // range 10-120
-  const [vortexRadius, setVortexRadius] = useState(220) // range 60-400
-  const [vortexFuel, setVortexFuel] = useState(1.1) // range 0.5-3.0 (RCP temperature multiplier)
+  const [vortexEnergy, setVortexEnergy] = useState(65) 
+  const [vortexRadius, setVortexRadius] = useState(220) 
+  const [vortexFuel, setVortexFuel] = useState(1.1) 
 
   const canvasRef = useRef(null)
   const isDragging = useRef(false)
   const vortexCoord = useRef({ x: 0, y: 0 })
   const synthRef = useRef({ audioCtx: null, osc: null, filter: null, gain: null })
 
-  // Initialize Web Audio Synth for interactive storm draft wind hums
   const startSynth = () => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext
@@ -209,7 +200,7 @@ export default function Dashboard() {
       const gain = ctx.createGain()
       
       osc.type = 'sawtooth'
-      osc.frequency.setValueAtTime(60, ctx.currentTime) // low sub-bass baseline
+      osc.frequency.setValueAtTime(60, ctx.currentTime) 
       
       filter.type = 'bandpass'
       filter.Q.setValueAtTime(7, ctx.currentTime)
@@ -239,23 +230,21 @@ export default function Dashboard() {
     synthRef.current = { audioCtx: null, osc: null, filter: null, gain: null }
   }
 
-  // Update dynamic frequency filter & volume bounds based on interactive controls
   const updateSynthParams = (energy, fuel) => {
     const s = synthRef.current
     if (!s.audioCtx) return
     try {
       const now = s.audioCtx.currentTime
-      // Frequency sweep coordinates with energy setting
+
       const sweep = 180 + energy * 4.2 + Math.sin(performance.now() * 0.006) * 15
       s.filter.frequency.setTargetAtTime(sweep, now, 0.12)
       
-      // Volume ramps comfortably inline with storm velocity energy
+
       const volume = Math.min(0.09, 0.003 + (energy / 120) * 0.065)
       s.gain.gain.setTargetAtTime(volume, now, 0.18)
     } catch (e) {}
   }
 
-  // Atmospheric Radar Fluid particles simulation loop
   useEffect(() => {
     if (activeTab !== 'vortex') {
       stopSynth()
@@ -270,13 +259,12 @@ export default function Dashboard() {
     const resize = () => {
       canvas.width = canvas.getBoundingClientRect().width
       canvas.height = canvas.getBoundingClientRect().height
-      // Center default vortex coordinates initially
+
       vortexCoord.current = { x: canvas.width / 2, y: canvas.height / 2 }
     }
     resize()
     window.addEventListener('resize', resize)
 
-    // Particle vector instances
     const particles = []
     for (let i = 0; i < 550; i++) {
       const angle = Math.random() * Math.PI * 2
@@ -294,11 +282,9 @@ export default function Dashboard() {
     const loop = () => {
       if (!ctx || !canvas) return
 
-      // Dynamic custom tailing fade creates beautiful neon trailing sweeps
       ctx.fillStyle = 'rgba(2, 4, 9, 0.12)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Draw radar scope concentric compass grids
       const cx = canvas.width / 2
       const cy = canvas.height / 2
       const maxScope = Math.min(canvas.width, canvas.height) * 0.45
@@ -311,7 +297,6 @@ export default function Dashboard() {
         ctx.stroke()
       }
 
-      // Draw sweeping HUD crosshair lines
       ctx.beginPath()
       ctx.moveTo(cx - maxScope, cy)
       ctx.lineTo(cx + maxScope, cy)
@@ -319,13 +304,11 @@ export default function Dashboard() {
       ctx.lineTo(cx, cy + maxScope)
       ctx.stroke()
 
-      // Calculate particle trajectories circling the active vortex center
       const targetV = vortexCoord.current
       const energy = vortexEnergy
       const radius = vortexRadius
       const fuel = vortexFuel
 
-      // Adjust wind synthesizers params dynamically in loop
       updateSynthParams(energy, fuel)
 
       particles.forEach(p => {
@@ -333,32 +316,30 @@ export default function Dashboard() {
         const dy = targetV.y - p.y
         const dist = Math.hypot(dx, dy)
 
-        // Orbital circular velocities
         const swirlStr = Math.max(0.05, (1 - dist / radius) * (energy * 0.05))
         const orbitalAngle = Math.atan2(dy, dx) + Math.PI / 2 + 0.015
 
         if (dist < radius) {
-          // Circular orbital sweep
+
           p.x += Math.cos(orbitalAngle) * swirlStr * p.speedFactor
           p.y += Math.sin(orbitalAngle) * swirlStr * p.speedFactor
           
-          // Gentle pull to storm eye center
+
           p.x += (dx / dist) * (swirlStr * 0.18)
           p.y += (dy / dist) * (swirlStr * 0.18)
         } else {
-          // Drifts casually outside reach
+
           p.x += Math.sin(performance.now() * 0.001 + p.angleOffset) * 0.4
           p.y += Math.cos(performance.now() * 0.001 + p.angleOffset) * 0.4
         }
 
-        // Particle colors shift dynamically depending on RCP temperature multiplier
-        let fill = 'rgba(0, 212, 255, 0.75)' // neon cyan (temperate/cool)
+        let fill = 'rgba(0, 212, 255, 0.75)' 
         if (fuel > 2.0) {
-          fill = `rgba(255, 0, 144, ${0.45 + Math.random() * 0.4})` // critical hot neon pink
+          fill = `rgba(255, 0, 144, ${0.45 + Math.random() * 0.4})` 
         } else if (fuel > 1.3) {
-          fill = 'rgba(124, 58, 237, 0.8)' // moderate violet
+          fill = 'rgba(124, 58, 237, 0.8)' 
         } else if (fuel < 0.7) {
-          fill = 'rgba(6, 255, 212, 0.8)' // arctic cyan-green
+          fill = 'rgba(6, 255, 212, 0.8)' 
         }
 
         ctx.fillStyle = fill
@@ -366,7 +347,6 @@ export default function Dashboard() {
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
         ctx.fill()
 
-        // Teleport back out to outer scope if sucked inside the storm eye
         if (dist < 10) {
           const spawnAngle = Math.random() * Math.PI * 2
           const spawnDist = radius * 0.6 + Math.random() * (radius * 0.4)
@@ -375,7 +355,6 @@ export default function Dashboard() {
         }
       })
 
-      // Draw neon core indicator glow on the vortex eye itself
       ctx.fillStyle = fuel > 2.0 
         ? 'rgba(255, 0, 144, 0.18)' 
         : fuel > 1.3 
@@ -401,7 +380,6 @@ export default function Dashboard() {
     }
   }, [activeTab, vortexEnergy, vortexRadius, vortexFuel])
 
-  // Canvas Mouse down dragging coordinates check
   const handleCanvasMouseDown = (e) => {
     isDragging.current = true
     const rect = canvasRef.current.getBoundingClientRect()
@@ -419,20 +397,18 @@ export default function Dashboard() {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     }
-    if (Math.random() > 0.85) playHover() // soft ticks while dragging storm vortex
+    if (Math.random() > 0.85) playHover() 
   }
 
   const handleCanvasMouseUp = () => {
     isDragging.current = false
   }
 
-  // IoT overrides applied if admin is simulating
   const uvDisplay = iotSimulationData ? iotSimulationData.uv : (weather?.uvIndex ?? '--')
   const uvRisk = uvDisplay >= 11 ? 'Extreme' : uvDisplay >= 8 ? 'Very High' : uvDisplay >= 6 ? 'High' : uvDisplay >= 3 ? 'Moderate' : 'Low'
   const soilDisplay = iotSimulationData?.soil || 'normal'
   const sensorFault = iotSimulationData?.fault || false
 
-  // Generate hourly temp data for chart
   const hourlyData = Array.from({ length: 24 }, (_, i) => ({
     time: `${i}:00`,
     temp: (weather?.temp || 22) + Math.sin((i / 24) * Math.PI * 2) * 5 + (Math.random() - 0.5) * 2,
@@ -465,7 +441,6 @@ export default function Dashboard() {
       exit={{ opacity: 0 }}
       className="min-h-screen pt-20 pb-12 relative"
     >
-      {/* Cinematic video background — subtle dark overlay */}
       <VideoBackground
         src={DASHBOARD_VIDEO}
         overlay="dark"
@@ -476,7 +451,6 @@ export default function Dashboard() {
       <WeatherParticles />
       <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[3]" />
 
-      {/* Sensor fault glitch overlay */}
       {sensorFault && (
         <div className="fixed inset-0 z-[50] pointer-events-none">
           <div className="absolute inset-0 border-2 border-red-500/50 animate-pulse" />
@@ -486,7 +460,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* IoT Simulation banner */}
       {iotSimulationData && (
         <div className="fixed bottom-6 right-6 z-[50] glass border border-neon-pink/30 px-4 py-2 rounded-xl text-xs font-mono text-neon-pink">
           🎛️ ADMIN SIMULATION ACTIVE · UV:{iotSimulationData.uv} · SOIL:{iotSimulationData.soil.toUpperCase()} · {sensorFault ? 'FAULT' : 'OK'}
@@ -495,7 +468,6 @@ export default function Dashboard() {
 
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-[10]">
         
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -531,12 +503,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Share Weather Card Modal */}
         <AnimatePresence>
           {showShareCard && <ShareWeatherCard onClose={() => setShowShareCard(false)} />}
         </AnimatePresence>
 
-        {/* Current Weather Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -572,7 +542,6 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* HUD Sub-Navigation Tab selector to select visual modes */}
         <div className="flex gap-2.5 mb-6 border-b border-white/5 pb-4">
           <button
             onClick={() => { playTap(); setActiveTab('metrics') }}
@@ -599,14 +568,12 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* ──────── TAB 1: METRICS OVERVIEW (Original Charts & Statistics) ──────── */}
         {activeTab === 'metrics' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-6"
           >
-            {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard icon={Thermometer} label="Temperature" value={weather?.temp ?? '--'} unit="°C"
                 sub={`Max ${forecast[0]?.maxTemp ?? '--'}° / Min ${forecast[0]?.minTemp ?? '--'}°`}
@@ -621,9 +588,7 @@ export default function Dashboard() {
                 color={uvDisplay >= 6 ? '#ff4444' : '#ffcc00'} accentClass="stat-accent-pink" />
             </div>
 
-            {/* Charts Row */}
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* Temperature Chart */}
               <div className="lg:col-span-2 glass rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="heading-section text-lg text-white">24-Hour Temperature</h3>
@@ -647,7 +612,6 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Wind & Humidity */}
               <div className="glass rounded-2xl p-6">
                 <h3 className="heading-section text-lg text-white mb-6">Wind & Humidity</h3>
                 <ResponsiveContainer width="100%" height={200}>
@@ -663,9 +627,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Weekly Forecast + AQI + AI Recs */}
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* Forecast */}
               <div className="lg:col-span-2 glass rounded-2xl p-6">
                 <h3 className="heading-section text-lg text-white mb-4">7-Day Forecast</h3>
                 <div className="flex gap-3 overflow-x-auto pb-2">
@@ -673,7 +635,6 @@ export default function Dashboard() {
                     <ForecastDay key={d.date} {...d} index={i} />
                   ))}
                 </div>
-                {/* Weekly bar chart */}
                 <div className="mt-6">
                   <ResponsiveContainer width="100%" height={120}>
                     <BarChart data={weeklyData}>
@@ -687,7 +648,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* AQI + Recommendations */}
               <div className="space-y-6">
                 <div className="glass rounded-2xl p-6">
                   <h3 className="heading-section text-lg text-white mb-4">Air Quality</h3>
@@ -723,7 +683,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Sunrise/Sunset */}
             {forecast[0] && (
               <div className="glass rounded-2xl p-6">
                 <h3 className="heading-section text-lg text-white mb-4">Sun Schedule</h3>
@@ -764,31 +723,26 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* ──────── TAB 2: NEURAL VORTEX RADAR (Interactive Canvas Simulator) ──────── */}
         {activeTab === 'vortex' && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="grid lg:grid-cols-12 gap-6 items-start"
           >
-            {/* Holographic Radar Canvas Screen */}
             <div className="lg:col-span-8 glass-strong rounded-3xl overflow-hidden border border-white/10 relative shadow-2xl">
               
-              {/* Radar Decals */}
               <div className="absolute top-4 left-4 text-[9px] font-mono text-neon-purple tracking-widest pointer-events-none z-20 select-none">
-                HOLOGRAM_SIMULATION // RADAR_SCOPE
+                HOLOGRAM_SIMULATION 
               </div>
               <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t border-l border-white/20 pointer-events-none z-20" />
               <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t border-r border-white/20 pointer-events-none z-20" />
               <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b border-l border-white/20 pointer-events-none z-20" />
               <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b border-r border-white/20 pointer-events-none z-20" />
 
-              {/* Real-time radar rotating scanner vector line overlay */}
               <div className="absolute inset-0 pointer-events-none opacity-20 z-10">
                 <div className="absolute inset-0 border-r border-neon-purple animate-spin" style={{ animationDuration: '6s' }} />
               </div>
 
-              {/* Dynamic canvas element */}
               <canvas
                 ref={canvasRef}
                 onMouseDown={handleCanvasMouseDown}
@@ -804,16 +758,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Radar controls and Diagnostic readings */}
             <div className="lg:col-span-4 space-y-6">
               
-              {/* Sliders Tuning */}
               <div className="glass rounded-3xl p-6 border border-white/10 shadow-xl space-y-5">
                 <h3 className="text-xs font-mono text-neon-purple uppercase tracking-widest select-none flex items-center gap-1.5">
                   <Compass size={14} className="text-neon-purple" /> STORM_PARAMETER_TUNER
                 </h3>
 
-                {/* Energy slider */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-[10px] font-mono text-gray-400 select-none">
                     <span>CONVECTIVE ENERGY (VELOCITY)</span>
@@ -830,7 +781,6 @@ export default function Dashboard() {
                   />
                 </div>
 
-                {/* Radius Slider */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-[10px] font-mono text-gray-400 select-none">
                     <span>VORTEX INFLUENCE RADIUS</span>
@@ -847,7 +797,6 @@ export default function Dashboard() {
                   />
                 </div>
 
-                {/* Temp Multiplier */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-[10px] font-mono text-gray-400 select-none">
                     <span>THERMAL FUEL (RCP MULTIPLIER)</span>
@@ -865,14 +814,12 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Diagnostics console readout */}
               <div className="glass rounded-3xl p-6 border border-white/10 shadow-xl space-y-4">
                 <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest select-none flex items-center gap-1.5">
                   <Cpu size={14} className="text-gray-400" /> SIMULATOR_DIAGNOSTICS
                 </h3>
 
                 <div className="space-y-2 font-mono">
-                  {/* Vortex diagnostics */}
                   {[
                     { label: 'SIMULATION HORIZON', val: vortexFuel > 2.0 ? 'RCP 8.5 (HIGH_ANOMALY)' : vortexFuel > 1.3 ? 'RCP 4.5 (MODERATE)' : 'RCP 2.6 (STABLE)', color: vortexFuel > 2.0 ? '#ff0090' : vortexFuel > 1.3 ? '#7c3aed' : '#06ffd4' },
                     { label: 'BAROMETRIC DEPRESSION', val: `${Math.round(1013 - (vortexEnergy * 0.7))} hPa`, color: '#ffffff' },
@@ -888,7 +835,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Dynamic threat alert status overlay card */}
               <AnimatePresence>
                 {vortexEnergy > 85 && (
                   <motion.div

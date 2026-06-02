@@ -14,23 +14,20 @@ export default function MapPage() {
   const [MapComponent, setMapComponent] = useState(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   
-  // Interactive navigation states
+
   const [mapCenter, setMapCenter] = useState([location.lat, location.lon])
   const [mapZoom, setMapZoom] = useState(4)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchNotice, setSearchNotice] = useState('')
 
-  // Real data layers
   const [wildfirePoints, setWildfirePoints] = useState([])
   const [aqiPoints, setAqiPoints] = useState([])
   const [layerLoading, setLayerLoading] = useState(false)
 
-  // Cyclone Threat Radar states
   const [cyclones, setCyclones] = useState([])
   const [loadingCyclones, setLoadingCyclones] = useState(false)
 
-  // Terminal telemetry cycle state
   const [telemetryIndex, setTelemetryIndex] = useState(0)
   const telemetryLogs = [
     `SYS_SCAN: CALIBRATING SATELLITE RADAR ARRAYS... STABLE LOCK OVER TROPICS.`,
@@ -40,7 +37,6 @@ export default function MapPage() {
     `COSMOS: CALIBRATING ALBEDO REFLECTION FACTOR. ATMOSPHERIC CO2 AT 424 PPM.`
   ]
 
-  // Dynamic import Leaflet on component mount to prevent SSR conflicts
   useEffect(() => {
     import('leaflet').then(L => {
       import('react-leaflet').then(({ MapContainer, TileLayer, CircleMarker, Popup, useMap, Polyline, Circle }) => {
@@ -50,7 +46,6 @@ export default function MapPage() {
     }).catch(() => setMapLoaded(false))
   }, [])
 
-  // Rotate telemetry text logs
   useEffect(() => {
     const timer = setInterval(() => {
       setTelemetryIndex(prev => (prev + 1) % telemetryLogs.length)
@@ -58,12 +53,11 @@ export default function MapPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Fetch NASA FIRMS wildfire hotspots (free, no key)
   const fetchWildfires = async () => {
-    if (wildfirePoints.length > 0) return // Already loaded
+    if (wildfirePoints.length > 0) return 
     setLayerLoading(true)
     try {
-      // NASA FIRMS VIIRS active fire data — past 1 day, global, CSV format
+
       const res = await fetch('https://firms.modaps.eosdis.nasa.gov/api/area/csv/VIIRS_NOAA20_NRT/-180,-90,180,90/1')
       const text = await res.text()
       const lines = text.split('\n').slice(1).filter(Boolean)
@@ -77,7 +71,7 @@ export default function MapPage() {
       }).filter(Boolean)
       setWildfirePoints(points)
     } catch (e) {
-      // Use sample wildfire points as fallback
+
       setWildfirePoints([
         { lat: 37.5, lon: -120.0, brightness: 350 }, { lat: 38.2, lon: -121.5, brightness: 340 },
         { lat: -33.5, lon: 150.2, brightness: 345 }, { lat: 39.5, lon: 25.3, brightness: 332 },
@@ -90,9 +84,8 @@ export default function MapPage() {
     }
   }
 
-  // Fetch OpenAQ real sensor locations (free, no key)
   const fetchAQI = async () => {
-    if (aqiPoints.length > 0) return // Already loaded
+    if (aqiPoints.length > 0) return 
     setLayerLoading(true)
     try {
       const res = await fetch(`https://api.openaq.org/v3/locations?limit=50&coordinates=${location.lat},${location.lon}&radius=2000000&order_by=lastUpdated&sort=desc`)
@@ -109,7 +102,7 @@ export default function MapPage() {
         setAqiPoints(points)
       }
     } catch (e) {
-      // Sample AQI points
+
       setAqiPoints([
         { lat: 28.6, lon: 77.2, name: 'Delhi Monitor', city: 'Delhi', pm25: 145 },
         { lat: 39.9, lon: 116.4, name: 'Beijing Station', city: 'Beijing', pm25: 89 },
@@ -136,17 +129,17 @@ export default function MapPage() {
           id: 'cyc_mawar',
           name: 'Typhoon Mawar',
           category: 'Category 4 Super Typhoon',
-          center: [14.2, 136.5], // Philippine Sea
+          center: [14.2, 136.5], 
           pressure: '935 hPa',
           windSpeed: '220 km/h',
           status: 'Active / Warning Issued',
           path: [
-            [11.5, 142.1], // Genesis
+            [11.5, 142.1], 
             [12.8, 139.5],
-            [14.2, 136.5], // Active center
-            [15.8, 132.2], // 12h projection
-            [18.1, 127.4], // 24h projection
-            [21.5, 123.8], // 48h projection
+            [14.2, 136.5], 
+            [15.8, 132.2], 
+            [18.1, 127.4], 
+            [21.5, 123.8], 
           ],
           coneRadius: 180000,
         },
@@ -154,16 +147,16 @@ export default function MapPage() {
           id: 'cyc_biparjoy',
           name: 'Cyclone Biparjoy',
           category: 'Category 3 Severe Storm',
-          center: [16.5, 68.2], // Arabian Sea
+          center: [16.5, 68.2], 
           pressure: '960 hPa',
           windSpeed: '160 km/h',
           status: 'Active / Coastal Alert',
           path: [
             [12.1, 66.5],
             [14.3, 67.2],
-            [16.5, 68.2], // Active center
-            [19.2, 69.1], // 12h projection
-            [21.8, 69.8], // 24h projection
+            [16.5, 68.2], 
+            [19.2, 69.1], 
+            [21.8, 69.8], 
           ],
           coneRadius: 120000,
         },
@@ -171,16 +164,16 @@ export default function MapPage() {
           id: 'cyc_arthur',
           name: 'Hurricane Arthur',
           category: 'Category 2 Hurricane',
-          center: [26.4, -72.8], // Atlantic Ocean
+          center: [26.4, -72.8], 
           pressure: '972 hPa',
           windSpeed: '175 km/h',
           status: 'Active / Precautionary Alert',
           path: [
             [20.5, -68.4],
             [23.2, -70.9],
-            [26.4, -72.8], // Active center
-            [29.5, -74.5], // 12h projection
-            [32.8, -75.2], // 24h projection
+            [26.4, -72.8], 
+            [29.5, -74.5], 
+            [32.8, -75.2], 
           ],
           coneRadius: 90000,
         }
@@ -192,14 +185,12 @@ export default function MapPage() {
     }
   }
 
-  // Trigger data fetch when layer changes
   useEffect(() => {
     if (activeLayer === 'wildfire') fetchWildfires()
     if (activeLayer === 'airquality') fetchAQI()
     if (activeLayer === 'cyclone') fetchCyclones()
   }, [activeLayer])
 
-  // Fly/pan Leaflet map view component
   function ChangeMapView({ center, zoom }) {
     if (!MapComponent) return null
     try {
@@ -213,7 +204,6 @@ export default function MapPage() {
     return null
   }
 
-  // Address search query logic via OSM Nominatim API
   const handleSearch = async (e) => {
     e.preventDefault()
     if (!searchQuery.trim()) return
@@ -280,7 +270,7 @@ export default function MapPage() {
         text: `Wind Speed: ${wind} km/h`,
         value: `${wind} km/h`
       }
-    } else { // precipitation
+    } else { 
       const rain = p.rain || 0
       const color = rain > 5 ? '#7c3aed' : rain > 1 ? '#0055ff' : rain > 0 ? '#06ffd4' : 'rgba(255,255,255,0.4)'
       return {
@@ -322,7 +312,6 @@ export default function MapPage() {
         grain={true}
       />
       
-      {/* Sci-Fi Global styled overrides for Leaflet Popups to render glassmorphism */}
       <style>{`
         .leaflet-popup-content-wrapper {
           background: rgba(4, 13, 26, 0.92) !important;
@@ -343,12 +332,10 @@ export default function MapPage() {
         }
       `}</style>
 
-      {/* Retro HUD grid overlay */}
       <div className="absolute inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
 
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-10 space-y-6">
         
-        {/* Header telemetry and Search portal */}
         <div className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
           <div>
             <span className="label-overline mb-1.5 inline-block text-neon-blue">[ SATELLITE_LOCK: ACTIVE ]</span>
@@ -359,7 +346,6 @@ export default function MapPage() {
           </div>
 
           <div className="flex flex-wrap gap-3 items-center w-full xl:w-auto">
-            {/* Nominatim Search panel */}
             <form onSubmit={handleSearch} className="flex gap-2 flex-1 sm:flex-initial">
               <div className="relative flex-1 sm:w-80">
                 <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -380,7 +366,6 @@ export default function MapPage() {
               </button>
             </form>
 
-            {/* Layer toggles */}
             <div className="flex gap-1.5 bg-black/40 p-1.5 rounded-2xl border border-white/5 backdrop-blur-lg">
               {layers.map(l => (
                 <button
@@ -407,13 +392,10 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Tactical Screen Grid */}
         <div className="grid lg:grid-cols-12 gap-6 items-start">
           
-          {/* Map Viewer Console */}
           <div className="lg:col-span-9 glass-strong rounded-3xl overflow-hidden border border-white/10 relative shadow-2xl">
             
-            {/* Holographic HUD Corners decal */}
             <div className="absolute top-4 left-4 text-[9px] font-mono text-neon-blue tracking-widest pointer-events-none z-[1000] select-none">
               RADAR_FEED // STABLE_LOCK_SAT
             </div>
@@ -422,7 +404,6 @@ export default function MapPage() {
             <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b border-l border-white/20 pointer-events-none z-[1000]" />
             <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b border-r border-white/25 pointer-events-none z-[1000]" />
 
-            {/* Radar scanner sweep overlay line */}
             <div className="absolute inset-0 pointer-events-none opacity-20 z-[999]">
               <div className="absolute left-0 right-0 h-[2px] bg-neon-cyan laser-sweep" />
             </div>
@@ -441,7 +422,6 @@ export default function MapPage() {
                   />
                   <ChangeMapView center={mapCenter} zoom={mapZoom} />
 
-                  {/* 1. Dynamic styled User Marker */}
                   <MapComponent.CircleMarker
                     key={`user-${activeLayer}`}
                     center={[userPoint.lat, userPoint.lon]}
@@ -476,7 +456,6 @@ export default function MapPage() {
                     </MapComponent.Popup>
                   </MapComponent.CircleMarker>
 
-                  {/* Wildfire hotspot markers */}
                   {activeLayer === 'wildfire' && wildfirePoints.map((p, i) => (
                     <MapComponent.CircleMarker
                       key={`fire-${i}`}
@@ -503,7 +482,6 @@ export default function MapPage() {
                     </MapComponent.CircleMarker>
                   ))}
 
-                  {/* AQI sensor markers */}
                   {activeLayer === 'airquality' && aqiPoints.map((p, i) => {
                     const pm25 = p.pm25 || 0
                     const aqiColor = pm25 > 150 ? '#ff0044' : pm25 > 100 ? '#ff4400' : pm25 > 55 ? '#ff8800' : pm25 > 25 ? '#ffcc00' : '#06ffd4'
@@ -534,10 +512,8 @@ export default function MapPage() {
                     )
                   })}
 
-                  {/* Cyclone Threat Radar Overlays */}
                   {activeLayer === 'cyclone' && cyclones.map((c) => (
                     <Fragment key={c.id}>
-                      {/* 1. Track Path Line */}
                       <MapComponent.Polyline
                         positions={c.path}
                         color="#ff0055"
@@ -546,7 +522,6 @@ export default function MapPage() {
                         opacity={0.7}
                       />
 
-                      {/* 2. Projected Track Points (Small dots along path) */}
                       {c.path.map((pos, idx) => (
                         <MapComponent.CircleMarker
                           key={`${c.id}-path-${idx}`}
@@ -559,7 +534,6 @@ export default function MapPage() {
                         />
                       ))}
 
-                      {/* 3. Hazard Cone/Radius */}
                       <MapComponent.Circle
                         center={c.center}
                         radius={c.coneRadius}
@@ -570,7 +544,6 @@ export default function MapPage() {
                         dashArray="4 4"
                       />
 
-                      {/* 4. Secondary Concentric Pulsing Ring */}
                       <MapComponent.CircleMarker
                         center={c.center}
                         radius={22}
@@ -581,7 +554,6 @@ export default function MapPage() {
                         opacity={0.6}
                       />
 
-                      {/* 5. Storm Core Marker */}
                       <MapComponent.CircleMarker
                         center={c.center}
                         radius={11}
@@ -622,7 +594,6 @@ export default function MapPage() {
                     </Fragment>
                   ))}
 
-                  {/* Standard weather markers (only for temp/wind/precip) */}
                   {['temperature', 'precipitation', 'wind'].includes(activeLayer) && weatherPoints.map((p, i) => {
                     const settings = getMarkerSettings(p, activeLayer)
                     const isEmergencyTarget = activeGlobalAlert?.targetCity && 
@@ -630,7 +601,6 @@ export default function MapPage() {
                     
                     return (
                       <Fragment key={`${i}-${activeLayer}-wrapper`}>
-                        {/* Target Reticle concentric spinning circle if emergency active */}
                         {isEmergencyTarget && (
                           <>
                             <MapComponent.CircleMarker
@@ -655,7 +625,6 @@ export default function MapPage() {
                           </>
                         )}
                         
-                        {/* Normal styled marker with neon pulses */}
                         <MapComponent.CircleMarker
                           key={`${i}-${activeLayer}`}
                           center={[p.lat, p.lon]}
@@ -697,7 +666,7 @@ export default function MapPage() {
                   })}
                 </MapComponent.MapContainer>
               ) : (
-                /* Fallback loading display */
+
                 <div className="w-full h-full relative flex items-center justify-center bg-[#010408]">
                   <div className="absolute inset-0 bg-animated-grid opacity-20" />
                   <div className="text-center relative z-10 space-y-4">
@@ -714,10 +683,8 @@ export default function MapPage() {
             </div>
           </div>
 
-          {/* HUD Sidebar and Diagnostics Console */}
           <div className="lg:col-span-3 space-y-4">
             
-            {/* World Stations list / Cyclone Doppler / Wildfire Hotspots */}
             <div className="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-4">
               <h3 className="text-xs font-mono text-neon-blue uppercase tracking-widest flex items-center gap-2 select-none">
                 <Compass size={14} className="animate-spin" style={{ animationDuration: '10s' }} />{' '}
@@ -780,7 +747,6 @@ export default function MapPage() {
                   </>
                 ) : (
                   <>
-                    {/* Active user position shortcut */}
                     <motion.div
                       whileHover={{ scale: 1.01, x: 2 }}
                       onClick={() => triggerFly(userPoint.lat, userPoint.lon)}
@@ -796,7 +762,6 @@ export default function MapPage() {
                       </span>
                     </motion.div>
 
-                    {/* City list loops */}
                     {weatherPoints.map((p, i) => {
                       const settings = getMarkerSettings(p, activeLayer)
                       return (
@@ -825,9 +790,7 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Diagnostics logger */}
             <div className="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-3 relative overflow-hidden bg-black/40 min-h-[120px]">
-              {/* Corner tech overlays */}
               <div className="absolute top-2.5 right-3 text-[7px] font-mono text-gray-600 tracking-widest select-none">LOGGER // CORE_STREAM</div>
               
               <h3 className="text-xs font-mono text-neon-purple uppercase tracking-widest select-none flex items-center gap-1.5">
@@ -848,7 +811,6 @@ export default function MapPage() {
               </AnimatePresence>
             </div>
 
-            {/* Tactical dynamic Legend */}
             <div className="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-4">
               <h3 className="text-xs font-mono text-gray-400 uppercase tracking-widest select-none">
                 {activeLayer === 'temperature' 

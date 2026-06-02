@@ -54,7 +54,6 @@ export default function NewsModeration({ socket }) {
   const [errors, setErrors] = useState({})
   const [refreshing, setRefreshing] = useState(false)
 
-  // New article form
   const [showForm, setShowForm] = useState(false)
   const [formTitle, setFormTitle] = useState('')
   const [formSummary, setFormSummary] = useState('')
@@ -70,7 +69,6 @@ export default function NewsModeration({ socket }) {
     'General': '#aaaaaa',
   }
 
-  // Fetch articles dynamically
   const fetchArticles = async (silent = false) => {
     if (!silent) setLoadingArticles(true)
     try {
@@ -86,7 +84,6 @@ export default function NewsModeration({ socket }) {
 
   useEffect(() => { fetchArticles() }, [])
 
-  // Socket listeners for real-time article updates
   useEffect(() => {
     if (!socket) return
     const onAdded = (article) => setArticles(prev => [article, ...prev])
@@ -208,7 +205,6 @@ export default function NewsModeration({ socket }) {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Newspaper size={16} className="text-neon-cyan" />
@@ -235,7 +231,6 @@ export default function NewsModeration({ socket }) {
         </div>
       </div>
 
-      {/* New Article Form */}
       <AnimatePresence>
         {showForm && (
           <motion.form
@@ -295,7 +290,6 @@ export default function NewsModeration({ socket }) {
         )}
       </AnimatePresence>
 
-      {/* Loading */}
       {loadingArticles ? (
         <div className="flex items-center justify-center gap-2 py-10 text-xs text-gray-500 font-mono">
           <Loader2 size={14} className="animate-spin text-neon-cyan" />
@@ -318,7 +312,6 @@ export default function NewsModeration({ socket }) {
 
             return (
               <motion.div key={artId} layout className="glass rounded-2xl overflow-hidden border border-white/5">
-                {/* Article Header */}
                 <div
                   className="w-full flex items-center justify-between p-4 text-left group hover:bg-white/5 transition-colors cursor-pointer"
                   onClick={() => handleExpand(artId)}
@@ -353,7 +346,6 @@ export default function NewsModeration({ socket }) {
                   </div>
                 </div>
 
-                {/* Comments Panel */}
                 <AnimatePresence>
                   {isExpanded && (
                     <motion.div

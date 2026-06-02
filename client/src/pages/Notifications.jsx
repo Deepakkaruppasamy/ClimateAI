@@ -38,7 +38,6 @@ function NotifCard({ notif, onDismiss }) {
       className="flex items-start gap-4 p-4 rounded-2xl border group relative overflow-hidden"
       style={{ background: cfg.bg, borderColor: cfg.border }}
     >
-      {/* Left icon */}
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
         style={{ background: `${cfg.color}18`, border: `1px solid ${cfg.color}30` }}
@@ -46,7 +45,6 @@ function NotifCard({ notif, onDismiss }) {
         <Icon size={16} style={{ color: cfg.color }} />
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded"
@@ -58,7 +56,6 @@ function NotifCard({ notif, onDismiss }) {
         <p className="text-sm text-gray-300 leading-snug">{notif.event}</p>
       </div>
 
-      {/* Dismiss */}
       {onDismiss && (
         <button
           onClick={() => onDismiss(notif.id)}
@@ -90,7 +87,6 @@ export default function Notifications() {
 
   const makeId = () => `local-${++idRef.current}`
 
-  // Fetch historical log from server
   const fetchNotifications = async (silent = false) => {
     if (!silent) setLoading(true)
     try {
@@ -114,7 +110,6 @@ export default function Notifications() {
     setNotifications(prev => [notif, ...prev].slice(0, 100))
   }
 
-  // Socket event listeners — build live notification feed
   useEffect(() => {
     if (!socket) return
 
@@ -122,21 +117,20 @@ export default function Notifications() {
     const onConnect = () => setConnected(true)
     const onDisconnect = () => setConnected(false)
 
-    // Admin alert dispatched
     const onBroadcast = (data) => pushNotif('alert', `📢 Admin broadcast: ${data.title || 'Alert'}${data.text ? ' — ' + data.text.slice(0, 80) : ''}`)
-    // News article added
+
     const onArticleAdded = (article) => pushNotif('news', `📰 New article published: "${article.title}"`)
-    // News article deleted
+
     const onArticleDeleted = ({ id }) => pushNotif('news', `🗑️ Article removed from feed (ID: ${id})`)
-    // Quiz question added
+
     const onQuizAdded = (q) => pushNotif('quiz', `❓ New quiz question added: "${q.question?.slice(0, 60)}"`)
-    // Quiz score submitted
+
     const onScore = (score) => pushNotif('score', `🏆 ${score.userName} completed the quiz with ${score.score}% (${score.xpGained} XP)`)
-    // Carbon request created
+
     const onCarbon = (req) => pushNotif('carbon', `🌱 Carbon offset request: ${req.amount} tonnes for ${req.projectId}`)
-    // Carbon status updated
+
     const onCarbonStatus = (req) => pushNotif('carbon', `✅ Carbon request ${req.status}: ${req.projectId} (${req.amount} tonnes)`)
-    // Periodic alert
+
     const onAlertNew = (data) => pushNotif('alert', `⚡ System alert: ${data.type} — ${data.message}`)
 
     socket.on('connect', onConnect)
@@ -192,7 +186,6 @@ export default function Notifications() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
 
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
             <span className="label-overline mb-2 inline-block">Platform Activity</span>
@@ -204,7 +197,6 @@ export default function Notifications() {
             </p>
           </div>
 
-          {/* Connection + Actions */}
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-2 glass px-4 py-2 rounded-xl border ${connected ? 'border-neon-cyan/20' : 'border-red-500/20'}`}>
               {connected
@@ -235,7 +227,6 @@ export default function Notifications() {
           </div>
         </div>
 
-        {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {FILTER_OPTIONS.map(({ key, label }) => {
             const cfg = TYPE_CONFIG[key]
@@ -257,7 +248,6 @@ export default function Notifications() {
           })}
         </div>
 
-        {/* Filter Pill Bar */}
         <div className="glass-strong rounded-2xl p-1.5 mb-6 flex items-center gap-1 overflow-x-auto">
           {FILTER_OPTIONS.map(({ key, label }) => (
             <button
@@ -275,7 +265,6 @@ export default function Notifications() {
           ))}
         </div>
 
-        {/* Notifications Feed */}
         {loading ? (
           <div className="py-24 text-center space-y-3">
             <div className="w-8 h-8 border-2 border-neon-blue border-t-transparent rounded-full animate-spin mx-auto" />

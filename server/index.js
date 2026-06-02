@@ -1,6 +1,5 @@
 require('dotenv').config()
 
-// ── Terminate Ghost Processes occupying the Server Port ────
 if (process.platform === 'win32') {
   try {
     const { execSync } = require('child_process')
@@ -19,7 +18,7 @@ if (process.platform === 'win32') {
       }
     }
   } catch (e) {
-    // findstr returns exit code 1 if no matches are found, which throws. Ignore.
+
   }
 }
 
@@ -35,7 +34,6 @@ const mongoose = require('mongoose')
 const app = express()
 const httpServer = createServer(app)
 
-// ── Socket.IO ─────────────────────────────────────────────
 const io = new Server(httpServer, {
   cors: {
     origin: ['http://localhost:3000', 'http://localhost:5173'],
@@ -43,7 +41,6 @@ const io = new Server(httpServer, {
   }
 })
 
-// ── Middleware ────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }))
 app.use(express.json())
@@ -51,13 +48,11 @@ app.use(express.json())
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 })
 app.use('/api/', limiter)
 
-// ── Expose io + stress test flags + activity log on app.locals ─
 app.locals.io = io
 app.locals.stressTest = { enabled: false, latencyMs: 3000, rateLimitChance: 0.5 }
-// Activity log ring buffer — max 100 entries across the app
+
 app.locals.activityLog = []
 
-// Global Mock Database Fallbacks (for DB offline development)
 const { hashPassword } = require('./utils/authHelper')
 app.locals.mockUsers = [
   {
@@ -139,10 +134,8 @@ app.locals.mockComments = [
   }
 ]
 
-// Stress-test middleware (no-op unless enabled)
 app.use(require('./middleware/stressTest'))
 
-// ── Routes ────────────────────────────────────────────────
 try {
   app.use('/api/weather', require('./routes/weather'))
   app.use('/api/ai', require('./routes/ai'))
@@ -162,11 +155,9 @@ try {
   throw err
 }
 
-// ── Serve Frontend Static Files in Production ─────────────
 const path = require('path')
 app.use(express.static(path.join(__dirname, 'public')))
 
-// Fallback all other non-API GET routes to React's index.html
 app.get('*', (req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     return res.status(404).json({ error: 'API endpoint not found' })
@@ -178,8 +169,6 @@ app.get('*', (req, res) => {
   }
 })
 
-
-// ── Health Check ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'operational',
@@ -195,48 +184,41 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// ── Socket.IO Real-time ───────────────────────────────────
 let connectedClients = 0
 
 io.on('connection', (socket) => {
   connectedClients++
   console.log(`Client connected: ${socket.id} | Total: ${connectedClients}`)
 
-  // Send initial weather update
   socket.emit('weather:update', { message: 'Connected to ClimateAI real-time server', timestamp: Date.now() })
 
-  // Broadcast weather updates every 30s
   const weatherInterval = setInterval(async () => {
     socket.emit('weather:tick', { timestamp: Date.now(), connectedClients })
   }, 30000)
 
-  // Handle location subscription
   socket.on('weather:subscribe', async (data) => {
     console.log('Subscribed to weather:', data)
     socket.join(`weather:${data.lat}:${data.lon}`)
     socket.emit('weather:subscribed', { success: true, location: data })
   })
 
-  // Handle alert subscriptions
   socket.on('alerts:subscribe', (data) => {
     socket.join('alerts')
     socket.emit('alerts:subscribed', { success: true })
   })
 
-  // Handle active user socket registration
   socket.on('user:register', (userData) => {
     socket.userData = userData
     console.log(`👤 Active realtime user registered on socket ${socket.id}: ${userData.email}`)
   })
 
-  // Handle Admin broadcast alert dispatcher
   socket.on('admin:dispatch-alert', async (alertData) => {
     console.log('📢 Admin broadcast dispatched:', alertData)
     io.emit('broadcast:alert', alertData)
     app.locals.activityLog.push({ type: 'alert', event: `Admin broadcast: ${alertData.title || 'Alert'}`, timestamp: Date.now() })
     if (app.locals.activityLog.length > 100) app.locals.activityLog.shift()
     
-    // Automatically email all users when Admin broadcasts!
+
     try {
       const { sendAlertEmailToAllUsers } = require('./utils/emailService')
       await sendAlertEmailToAllUsers(app, {
@@ -248,7 +230,6 @@ io.on('connection', (socket) => {
     }
   })
 
-  // Handle Admin IoT simulation
   socket.on('admin:simulate-iot', (iotData) => {
     console.log('🎛️ Admin IoT simulation dispatched:', iotData)
     io.emit('broadcast:iot', iotData)
@@ -261,7 +242,6 @@ io.on('connection', (socket) => {
   })
 })
 
-// ── Periodic alert simulation ─────────────────────────────
 setInterval(async () => {
   const alerts = [
     { type: 'uv', severity: 'moderate', message: 'UV Index reaching 7+ in metropolitan areas' },
@@ -271,7 +251,6 @@ setInterval(async () => {
   const alert = alerts[Math.floor(Math.random() * alerts.length)]
   io.emit('alert:new', { ...alert, timestamp: Date.now() })
 
-  // Automatically email all users when a periodic warning ticks!
   try {
     const { sendAlertEmailToAllUsers } = require('./utils/emailService')
     await sendAlertEmailToAllUsers(app, {
@@ -283,7 +262,6 @@ setInterval(async () => {
   }
 }, 60000)
 
-// ── MongoDB Connection ────────────────────────────────────
 async function connectDB() {
   if (process.env.MONGODB_URI) {
     try {
@@ -292,7 +270,6 @@ async function connectDB() {
       })
       console.log('✅ MongoDB connected')
 
-      // Drop stale unique index on googleId if it exists to allow multiple null/empty registrations
       try {
         const db = mongoose.connection.db;
         const collections = await db.listCollections({ name: 'users' }).toArray();
@@ -316,7 +293,6 @@ async function connectDB() {
   }
 }
 
-// ── Start Server ──────────────────────────────────────────
 const PORT = process.env.PORT || 5000
 connectDB().then(() => {
   httpServer.listen(PORT, () => {
@@ -334,6 +310,5 @@ connectDB().then(() => {
     console.log(`⚙️  Admin: /api/admin\n`)
   })
 })
-
 
 module.exports = { app, io }

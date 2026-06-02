@@ -8,7 +8,6 @@ import {
 import VideoBackground from '../components/ui/VideoBackground'
 import { playTap, playHover } from '../utils/audio'
 
-// Synthesis for authentic retro sci-fi sirens and telemetry sounds
 const playSirenSound = (type = 'siren') => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -16,13 +15,13 @@ const playSirenSound = (type = 'siren') => {
     const ctx = new AudioContext()
     
     if (type === 'siren') {
-      // Pulsing alert siren
+
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sawtooth'
       osc.frequency.setValueAtTime(440, ctx.currentTime)
       
-      // Siren sweep
+
       osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.4)
       osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.8)
       
@@ -34,7 +33,7 @@ const playSirenSound = (type = 'siren') => {
       osc.start()
       osc.stop(ctx.currentTime + 0.8)
     } else if (type === 'beep') {
-      // Sci-fi high-pitch telemetry beep
+
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
@@ -48,7 +47,7 @@ const playSirenSound = (type = 'siren') => {
       osc.start()
       osc.stop(ctx.currentTime + 0.15)
     } else if (type === 'action') {
-      // Heavy dispatch bass sound
+
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'square'
@@ -111,10 +110,10 @@ const SCENARIOS = [
 ]
 
 export default function EmergencyCommand() {
-  const [gameState, setGameState] = useState('lobby') // 'lobby' | 'active' | 'victory' | 'defeat'
+  const [gameState, setGameState] = useState('lobby') 
   const [selectedScenario, setSelectedScenario] = useState(SCENARIOS[0])
   
-  // Game states
+
   const [livesSaved, setLivesSaved] = useState(0)
   const [infraIntegrity, setInfraIntegrity] = useState(100)
   const [budget, setBudget] = useState(1000000)
@@ -123,10 +122,9 @@ export default function EmergencyCommand() {
   const [logs, setLogs] = useState([])
   const [activeAlarms, setActiveAlarms] = useState([])
   
-  // References
+
   const timerRef = useRef(null)
 
-  // Start emergency simulation
   const handleStartGame = (scenario) => {
     playTap()
     playSirenSound('siren')
@@ -141,12 +139,10 @@ export default function EmergencyCommand() {
     setGameState('active')
   }
 
-  // End game cleanly
   const stopGame = () => {
     if (timerRef.current) clearInterval(timerRef.current)
   }
 
-  // Game ticking hook
   useEffect(() => {
     if (gameState !== 'active') return
     
@@ -154,7 +150,7 @@ export default function EmergencyCommand() {
       setSecondsElapsed(prev => {
         const nextTime = prev + 1
         
-        // Incident matching
+
         const incident = selectedScenario.incidents.find(inc => inc.time === nextTime)
         if (incident) {
           playSirenSound('siren')
@@ -164,15 +160,12 @@ export default function EmergencyCommand() {
           setActiveAlarms(a => [...a, incident])
         }
 
-        // Periodically tick safety down slowly if active alarms remain
         if (nextTime % 4 === 0) {
           setEnvSafety(env => Math.max(10, env - 2))
         }
 
-        // Increment lives saved slowly over time if system is stable
         setLivesSaved(l => l + Math.round(Math.random() * 200 + 100))
 
-        // Time limit victory condition (45 seconds survivability)
         if (nextTime >= 45) {
           stopGame()
           setGameState('victory')
@@ -186,7 +179,6 @@ export default function EmergencyCommand() {
     return () => stopGame()
   }, [gameState, selectedScenario])
 
-  // Monitor loss criteria
   useEffect(() => {
     if (gameState === 'active' && infraIntegrity <= 0) {
       stopGame()
@@ -195,7 +187,6 @@ export default function EmergencyCommand() {
     }
   }, [infraIntegrity, gameState])
 
-  // Responder Actions dispatches
   const dispatchAction = (actionName, cost, effect) => {
     if (budget < cost) {
       playSirenSound('beep')
@@ -210,7 +201,7 @@ export default function EmergencyCommand() {
     if (effect.lives) setLivesSaved(lives => lives + effect.lives)
     if (effect.env) setEnvSafety(env => Math.min(100, env + effect.env))
     
-    // Clear the oldest active alarm when deploying heavy responders
+
     if (effect.resolvesAlarm && activeAlarms.length > 0) {
       setActiveAlarms(alarms => alarms.slice(1))
       setLogs(l => [`[00:${secondsElapsed.toString().padStart(2, '0')}] ✅ RESOLVED: Core structural threat mitigated.`, ...l])
@@ -235,12 +226,10 @@ export default function EmergencyCommand() {
         grain={true}
       />
 
-      {/* Cyber Grid pattern */}
       <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[2]" />
 
       <div className="max-w-[95%] xl:max-w-[85%] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
         
-        {/* Head Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-4">
           <div>
             <span className="label-overline mb-1 inline-block text-red-500 font-bold">[ DISASTER_SIMULATOR: LIVE_OPS ]</span>
@@ -261,7 +250,6 @@ export default function EmergencyCommand() {
           )}
         </div>
 
-        {/* LOBBY / SCENARIO SELECTOR */}
         <AnimatePresence mode="wait">
           {gameState === 'lobby' && (
             <motion.div
@@ -280,7 +268,6 @@ export default function EmergencyCommand() {
                     transition={{ delay: idx * 0.1 }}
                     className="glass-strong rounded-3xl p-6 border border-white/10 flex flex-col justify-between hover:border-red-500/30 transition-all bg-black/40 group relative overflow-hidden"
                   >
-                    {/* Glowing card base decals */}
                     <div className="absolute top-2.5 right-3 text-[8px] font-mono text-gray-600 tracking-wider">CRISIS_NODE // 0{idx + 1}</div>
                     
                     <div className="space-y-4">
@@ -313,7 +300,6 @@ export default function EmergencyCommand() {
             </motion.div>
           )}
 
-          {/* SIMULATOR DASHBOARD (ACTIVE) */}
           {gameState === 'active' && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -322,10 +308,8 @@ export default function EmergencyCommand() {
               className="space-y-6 pt-2"
             >
               
-              {/* Emergency Status Meters */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 
-                {/* Lives Saved Meter */}
                 <div className="glass rounded-3xl p-5 border border-white/10 bg-black/30 flex items-center gap-4">
                   <div className="w-11 h-11 rounded-2xl bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center shrink-0">
                     <Users className="text-neon-cyan" size={20} />
@@ -336,7 +320,6 @@ export default function EmergencyCommand() {
                   </div>
                 </div>
 
-                {/* Infrastructure Integrity Meter */}
                 <div className="glass rounded-3xl p-5 border border-white/10 bg-black/30 space-y-2">
                   <div className="flex justify-between items-center font-mono">
                     <span className="text-[10px] text-gray-500 uppercase flex items-center gap-1">
@@ -355,7 +338,6 @@ export default function EmergencyCommand() {
                   </div>
                 </div>
 
-                {/* Tactical Operation Budget */}
                 <div className="glass rounded-3xl p-5 border border-white/10 bg-black/30 flex items-center gap-4">
                   <div className="w-11 h-11 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center shrink-0">
                     <DollarSign className="text-yellow-400" size={20} />
@@ -368,7 +350,6 @@ export default function EmergencyCommand() {
                   </div>
                 </div>
 
-                {/* Environmental Safety Index */}
                 <div className="glass rounded-3xl p-5 border border-white/10 bg-black/30 space-y-2">
                   <div className="flex justify-between items-center font-mono">
                     <span className="text-[10px] text-gray-500 uppercase flex items-center gap-1">
@@ -387,12 +368,9 @@ export default function EmergencyCommand() {
 
               </div>
 
-              {/* Main Panel Core Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* Protocol Decision Panel (8 Columns) */}
                 <div className="lg:col-span-8 glass-strong rounded-3xl p-6 border border-white/10 space-y-6 relative overflow-hidden bg-black/40">
-                  {/* Holographic sweeps */}
                   <div className="absolute top-2.5 right-3 text-[8px] font-mono text-gray-600 tracking-wider">PROTOCOL_ENGINE // ONLINE</div>
 
                   <div className="border-b border-white/10 pb-3 flex items-center gap-2">
@@ -484,7 +462,6 @@ export default function EmergencyCommand() {
 
                   </div>
 
-                  {/* Active Alert Warning Feed */}
                   {activeAlarms.length > 0 && (
                     <motion.div 
                       initial={{ scale: 0.97, opacity: 0 }}
@@ -504,14 +481,12 @@ export default function EmergencyCommand() {
 
                 </div>
 
-                {/* Operations Terminal Logs (4 Columns) */}
                 <div className="lg:col-span-4 glass-strong rounded-3xl p-5 border border-white/10 space-y-4 bg-black/50 h-[380px] flex flex-col justify-between">
                   <div className="flex items-center gap-2 border-b border-white/10 pb-3">
                     <Terminal size={14} className="text-[#06ffd4]" />
                     <span className="text-xs font-mono text-white uppercase tracking-wider">Operations Telemetry Feed</span>
                   </div>
 
-                  {/* Scrolling Feed logs */}
                   <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-[10px] font-mono leading-relaxed select-text">
                     {logs.map((log, idx) => {
                       const isAlert = log.includes('⚠️ ALARM:')
@@ -544,7 +519,6 @@ export default function EmergencyCommand() {
             </motion.div>
           )}
 
-          {/* SIMULATOR END RESULTS */}
           {(gameState === 'victory' || gameState === 'defeat') && (
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -578,7 +552,6 @@ export default function EmergencyCommand() {
                 </p>
               </div>
 
-              {/* End Stats report */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-black/40 p-5 rounded-2xl border border-white/5 text-xs font-mono text-left max-w-md mx-auto">
                 <div className="space-y-0.5">
                   <span className="text-gray-500 block text-[9px]">SAVED CITIZENS:</span>

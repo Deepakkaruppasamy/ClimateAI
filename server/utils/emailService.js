@@ -6,17 +6,11 @@ const User = require('../models/User')
 
 let localEmailsSent = 0
 
-/**
- * Broadcasts an alert email to all registered users.
- * Supports two delivery methods:
- * 1. 'resend' -> Direct HTTP Resend API delivery (requires RESEND_API_KEY)
- * 2. 'file'   -> Writes local HTML preview files to server/mail-outbox/ (No server needed, perfect for local dev!)
- */
 const sendAlertEmailToAllUsers = async (app, alert) => {
   try {
     let users = []
     
-    // 1. Fetch registered users from MongoDB if database is connected
+
     const isDBConnected = mongoose.connection.readyState === 1
     if (isDBConnected) {
       try {
@@ -31,7 +25,6 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
       }
     }
 
-    // 2. Fetch currently connected Socket.io real-time clients!
     if (app && app.locals.io) {
       const sockets = app.locals.io.sockets.sockets
       for (const [id, s] of sockets) {
@@ -43,7 +36,6 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
       }
     }
 
-    // 3. Fallback to mock users if no active or registered users are found
     if (users.length === 0) {
       users = app ? app.locals.mockUsers : []
     }
@@ -56,17 +48,16 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
     const emailSubject = `⚠️ ClimateAI ALERT: ${alert.title || alert.type?.toUpperCase() || 'Emergency advisory'}`
     const emailBody = alert.message || alert.text || 'Active climate hazard anomaly detected.'
     
-    // Choose delivery method based on .env config
+
     const configMethod = (process.env.MAIL_METHOD || '').toLowerCase()
     
-    let method = 'file' // Default developer fallback
+    let method = 'file' 
     if (configMethod === 'resend' || (process.env.RESEND_API_KEY && !configMethod)) {
       method = 'resend'
     } else {
       method = 'file'
     }
 
-    // HTML Template
     const getHtmlBody = (userName, userEmail) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; border: 2px solid #ff0055; border-radius: 16px; padding: 25px; background-color: #02050a; color: #ffffff; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
         <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
@@ -120,7 +111,7 @@ const sendAlertEmailToAllUsers = async (app, alert) => {
       console.log(`✉️ [EMAIL SERVICE] Resend API Broadcast Complete.\n`)
 
     } else {
-      // Local File Outbox Mode (Perfect for zero-setup developer visualization)
+
       console.log(`\n✉️ [EMAIL SERVICE] File Outbox Mode active! Creating HTML preview files...`)
       
       const outboxDir = path.join('c:', 'ClimateAI', 'server', 'mail-outbox')

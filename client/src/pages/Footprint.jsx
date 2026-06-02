@@ -104,7 +104,7 @@ export default function Footprint() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user?._id || 'mock', footprint: footprintToday, values })
       }).catch(() => {})
-      // Add today to chart
+
       const today = new Date().toLocaleDateString('en', { month: 'short', day: 'numeric' })
       setHistory(prev => [...prev.slice(-29), { date: today, footprint: footprintToday }])
       setSubmitted(true)
@@ -133,7 +133,6 @@ export default function Footprint() {
       <div className="absolute inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
 
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(6,255,212,0.12)', border: '1px solid rgba(6,255,212,0.3)' }}>
@@ -147,10 +146,8 @@ export default function Footprint() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* LEFT — Calculator */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Step progress */}
             <div className="flex items-center gap-2">
               {CATEGORIES.map((cat, i) => {
                 const Icon = cat.icon
@@ -181,7 +178,6 @@ export default function Footprint() {
               </button>
             </div>
 
-            {/* Category Sliders */}
             <AnimatePresence mode="wait">
               {step < 3 && (
                 <motion.div
@@ -291,7 +287,6 @@ export default function Footprint() {
               )}
             </AnimatePresence>
 
-            {/* 30-Day History Chart */}
             <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingDown size={16} className="text-neon-cyan" />
@@ -319,7 +314,6 @@ export default function Footprint() {
             </div>
           </div>
 
-          {/* RIGHT — Leaderboard */}
           <div className="space-y-6">
             <div className="glass-strong rounded-3xl p-6 border border-white/5">
               <div className="flex items-center gap-2 mb-4">
@@ -330,7 +324,6 @@ export default function Footprint() {
                 </div>
               </div>
 
-              {/* User's rank highlight */}
               <div className="mb-4 p-3 rounded-xl" style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)' }}>
                 <div className="flex items-center gap-3">
                   <span className="text-neon-blue font-mono font-bold text-lg">#{userRank}</span>
@@ -365,7 +358,6 @@ export default function Footprint() {
               </div>
             </div>
 
-            {/* Tips Card */}
             <div className="glass rounded-2xl p-5 border border-white/5">
               <div className="flex items-center gap-2 mb-3">
                 <Award size={15} className="text-neon-purple" />

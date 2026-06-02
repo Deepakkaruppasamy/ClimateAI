@@ -18,7 +18,6 @@ import use3dTilt from '../utils/use3dTilt'
 import useQuantumFloat from '../utils/useQuantumFloat'
 import { playTap, playHover } from '../utils/audio'
 
-// ── Video pool (cycling on hero) ────────────────────────────
 const HERO_VIDEOS = [
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4',
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260319_055001_8e16d972-3b2b-441c-86ad-2901a54682f9.mp4',
@@ -34,7 +33,6 @@ const getDiagReport = (year) => {
   return "EXTREME EMERGENCY: SYSTEM DEVIATION APPRECIABLE. CARBON PEAKS AT 560 PPM. ALBEDO REFLECTION FAILED."
 }
 
-// ── Floating Weather Card ────────────────────────────────────
 function FloatingCard({ delay = 0, zFactor = 1.0, className = '', children }) {
   const physicsProps = useQuantumFloat(delay, zFactor)
   return (
@@ -52,7 +50,6 @@ function FloatingCard({ delay = 0, zFactor = 1.0, className = '', children }) {
   )
 }
 
-// ── Animated Stats Counter ───────────────────────────────────
 function StatCounter({ value, suffix, label, icon: Icon, color }) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.5 })
   const tiltProps = use3dTilt(5, 750)
@@ -89,7 +86,6 @@ function StatCounter({ value, suffix, label, icon: Icon, color }) {
   )
 }
 
-// ── Feature Card ─────────────────────────────────────────────
 function FeatureCard({ icon: Icon, title, desc, color, delay, badge, to }) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 })
   const tiltProps = use3dTilt(7, 850)
@@ -136,7 +132,6 @@ function FeatureCard({ icon: Icon, title, desc, color, delay, badge, to }) {
   )
 }
 
-// ── Weather Ticker ───────────────────────────────────────────
 function WeatherTicker() {
   const cities = [
     { name: 'New York', temp: 22, icon: '🌤️' }, { name: 'London', temp: 15, icon: '🌧️' },
@@ -162,7 +157,6 @@ function WeatherTicker() {
   )
 }
 
-// ── Main Landing Page ─────────────────────────────────────────
 export default function Landing() {
   const { weather, weatherType, loading } = useWeather()
   const [simYear, setSimYear] = useState(2026)
@@ -197,12 +191,8 @@ export default function Landing() {
     >
       <WeatherParticles />
 
-      {/* ══════════════════════════════════════════════════════
-          HERO — Fullscreen video carousel
-      ══════════════════════════════════════════════════════ */}
       <section ref={heroRef} className="relative min-h-screen flex flex-col overflow-hidden">
 
-        {/* Video background (HLS stream) */}
         <VideoBackground
           src="https://stream.mux.com/Aa02T7oM1wH5Mk5EEVDYhbZ1ChcdhRsS2m1NYyx4Ua1g.m3u8"
           overlay="default"
@@ -210,10 +200,8 @@ export default function Landing() {
           grain={true}
         />
 
-        {/* Animated neon grid on top of video */}
         <div className="absolute inset-0 bg-animated-grid opacity-20 z-[3] pointer-events-none" />
 
-        {/* Radial neon bloom */}
         <motion.div
           className="absolute inset-0 flex items-center justify-end z-[3] pointer-events-none"
           initial={{ opacity: 0 }}
@@ -224,7 +212,6 @@ export default function Landing() {
             style={{ background: 'radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%)' }} />
         </motion.div>
 
-        {/* ── Hero Content ───────────────────────────────── */}
         <motion.div
           style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
           className="relative z-[10] flex flex-1"
@@ -232,9 +219,7 @@ export default function Landing() {
           <div className="max-w-[95%] mx-auto px-6 lg:px-12 pt-28 pb-20 w-full">
             <div className="grid lg:grid-cols-2 gap-16 items-center min-h-[82vh]">
 
-              {/* LEFT — Cinematic Copy */}
               <div className="space-y-8">
-                {/* Overline badge */}
                 <div className="anim-reveal-up delay-200">
                   <div className="inline-flex items-center gap-3 glass rounded-full px-5 py-2.5">
                     <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
@@ -244,7 +229,6 @@ export default function Landing() {
                   </div>
                 </div>
 
-                {/* Main display heading — Instrument Serif */}
                 <div className="anim-reveal-up delay-300">
                   <h1
                     className="text-white leading-[1.05]"
@@ -270,7 +254,6 @@ export default function Landing() {
                   </h1>
                 </div>
 
-                {/* Italic subtitle */}
                 <div className="anim-reveal-up delay-400">
                   <p className="display-subtitle text-gray-300">
                     Real-time weather, predictions,
@@ -280,7 +263,6 @@ export default function Landing() {
                   </p>
                 </div>
 
-                {/* Type animation */}
                 <div className="anim-reveal-up delay-500">
                   <div className="text-gray-400 text-lg font-light min-h-[32px]">
                     {(() => {
@@ -305,7 +287,6 @@ export default function Landing() {
                   </div>
                 </div>
 
-                {/* CTAs */}
                 <div className="anim-reveal-up delay-600 flex flex-wrap gap-4">
                   <Link to="/dashboard" className="btn-primary group" onClick={playTap} onMouseEnter={playHover}>
                     <Zap size={18} />
@@ -318,7 +299,6 @@ export default function Landing() {
                   </Link>
                 </div>
 
-                {/* Live weather chips */}
                 {weather && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -345,7 +325,6 @@ export default function Landing() {
                 )}
               </div>
 
-              {/* RIGHT — 3D Globe + Floating Cards */}
               <div className="relative hidden lg:block">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.85, rotateY: 15 }}
@@ -356,7 +335,6 @@ export default function Landing() {
                   <AnimatedGlobe />
                 </motion.div>
 
-                {/* Floating card: Current Weather */}
                 <FloatingCard delay={0.6} zFactor={1.3} className="absolute top-10 -left-10 w-54">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-xl bg-neon-blue/20 flex items-center justify-center">
@@ -373,7 +351,6 @@ export default function Landing() {
                   <div className="text-xs text-gray-500 mt-1">Feels like {weather?.feelsLike ?? '--'}°C</div>
                 </FloatingCard>
 
-                {/* Floating card: AQI */}
                 <FloatingCard delay={1.1} zFactor={1.0} className="absolute bottom-24 -left-2 w-44">
                   <div className="text-xs text-gray-400 mb-1 label-overline">Air Quality</div>
                   <div className="text-2xl font-bold text-neon-cyan" style={{ fontFamily: 'var(--font-display)' }}>Good</div>
@@ -384,7 +361,6 @@ export default function Landing() {
                   <div className="text-xs text-gray-500 mt-1">AQI 42 · PM2.5 8μg</div>
                 </FloatingCard>
 
-                {/* Floating card: AI Forecast */}
                 <FloatingCard delay={1.6} zFactor={1.0} className="absolute top-24 -right-2 w-48">
                   <div className="flex items-center gap-2 mb-3">
                     <Brain size={13} className="text-neon-purple" />
@@ -401,7 +377,6 @@ export default function Landing() {
                   </div>
                 </FloatingCard>
 
-                {/* Floating card: Alert */}
                 <FloatingCard delay={2.1} zFactor={0.5} className="absolute bottom-6 right-2 w-48">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
@@ -413,7 +388,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Scroll indicator */}
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -426,14 +400,8 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          WEATHER TICKER
-      ══════════════════════════════════════════════════════ */}
       <WeatherTicker />
 
-      {/* ══════════════════════════════════════════════════════
-          STATS
-      ══════════════════════════════════════════════════════ */}
       <section className="py-24 relative">
         <div className="max-w-[95%] mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -442,11 +410,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          FEATURES — with secondary video bg
-      ══════════════════════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden">
-        {/* Subtle video bg for features section */}
         <VideoBackground
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260503_101827_abebfeec-f243-466b-b494-7f6814c0fbbf.mp4"
           overlay="dark"
@@ -456,7 +420,6 @@ export default function Landing() {
         <div className="absolute inset-0 bg-circuit opacity-30 z-[3]" />
 
         <div className="max-w-[95%] mx-auto px-6 lg:px-12 relative z-[10]">
-          {/* Section header */}
           <div className="text-center mb-20">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -508,11 +471,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          NEURAL CLIMATE FORECAST SIMULATOR PREVIEW — Extended Section
-      ══════════════════════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden">
-        {/* Dynamic premium background video loop */}
         <VideoBackground
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
           overlay="dark"
@@ -520,12 +479,10 @@ export default function Landing() {
           grain={true}
         />
         
-        {/* Futuristic sci-fi telemetry grid */}
         <div className="absolute inset-0 bg-animated-grid opacity-10 z-[3] pointer-events-none" />
 
         <div className="max-w-[95%] mx-auto px-6 lg:px-12 relative z-[10]">
           
-          {/* Section Header */}
           <div className="text-center mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -572,10 +529,8 @@ export default function Landing() {
             </motion.p>
           </div>
 
-          {/* Interactive Console Grid */}
           <div className="grid lg:grid-cols-12 gap-8 items-center">
             
-            {/* LEFT PANEL — Timeline Selector */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -583,7 +538,6 @@ export default function Landing() {
               transition={{ duration: 0.8 }}
               className="lg:col-span-5 glass-strong rounded-3xl p-8 border border-white/10 space-y-8 relative overflow-hidden"
             >
-              {/* Telemetry Corner Decals */}
               <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 border-t border-l border-white/20 pointer-events-none" />
               <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 border-t border-r border-white/20 pointer-events-none" />
               <div className="absolute bottom-2.5 left-2.5 w-2.5 h-2.5 border-b border-l border-white/20 pointer-events-none" />
@@ -597,7 +551,6 @@ export default function Landing() {
                 </p>
               </div>
 
-              {/* Year Display Indicator */}
               <div className="text-center py-6 glass rounded-2xl border border-white/5 relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none opacity-5 bg-animated-grid" />
                 <div className="text-[11px] font-mono text-gray-500 uppercase tracking-widest mb-1">PROJECTIONS FOR YEAR</div>
@@ -616,7 +569,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* Tactile Range Slider */}
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] font-mono text-gray-500">
                   <span>START: 2026</span>
@@ -639,7 +591,6 @@ export default function Landing() {
               </div>
             </motion.div>
 
-            {/* RIGHT PANEL — Projections Dashboard */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -647,7 +598,6 @@ export default function Landing() {
               transition={{ duration: 0.8 }}
               className="lg:col-span-7 glass-strong rounded-3xl p-8 border border-white/10 space-y-6 relative overflow-hidden"
             >
-              {/* Telemetry Corner Decals */}
               <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 border-t border-l border-white/20 pointer-events-none" />
               <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 border-t border-r border-white/20 pointer-events-none" />
               <div className="absolute bottom-2.5 left-2.5 w-2.5 h-2.5 border-b border-l border-white/20 pointer-events-none" />
@@ -658,7 +608,6 @@ export default function Landing() {
                 <h3 className="text-2xl font-display text-white">Atmospheric Projection Models</h3>
               </div>
 
-              {/* Stats Metrics Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { label: 'CO2 Density', val: `${Math.round(420 + ((simYear - 2026) / (2100 - 2026)) * 140)} ppm`, color: '#06ffd4', desc: 'Carbon accumulation' },
@@ -675,9 +624,7 @@ export default function Landing() {
                 ))}
               </div>
 
-              {/* Diagnostic Terminal Printer */}
               <div className="glass rounded-2xl p-5 border border-white/5 font-mono space-y-3 relative overflow-hidden bg-black/40 min-h-[110px]">
-                {/* Laser sweep overlay inside diagnostic console */}
                 <div className="absolute inset-0 pointer-events-none opacity-30">
                   <div className="absolute left-0 right-0 h-[1.5px] bg-neon-cyan laser-sweep" />
                 </div>
@@ -692,11 +639,9 @@ export default function Landing() {
                 </p>
               </div>
 
-              {/* Circular SVG Vector Radar and Active Network Chime */}
               <div className="flex flex-col sm:flex-row items-center gap-6 justify-between pt-4 border-t border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
-                    {/* Animated radar sweep line */}
                     <div className="absolute inset-0 border-r-2 border-neon-cyan animate-spin" style={{ animationDuration: '4s' }} />
                     <Activity size={16} className="text-neon-cyan animate-pulse" />
                   </div>
@@ -718,11 +663,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          WEBXR TABLETOP HOLOGRAM SHOWCASE — New Premium Section
-      ══════════════════════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden">
-        {/* Subtle video background */}
         <VideoBackground
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260319_055001_8e16d972-3b2b-441c-86ad-2901a54682f9.mp4"
           overlay="dark"
@@ -733,7 +674,6 @@ export default function Landing() {
 
         <div className="max-w-[95%] mx-auto px-6 lg:px-12 relative z-[10]">
           
-          {/* Section Header */}
           <div className="text-center mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -780,15 +720,11 @@ export default function Landing() {
             </motion.p>
           </div>
 
-          {/* Hologram Core Simulator */}
           <WebXRHologram />
 
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          HOW IT WORKS
-      ══════════════════════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-5 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }} />
@@ -834,9 +770,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          CTA BANNER — with video bg
-      ══════════════════════════════════════════════════════ */}
       <section className="py-20 relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <motion.div
@@ -845,7 +778,6 @@ export default function Landing() {
             viewport={{ once: true }}
             className="relative rounded-3xl overflow-hidden"
           >
-            {/* Video in the CTA card */}
             <VideoBackground
               src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260506_031045_0e1165dd-ab48-46e3-ad3d-5fe77f217647.mp4"
               overlay="dark"
@@ -878,9 +810,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════════════ */}
       <footer className="border-t border-white/5 py-12">
         <div className="max-w-[95%] mx-auto px-6 lg:px-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">

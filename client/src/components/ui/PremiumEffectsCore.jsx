@@ -7,14 +7,13 @@ export default function PremiumEffectsCore() {
   const [trail, setTrail] = useState([])
   const [reducedMotion, setReducedMotion] = useState(false)
 
-  // Custom aesthetic preference overrides toggled from the user Profile page
   const [cursorEnabled, setCursorEnabled] = useState(() => {
     const saved = localStorage.getItem('climateai:premium-cursor-enabled')
-    return saved !== 'false' // default is true
+    return saved !== 'false' 
   })
   const [magneticEnabled, setMagneticEnabled] = useState(() => {
     const saved = localStorage.getItem('climateai:magnetic-enabled')
-    return saved !== 'false' // default is true
+    return saved !== 'false' 
   })
 
   const trailTimerRef = useRef(null)
@@ -23,7 +22,6 @@ export default function PremiumEffectsCore() {
   const coreRef = useRef(null)
   const rafRef = useRef(null)
 
-  // 1. Scroll Progress Ribbon Tracker
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -45,7 +43,6 @@ export default function PremiumEffectsCore() {
     window.addEventListener('climateai:cursor-preference-updated', handleCursorPreference)
     window.addEventListener('climateai:magnetic-preference-updated', handleMagneticPreference)
 
-    // Check user accessibility reduced-motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     setReducedMotion(mediaQuery.matches)
     const handleMotionChange = (e) => setReducedMotion(e.matches)
@@ -59,7 +56,6 @@ export default function PremiumEffectsCore() {
       }
     }
 
-    // High-Performance Event-Driven Proximity Attraction (GPU-friendly requestAnimationFrame loop)
     let currentX = 0
     let currentY = 0
     let targetX = 0
@@ -67,11 +63,11 @@ export default function PremiumEffectsCore() {
     const activeMagneticRect = { pageLeft: 0, pageTop: 0, width: 0, height: 0 }
 
     const updatePosition = () => {
-      // Linear interpolation (lerp) for smooth easing
+
       currentX += (targetX - currentX) * 0.25
       currentY += (targetY - currentY) * 0.25
       
-      // Update DOM directly to bypass React render cycle!
+
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`
       }
@@ -79,7 +75,6 @@ export default function PremiumEffectsCore() {
         coreRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`
       }
 
-      // Animate active magnetic target on active frame sync
       const activeEl = activeMagneticRef.current
       if (magneticEnabled && activeEl && activeMagneticRect.width > 0) {
         const elCenterX = activeMagneticRect.pageLeft - window.scrollX + activeMagneticRect.width / 2
@@ -90,13 +85,13 @@ export default function PremiumEffectsCore() {
         const distance = Math.hypot(distX, distY)
 
         if (distance < 80) {
-          const strength = 0.35 // magnetic pull force
+          const strength = 0.35 
           const pullX = distX * strength
           const pullY = distY * strength
           activeEl.style.transform = `translate3d(${pullX}px, ${pullY}px, 0) scale(1.05)`
           activeEl.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.2)'
         } else {
-          // Depart lock state gently
+
           activeEl.style.transform = ''
           activeEl.style.boxShadow = ''
           activeEl.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease'
@@ -108,26 +103,22 @@ export default function PremiumEffectsCore() {
       rafRef.current = requestAnimationFrame(updatePosition)
     }
 
-    // Trigger loop startup
     rafRef.current = requestAnimationFrame(updatePosition)
 
-    // 2. Mouse Move & Custom Trail Telemetry
     const handleMouseMove = (e) => {
       const { clientX, clientY } = e
       targetX = clientX
       targetY = clientY
 
-      if (!cursorEnabled) return // Bypass custom cursor trails
+      if (!cursorEnabled) return 
 
-      // Throttle particle trails to conserve GC cycles
       if (Math.random() > 0.8) {
         setTrail(prev => [
-          ...prev.slice(-10), // Limit trails to max 10 elements
+          ...prev.slice(-10), 
           { id: Math.random(), x: clientX, y: clientY, size: Math.random() * 5 + 2 }
         ])
       }
 
-      // Check hovered elements for premium reactive states
       const target = e.target
       if (!target) return
 
@@ -151,9 +142,9 @@ export default function PremiumEffectsCore() {
       const target = e.target?.closest?.('a, button, .btn-primary, .btn-ghost, .magnetic')
       if (target) {
         activeMagneticRef.current = target
-        target.style.transition = 'none' // Remove delay during active lock
+        target.style.transition = 'none' 
         
-        // Cache absolute page coordinates to avoid layout thrashing
+
         const rect = target.getBoundingClientRect()
         activeMagneticRect.pageLeft = rect.left + window.scrollX
         activeMagneticRect.pageTop = rect.top + window.scrollY
@@ -200,7 +191,6 @@ export default function PremiumEffectsCore() {
     }
   }, [cursorEnabled, magneticEnabled])
 
-  // Periodic particle trail decay
   useEffect(() => {
     if (trail.length === 0) return
     trailTimerRef.current = setTimeout(() => {
@@ -211,7 +201,6 @@ export default function PremiumEffectsCore() {
 
   if (reducedMotion) return null
 
-  // Define cursor aesthetic options
   const cursorColors = {
     default: 'rgba(0, 212, 255, 0.3)',
     clickable: 'rgba(6, 255, 212, 0.4)',
@@ -228,7 +217,6 @@ export default function PremiumEffectsCore() {
 
   return (
     <>
-      {/* Hide standard cursor on desktop screens when premium cursor is active */}
       {cursorEnabled && (
         <style>{`
           @media (min-width: 768px) {
@@ -239,13 +227,11 @@ export default function PremiumEffectsCore() {
         `}</style>
       )}
 
-      {/* ── Scroll Progress Ribbon ──────────────────────────── */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-neon-blue via-neon-cyan to-neon-purple z-[99999] origin-left"
         style={{ scaleX, boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
       />
 
-      {/* ── Custom Animated Cursor Halo ──────────────────────── */}
       {cursorEnabled && (
         <div
           ref={cursorRef}
@@ -263,7 +249,6 @@ export default function PremiumEffectsCore() {
         />
       )}
 
-      {/* ── Cursor Core Dot ─────────────────────────────────── */}
       {cursorEnabled && (
         <div
           ref={coreRef}
@@ -279,7 +264,6 @@ export default function PremiumEffectsCore() {
         />
       )}
 
-      {/* ── Interactive Particle Trails ─────────────────────── */}
       {cursorEnabled && trail.map((t, idx) => (
         <div
           key={t.id}

@@ -23,11 +23,9 @@ function ModuleCard({ mod }) {
       style={{ ...tiltProps.style, boxShadow: `0 20px 40px ${mod.shadowColor}` }}
       className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative group overflow-hidden flex flex-col justify-between min-h-[300px] cursor-default"
     >
-      {/* Decorative colored glow ball */}
       <div className={`absolute -right-16 -top-16 w-32 h-32 bg-gradient-to-br ${mod.color} opacity-10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none`} />
 
       <div>
-        {/* Icon wrap */}
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${mod.color} flex items-center justify-center mb-6 shadow-lg`}>
           <Icon size={22} className="text-white" />
         </div>
@@ -96,16 +94,15 @@ export default function Hub() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('pillars')
   
-  // Green AI calculator state
-  const [modelSize, setModelSize] = useState(8) // 8B, 70B, 405B parameters
-  const [trainHours, setTrainHours] = useState(168) // hours
 
-  // Estimate Carbon Math (Green AI Paradox)
+  const [modelSize, setModelSize] = useState(8) 
+  const [trainHours, setTrainHours] = useState(168) 
+
   const calculateEmissions = () => {
-    // Approx carbon intensity per training hour: 8B parameters = 0.42kg, 70B = 4.8kg, 405B = 27.5kg
+
     const baseFactor = modelSize === 8 ? 0.42 : modelSize === 70 ? 4.8 : 27.5
     const kgCo2 = baseFactor * trainHours
-    const treesNeeded = (kgCo2 / 22).toFixed(1) // 1 tree absorbs approx 22kg of CO2 per year
+    const treesNeeded = (kgCo2 / 22).toFixed(1) 
     return { kgCo2: kgCo2.toFixed(1), treesNeeded }
   }
 
@@ -133,7 +130,6 @@ export default function Hub() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10 space-y-16">
         
-        {/* Header & Stats Banner */}
         <div className="flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
           <div>
             <span className="label-overline mb-2 inline-block">Climate Intelligence Center</span>
@@ -145,7 +141,6 @@ export default function Hub() {
             </p>
           </div>
 
-          {/* User Achievement summary card */}
           {user && (
             <Link to="/profile">
               <motion.div 
@@ -178,7 +173,6 @@ export default function Hub() {
           )}
         </div>
 
-        {/* Modules Grid */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -190,7 +184,6 @@ export default function Hub() {
           ))}
         </motion.div>
 
-        {/* ── Climate AI Knowledge Portal Section ────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -198,7 +191,6 @@ export default function Hub() {
           transition={{ duration: 0.8 }}
           className="glass-strong rounded-3xl p-8 border border-white/5 shadow-2xl relative overflow-hidden"
         >
-          {/* Tech HUD Decals */}
           <div className="absolute top-3 left-4 text-[9px] font-mono text-neon-purple tracking-widest select-none">
             KNOWLEDGE_BASE // CORE_FOUNDATIONS
           </div>
@@ -207,7 +199,6 @@ export default function Hub() {
           <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b border-l border-white/10" />
           <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b border-r border-white/10" />
 
-          {/* Section Header */}
           <div className="mb-8 border-b border-white/5 pb-6">
             <h2 className="text-white text-3xl font-normal font-display">
               Climate AI <span className="gradient-text">Core Foundations</span>
@@ -217,7 +208,6 @@ export default function Hub() {
             </p>
           </div>
 
-          {/* Dynamic Tab Selector */}
           <div className="flex flex-wrap gap-2.5 mb-8">
             {[
               { id: 'pillars', label: 'Core Pillars', icon: Layers },
@@ -246,7 +236,6 @@ export default function Hub() {
             })}
           </div>
 
-          {/* Tabs Content Registry */}
           <div className="min-h-[280px]">
             <AnimatePresence mode="wait">
               {activeTab === 'pillars' && (
@@ -362,7 +351,6 @@ export default function Hub() {
                   transition={{ duration: 0.3 }}
                   className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
                 >
-                  {/* Left explanation */}
                   <div className="lg:col-span-7 space-y-5">
                     <div>
                       <h3 className="text-white text-lg font-normal font-display">The "Green AI" Paradox</h3>
@@ -386,13 +374,11 @@ export default function Hub() {
                     </ul>
                   </div>
 
-                  {/* Right interactive Carbon Estimator */}
                   <div className="lg:col-span-5 glass p-6 rounded-2xl border border-white/5 space-y-5 relative overflow-hidden">
                     <div className="absolute top-2.5 right-3 text-[7px] font-mono text-neon-cyan/50 tracking-widest select-none">EMISSION_CALCULATOR</div>
                     
                     <h4 className="text-white text-xs font-mono tracking-wide uppercase">[ Training Footprint Estimator ]</h4>
                     
-                    {/* Select Model size */}
                     <div className="space-y-2">
                       <label className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Model Parameters</label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -416,7 +402,6 @@ export default function Hub() {
                       </div>
                     </div>
 
-                    {/* Scrub Hours */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-[9px] font-mono text-gray-500">
                         <span>TRAINING DURATION</span>
@@ -433,7 +418,6 @@ export default function Hub() {
                       />
                     </div>
 
-                    {/* Telemetry Output */}
                     <div className="border-t border-white/5 pt-4 flex items-center justify-between gap-4">
                       <div>
                         <span className="text-[8px] font-mono text-gray-500 uppercase block">ESTIMATED CO2 IMPACT</span>
@@ -521,7 +505,7 @@ function LearningPathsPanel() {
     const key = `${pathId}_${moduleIdx}`
     const newProgress = { ...progress, [key]: !progress[key] }
     saveProgress(newProgress)
-    // Check if path is fully complete
+
     const path = LEARNING_PATHS.find(p => p.id === pathId)
     const allComplete = path.modules.every((_, i) => newProgress[`${pathId}_${i}`])
     if (allComplete && !celebration) {
@@ -554,7 +538,6 @@ function LearningPathsPanel() {
           const isExpanded = activePathId === path.id
           return (
             <div key={path.id} className="glass rounded-2xl border border-white/5 overflow-hidden">
-              {/* Path header */}
               <button
                 onClick={() => { playTap(); setActivePathId(isExpanded ? null : path.id) }}
                 className="w-full p-5 text-left hover:bg-white/3 transition-colors"
@@ -564,7 +547,6 @@ function LearningPathsPanel() {
                   <span className="text-[10px] font-mono" style={{ color: path.color }}>{done}/{total} Done</span>
                 </div>
                 <p className="text-gray-500 text-xs mb-3">{path.description}</p>
-                {/* Progress bar */}
                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
@@ -575,7 +557,6 @@ function LearningPathsPanel() {
                   />
                 </div>
               </button>
-              {/* Expanded module list */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div

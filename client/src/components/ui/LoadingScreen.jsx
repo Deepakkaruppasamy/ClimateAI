@@ -38,10 +38,8 @@ export default function LoadingScreen({ onComplete }) {
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
       style={{ background: '#020409' }}
     >
-      {/* Grid bg */}
       <div className="absolute inset-0 bg-animated-grid opacity-30" />
 
-      {/* Radial glow */}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
           className="w-96 h-96 rounded-full"
@@ -52,7 +50,6 @@ export default function LoadingScreen({ onComplete }) {
       </div>
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Logo */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ 
@@ -68,7 +65,6 @@ export default function LoadingScreen({ onComplete }) {
           <img src="/logo.png" alt="ClimateAI Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(0,212,255,0.5)]" />
         </motion.div>
 
-        {/* Brand */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -83,14 +79,12 @@ export default function LoadingScreen({ onComplete }) {
           </p>
         </motion.div>
 
-        {/* Scanning animation */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="w-72 mb-6"
         >
-          {/* Progress bar */}
           <div className="h-1 rounded-full bg-white/10 overflow-hidden mb-3">
             <motion.div
               className="h-full rounded-full"
@@ -100,7 +94,6 @@ export default function LoadingScreen({ onComplete }) {
             />
           </div>
 
-          {/* Phase text */}
           <div className="flex justify-between items-center">
             <motion.p
               key={phase}
@@ -114,7 +107,6 @@ export default function LoadingScreen({ onComplete }) {
           </div>
         </motion.div>
 
-        {/* Orbit rings loader */}
         <div className="relative w-16 h-16">
           {[0, 1, 2].map(i => (
             <motion.div

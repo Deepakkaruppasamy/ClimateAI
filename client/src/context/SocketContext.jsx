@@ -22,7 +22,7 @@ export const SocketProvider = ({ children }) => {
       osc1.connect(gain1)
       gain1.connect(ctx.destination)
       osc1.type = 'sine'
-      osc1.frequency.setValueAtTime(520, ctx.currentTime) // Warning frequency
+      osc1.frequency.setValueAtTime(520, ctx.currentTime) 
       gain1.gain.setValueAtTime(0.08, ctx.currentTime)
       osc1.start()
       osc1.stop(ctx.currentTime + 0.15)
@@ -44,7 +44,7 @@ export const SocketProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    // Establish connection to back-end socket server
+
     const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin
     const socket = io(serverUrl, {
       transports: ['websocket', 'polling']
@@ -76,7 +76,6 @@ export const SocketProvider = ({ children }) => {
         setActiveGlobalAlert(prev => prev === data ? null : prev)
       }, 15000)
 
-      // Pop up a premium toast notifications card
       toast.custom((t) => (
         <div
           className={`${

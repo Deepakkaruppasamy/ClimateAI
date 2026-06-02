@@ -6,7 +6,6 @@ const Score = require('../models/Score')
 const CarbonRequest = require('../models/CarbonRequest')
 const { generateAvatar } = require('../utils/authHelper')
 
-// ── GET /api/profile/:userId — Public profile data ──────────
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1
@@ -16,12 +15,10 @@ router.get('/:userId', async (req, res) => {
       const user = await User.findById(userId).select('-password')
       if (!user) return res.status(404).json({ error: 'User not found' })
 
-      // Fetch user quiz scores
       const scores = await Score.find({ userId: userId.toString() })
         .sort({ createdAt: -1 })
         .limit(10)
 
-      // Fetch carbon requests
       let carbonRequests = []
       try {
         carbonRequests = await CarbonRequest.find({ userId }).sort({ createdAt: -1 }).limit(10)
@@ -52,7 +49,7 @@ router.get('/:userId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch profile' })
     }
   } else {
-    // In-memory fallback
+
     const mockUsers = req.app.locals.mockUsers || []
     const mockScores = req.app.locals.mockScores || []
     const mockCarbonRequests = req.app.locals.mockCarbonRequests || []
@@ -101,7 +98,6 @@ router.get('/:userId', async (req, res) => {
   }
 })
 
-// ── PATCH /api/profile/:userId — Update profile ─────────────
 router.patch('/:userId', async (req, res) => {
   const { userId } = req.params
   const { name, avatar, bio } = req.body
@@ -128,7 +124,7 @@ router.patch('/:userId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to update profile' })
     }
   } else {
-    // In-memory fallback
+
     const mockUsers = req.app.locals.mockUsers || []
     const index = mockUsers.findIndex(u => u._id === userId || u.id === userId)
     if (index !== -1) {
@@ -147,7 +143,6 @@ router.patch('/:userId', async (req, res) => {
   }
 })
 
-// ── POST /api/profile/:userId/footprint — Update footprint + save to history ──
 router.post('/:userId/footprint', async (req, res) => {
   const { userId } = req.params
   const { footprint } = req.body
@@ -162,7 +157,7 @@ router.post('/:userId/footprint', async (req, res) => {
           $push: {
             footprintHistory: {
               $each: [{ value: footprint, date: new Date() }],
-              $slice: -24 // Keep last 24 entries (2 years monthly)
+              $slice: -24 
             }
           }
         },
@@ -178,7 +173,7 @@ router.post('/:userId/footprint', async (req, res) => {
       return res.status(500).json({ error: 'Failed to update footprint' })
     }
   } else {
-    // In-memory fallback
+
     const mockUsers = req.app.locals.mockUsers || []
     const index = mockUsers.findIndex(u => u._id === userId || u.id === userId)
     if (index !== -1) {
@@ -194,7 +189,6 @@ router.post('/:userId/footprint', async (req, res) => {
   }
 })
 
-// ── GET /api/profile/:userId/footprint-history ────────────────
 router.get('/:userId/footprint-history', async (req, res) => {
   const { userId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1
@@ -211,7 +205,7 @@ router.get('/:userId/footprint-history', async (req, res) => {
     const mockUsers = req.app.locals.mockUsers || []
     const user = mockUsers.find(u => u._id === userId || u.id === userId)
     if (!user) return res.json({ success: true, history: [], current: 0 })
-    // Generate mock history for demo
+
     const mockHistory = Array.from({ length: 6 }, (_, i) => ({
       value: parseFloat((Math.random() * 6 + 4).toFixed(1)),
       date: new Date(Date.now() - (5 - i) * 30 * 24 * 60 * 60 * 1000)
@@ -220,7 +214,6 @@ router.get('/:userId/footprint-history', async (req, res) => {
   }
 })
 
-// ── POST /api/profile/:userId/badge — Award a badge ──────────
 router.post('/:userId/badge', async (req, res) => {
   const { userId } = req.params
   const { badge } = req.body
@@ -255,7 +248,6 @@ router.post('/:userId/badge', async (req, res) => {
   }
 })
 
-// ── GET /api/profile — Admin: list all users ─────────────────
 router.get('/', async (req, res) => {
   const isDBConnected = mongoose.connection.readyState === 1
   if (isDBConnected) {
@@ -276,7 +268,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── PATCH /api/profile/:userId/role — Admin: change role ─────
 router.patch('/:userId/role', async (req, res) => {
   const { userId } = req.params
   const { role } = req.body
@@ -308,7 +299,6 @@ router.patch('/:userId/role', async (req, res) => {
   }
 })
 
-// ── DELETE /api/profile/:userId — Admin: delete user ─────────
 router.delete('/:userId', async (req, res) => {
   const { userId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1

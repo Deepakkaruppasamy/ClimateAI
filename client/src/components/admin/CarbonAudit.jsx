@@ -8,7 +8,6 @@ const STATUS_CONFIG = {
   rejected: { color: '#ff4444', bg: 'rgba(255,68,68,0.08)', border: 'rgba(255,68,68,0.2)', icon: XCircle,      label: 'REJECTED' },
 }
 
-// Demo seed requests shown when DB is offline
 const DEMO_REQUESTS = [
   { _id: 'demo-1', userId: 'user_alpha', projectId: 'PROJ-2024-GHG', amount: 150, status: 'pending',  createdAt: new Date(Date.now() - 3600000 * 4).toISOString() },
   { _id: 'demo-2', userId: 'user_beta',  projectId: 'PROJ-2023-WIND', amount: 220, status: 'approved', createdAt: new Date(Date.now() - 3600000 * 12).toISOString() },
@@ -31,13 +30,11 @@ function RequestRow({ req, onApprove, onReject, actionLoading }) {
       className="flex items-center gap-4 p-4 rounded-2xl border group transition-colors"
       style={{ background: cfg.bg, borderColor: cfg.border }}
     >
-      {/* Status Icon */}
       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: `${cfg.color}18`, border: `1px solid ${cfg.color}30` }}>
         <Icon size={15} style={{ color: cfg.color }} />
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-white font-mono truncate">{req.projectId}</span>
@@ -56,7 +53,6 @@ function RequestRow({ req, onApprove, onReject, actionLoading }) {
         </div>
       </div>
 
-      {/* Amount */}
       <div className="text-right flex-shrink-0 mr-1">
         <div className="text-lg font-bold font-outfit" style={{ color: cfg.color }}>
           {req.amount?.toLocaleString()}
@@ -64,7 +60,6 @@ function RequestRow({ req, onApprove, onReject, actionLoading }) {
         <div className="text-[10px] text-gray-600 font-mono">credits</div>
       </div>
 
-      {/* Actions — only for pending */}
       {req.status === 'pending' && (
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
           {isLoading ? (
@@ -125,7 +120,6 @@ export default function CarbonAudit({ socket }) {
 
   useEffect(() => { fetchRequests() }, [])
 
-  // Socket live updates
   useEffect(() => {
     if (!socket) return
     const onCreated = (req) => setRequests(prev => [req, ...prev])
@@ -148,13 +142,13 @@ export default function CarbonAudit({ socket }) {
       if (res.ok && data.request) {
         setRequests(prev => prev.map(r => (r._id || r.id) === id ? data.request : r))
       } else {
-        // Optimistic update for demo mode
+
         setRequests(prev => prev.map(r =>
           (r._id || r.id) === id ? { ...r, status: type === 'approve' ? 'approved' : 'rejected' } : r
         ))
       }
     } catch {
-      // Fallback optimistic update
+
       setRequests(prev => prev.map(r =>
         (r._id || r.id) === id ? { ...r, status: type === 'approve' ? 'approved' : 'rejected' } : r
       ))
@@ -175,7 +169,6 @@ export default function CarbonAudit({ socket }) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Leaf size={16} className="text-neon-cyan" />
@@ -192,7 +185,6 @@ export default function CarbonAudit({ socket }) {
         </button>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Total Requests', value: counts.all, color: '#00d4ff' },
@@ -207,7 +199,6 @@ export default function CarbonAudit({ socket }) {
         ))}
       </div>
 
-      {/* Filter Tabs */}
       <div className="flex gap-2">
         {['all', 'pending', 'approved', 'rejected'].map(f => (
           <button
@@ -224,7 +215,6 @@ export default function CarbonAudit({ socket }) {
         ))}
       </div>
 
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 font-mono">
           <AlertCircle size={12} className="flex-shrink-0" />
@@ -232,7 +222,6 @@ export default function CarbonAudit({ socket }) {
         </div>
       )}
 
-      {/* Request List */}
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-xs text-gray-500 font-mono">
           <Loader2 size={14} className="animate-spin text-neon-cyan" />

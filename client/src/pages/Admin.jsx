@@ -34,7 +34,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null
 }
 
-// ── Simulated real-time metrics ────────────────────────────
 function useRealtimeMetrics() {
   const [metrics, setMetrics] = useState({
     cpu: 38, memory: 62, requests: 1420, latency: 124,
@@ -60,7 +59,6 @@ function useRealtimeMetrics() {
   return metrics
 }
 
-// ── Generate sparkline history ─────────────────────────────
 function generateHistory(length = 20, base = 50, variance = 15) {
   return Array.from({ length }, (_, i) => ({
     t: `${i}m`,
@@ -68,7 +66,6 @@ function generateHistory(length = 20, base = 50, variance = 15) {
   }))
 }
 
-// ── Status Badge ───────────────────────────────────────────
 function StatusBadge({ status }) {
   const styles = {
     operational: { color: '#06ffd4', bg: 'rgba(6,255,212,0.1)', label: '● OPERATIONAL' },
@@ -84,7 +81,6 @@ function StatusBadge({ status }) {
   )
 }
 
-// ── Gauge Ring ─────────────────────────────────────────────
 function GaugeRing({ value, max = 100, color, label, size = 80 }) {
   const pct = (value / max) * 100
   const r = size / 2 - 8
@@ -116,7 +112,6 @@ function GaugeRing({ value, max = 100, color, label, size = 80 }) {
   )
 }
 
-// ── Metric Card ────────────────────────────────────────────
 function AdminMetricCard({ icon: Icon, label, value, unit, color, trend, sparkData }) {
   return (
     <motion.div
@@ -160,7 +155,6 @@ function AdminMetricCard({ icon: Icon, label, value, unit, color, trend, sparkDa
   )
 }
 
-// ── Service Status ─────────────────────────────────────────
 const services = [
   { name: 'Weather API Gateway', status: 'operational', latency: '42ms', uptime: '99.99%' },
   { name: 'AI Inference Engine', status: 'operational', latency: '180ms', uptime: '99.94%' },
@@ -170,7 +164,6 @@ const services = [
   { name: 'Alert Notification Service', status: 'operational', latency: '22ms', uptime: '99.97%' },
 ]
 
-// ── Recent Activity ────────────────────────────────────────
 const activities = [
   { time: '13:57', event: 'New user connected from Mumbai', type: 'user', color: '#00d4ff' },
   { time: '13:55', event: 'Thunderstorm alert dispatched — 3 regions', type: 'alert', color: '#ff4444' },
@@ -182,7 +175,6 @@ const activities = [
   { time: '13:35', event: 'High UV alert auto-generated for 5 cities', type: 'alert', color: '#ff8800' },
 ]
 
-// ── Main Admin Page ────────────────────────────────────────
 export default function Admin() {
   const { user } = useAuth()
   const { socket } = useSocket()
@@ -199,12 +191,11 @@ export default function Admin() {
     { id: 'stress',    label: 'Stress Testing',icon: Zap,       color: '#ff8800' },
   ]
 
-  // Rules states
   const [rules, setRules] = useState([])
   const [loadingRules, setLoadingRules] = useState(true)
   const [errorRules, setErrorRules] = useState('')
   
-  // Form states
+
   const [city, setCity] = useState('Paris')
   const [metric, setMetric] = useState('temp')
   const [condition, setCondition] = useState('greater')
@@ -212,14 +203,12 @@ export default function Admin() {
   const [submittingRule, setSubmittingRule] = useState(false)
   const [errorForm, setErrorForm] = useState('')
 
-  // Push Alert Simulator states
   const [simulatedAlert, setSimulatedAlert] = useState(null)
   const [customTitle, setCustomTitle] = useState('')
   const [customText, setCustomText] = useState('')
   const [customSeverity, setCustomSeverity] = useState('critical')
   const [targetCity, setTargetCity] = useState('')
 
-  // ── Emails Sent & Realtime Active Users State & Polling ──────
   const [emailsSentCount, setEmailsSentCount] = useState(0)
   const [realtimeActiveUsers, setRealtimeActiveUsers] = useState(1)
 
@@ -242,34 +231,32 @@ export default function Admin() {
     return () => clearInterval(interval)
   }, [])
 
-  // IoT Simulator states
   const [uvSim, setUvSim] = useState(5)
   const [soilSim, setSoilSim] = useState('normal')
   const [sensorFaultSim, setSensorFaultSim] = useState(false)
 
-  // Synthesize double-beep warning chime using browser Web Audio API
   const playAlertSound = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)()
-      // Beep 1
+
       const osc1 = ctx.createOscillator()
       const gain1 = ctx.createGain()
       osc1.connect(gain1)
       gain1.connect(ctx.destination)
       osc1.type = 'sine'
-      osc1.frequency.setValueAtTime(660, ctx.currentTime) // E5 note
+      osc1.frequency.setValueAtTime(660, ctx.currentTime) 
       gain1.gain.setValueAtTime(0.08, ctx.currentTime)
       osc1.start()
       osc1.stop(ctx.currentTime + 0.12)
       
-      // Beep 2 (delayed)
+
       setTimeout(() => {
         const osc2 = ctx.createOscillator()
         const gain2 = ctx.createGain()
         osc2.connect(gain2)
         gain2.connect(ctx.destination)
         osc2.type = 'sine'
-        osc2.frequency.setValueAtTime(880, ctx.currentTime) // A5 note
+        osc2.frequency.setValueAtTime(880, ctx.currentTime) 
         gain2.gain.setValueAtTime(0.08, ctx.currentTime)
         osc2.start()
         osc2.stop(ctx.currentTime + 0.22)
@@ -279,7 +266,6 @@ export default function Admin() {
     }
   }
 
-  // Fetch user alert rules
   const fetchRules = async () => {
     setLoadingRules(true)
     setErrorRules('')
@@ -298,7 +284,6 @@ export default function Admin() {
     }
   }
 
-  // Add rule
   const handleAddRule = async (e) => {
     e.preventDefault()
     if (!city || !value) return
@@ -331,7 +316,6 @@ export default function Admin() {
     }
   }
 
-  // Delete rule
   const handleDeleteRule = async (ruleId) => {
     try {
       const res = await fetch(`/api/alerts/rules/${ruleId}`, {
@@ -347,7 +331,6 @@ export default function Admin() {
     }
   }
 
-  // Trigger emergency events simulation
   const handleTriggerSimulation = (type) => {
     let title = 'Heatwave Advisory'
     let text = 'Telemetry reports Paris average temp has exceeded 40°C threshold limit.'
@@ -393,7 +376,6 @@ export default function Admin() {
     }
   }
 
-  // Handle IoT simulation dispatch
   useEffect(() => {
     if (socket) {
       socket.emit('admin:simulate-iot', { uv: uvSim, soil: soilSim, fault: sensorFaultSim })
@@ -404,7 +386,6 @@ export default function Admin() {
     fetchRules()
   }, [])
 
-  // Hourly traffic data
   const trafficData = Array.from({ length: 24 }, (_, i) => ({
     hour: `${i}:00`,
     requests: Math.round(500 + Math.sin((i / 24) * Math.PI * 2) * 400 + Math.random() * 200),
@@ -439,7 +420,6 @@ export default function Admin() {
       <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[3]" />
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
 
-        {/* ── Header ────────────────────────────────────── */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -465,7 +445,6 @@ export default function Admin() {
             </button>
           </div>
         </div>
-        {/* ── Horizontal Tab Bar ───────────────────────── */}
         <div className="glass-strong rounded-2xl p-1.5 mb-6 flex items-center gap-1 overflow-x-auto">
           {adminTabs.map(tab => {
             const TabIcon = tab.icon
@@ -497,7 +476,6 @@ export default function Admin() {
           })}
         </div>
 
-        {/* ── Non-Dashboard Tab Panels ─────────────────── */}
         <AnimatePresence mode="wait">
           {activeTab === 'news' && (
             <motion.div key="news" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
@@ -536,10 +514,8 @@ export default function Admin() {
           )}
         </AnimatePresence>
 
-        {/* ── Dashboard Tab Content ────────────────────── */}
         {activeTab === 'dashboard' && (<>
 
-        {/* ── Server Health Gauges ─────────────────────── */}
         <div className="glass-strong rounded-3xl p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="heading-section text-lg text-white">Server Health</h2>
@@ -573,7 +549,6 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* ── Sparkline Metrics ────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <AdminMetricCard icon={Cpu} label="CPU Utilization" value={Math.round(metrics.cpu)} unit="%" color="#00d4ff" trend={2.1} sparkData={sparkCpu} />
           <AdminMetricCard icon={Database} label="Memory Usage" value={Math.round(metrics.memory)} unit="%" color="#7c3aed" trend={-0.5} sparkData={sparkMem} />
@@ -582,9 +557,7 @@ export default function Admin() {
           <AdminMetricCard icon={Zap} label="Alert Emails Sent" value={emailsSentCount} unit="mails" color="#ff0090" trend={emailsSentCount > 0 ? 100 : 0} sparkData={sparkEmails} />
         </div>
 
-        {/* ── Traffic Charts ───────────────────────────── */}
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Hourly Traffic */}
           <div className="lg:col-span-2 glass rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="heading-section text-lg text-white">Hourly API Traffic</h3>
@@ -614,7 +587,6 @@ export default function Admin() {
             </ResponsiveContainer>
           </div>
 
-          {/* Error Rate */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-4">Error Rate</h3>
             <div className="flex items-center gap-3 mb-4">
@@ -636,9 +608,7 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* ── Service Status + Activity ────────────────── */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Service Status */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-4 flex items-center gap-2">
               <Server size={16} className="text-neon-blue" /> Service Status
@@ -666,7 +636,6 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Activity Feed */}
           <div className="glass rounded-2xl p-6">
             <h3 className="heading-section text-lg text-white mb-4 flex items-center gap-2">
               <Activity size={16} className="text-neon-purple" /> Live Activity Feed
@@ -690,7 +659,6 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* ── User Geography ───────────────────────────── */}
         <div className="glass rounded-2xl p-6 mt-6">
           <h3 className="heading-section text-lg text-white mb-4 flex items-center gap-2">
             <Globe size={16} className="text-neon-blue" /> User Geography
@@ -720,10 +688,8 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* ── Smart Trigger Alerts & Simulator ───────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start mt-6">
           
-          {/* Rules Builder Form */}
           <div className="xl:col-span-4">
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative space-y-6">
               <div>
@@ -799,10 +765,8 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Active Rules List & Simulators */}
           <div className="xl:col-span-8 space-y-6">
             
-            {/* Active Rules Grid */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl space-y-4">
               <h3 className="text-lg text-white font-normal font-display">Active Threshold Rules</h3>
               
@@ -851,7 +815,6 @@ export default function Admin() {
               )}
             </div>
 
-            {/* Simulators Portal */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative space-y-4">
               <div>
                 <h3 className="text-lg text-white font-normal font-display">Emergency Telemetry Simulator</h3>
@@ -875,7 +838,6 @@ export default function Admin() {
                 ))}
               </div>
 
-              {/* Dynamic IoT Controllers */}
               <div className="border-t border-white/10 pt-4 mt-4 space-y-4">
                 <h4 className="text-sm font-semibold text-white mb-2 font-display">IoT Sensor Array Controls</h4>
                 
@@ -969,11 +931,10 @@ export default function Admin() {
           </div>
         </div>
 
-        </>)}{/* end dashboard tab */}
+        </>)}
 
       </div>
 
-      {/* Slide-in Simulation Overlay alerts */}
       <AnimatePresence>
         {simulatedAlert && (
           <motion.div

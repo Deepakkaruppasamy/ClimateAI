@@ -39,7 +39,6 @@ export default function GlobalAlertBanner() {
               <X size={16} />
             </button>
           </div>
-          {/* Animated pulsing scanline */}
           <motion.div 
             className="absolute bottom-0 left-0 h-[1px] bg-red-500 w-full"
             initial={{ opacity: 0.2, x: '-100%' }}

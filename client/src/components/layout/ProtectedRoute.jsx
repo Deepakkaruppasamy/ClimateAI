@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    // Redirect to login page and store the original path they tried to access
+
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

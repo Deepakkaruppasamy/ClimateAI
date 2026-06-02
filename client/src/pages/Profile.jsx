@@ -14,7 +14,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import VideoBackground from '../components/ui/VideoBackground'
 import { useSocket } from '../context/SocketContext'
 
-// ── Badge config ─────────────────────────────────────────────
 const BADGE_CONFIG = {
   'Climate Scholar':    { color: '#00d4ff',  bg: 'rgba(0,212,255,0.1)',   icon: BookOpen,   desc: 'Completed 3+ quizzes' },
   'Eco-Guardian':       { color: '#22c55e',  bg: 'rgba(34,197,94,0.1)',   icon: Leaf,       desc: 'Funded a carbon offset project' },
@@ -78,21 +77,19 @@ function CarbonStatusChip({ status }) {
   )
 }
 
-// ── Main Profile Page ─────────────────────────────────────────
 export default function Profile() {
   const { user, logout, updateUser } = useAuth()
   const navigate = useNavigate()
-  const { userId: paramUserId } = useParams() // if admin views someone else
+  const { userId: paramUserId } = useParams() 
   const { socket } = useSocket()
 
-  // Aesthetic preference toggle overrides
   const [cursorEnabled, setCursorEnabled] = useState(() => {
     const saved = localStorage.getItem('climateai:premium-cursor-enabled')
-    return saved !== 'false' // default is true
+    return saved !== 'false' 
   })
   const [magneticEnabled, setMagneticEnabled] = useState(() => {
     const saved = localStorage.getItem('climateai:magnetic-enabled')
-    return saved !== 'false' // default is true
+    return saved !== 'false' 
   })
 
   const targetId = paramUserId || user?._id
@@ -105,12 +102,10 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Carbon history state
-  const [activeHistoryTab, setActiveHistoryTab] = useState('quiz') // 'quiz' | 'carbon'
+  const [activeHistoryTab, setActiveHistoryTab] = useState('quiz') 
   const [footprintHistory, setFootprintHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
 
-  // Edit mode
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editBio, setEditBio] = useState('')
@@ -119,11 +114,9 @@ export default function Profile() {
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
 
-  // Admin users list
   const [allUsers, setAllUsers] = useState([])
   const [usersLoading, setUsersLoading] = useState(false)
 
-  // ── Fetch profile data ──────────────────────────────────────
   const fetchProfile = async () => {
     if (!targetId) return
     setLoading(true)
@@ -139,7 +132,7 @@ export default function Profile() {
         setEditBio(data.profile.bio || '')
         setEditAvatar(data.profile.avatar || '')
       } else {
-        // Fallback: use local user data for own profile
+
         if (isOwnProfile && user) {
           setProfile(user)
           setEditName(user.name)
@@ -163,7 +156,6 @@ export default function Profile() {
     }
   }
 
-  // ── Fetch all users (admin only) ─────────────────────────────
   const fetchAllUsers = async () => {
     if (!isAdmin) return
     setUsersLoading(true)
@@ -203,7 +195,6 @@ export default function Profile() {
     }
   }, [activeHistoryTab, targetId])
 
-  // Socket.IO real-time synchronization
   useEffect(() => {
     if (!socket) return
 
@@ -263,7 +254,6 @@ export default function Profile() {
     }
   }, [socket, targetId])
 
-  // ── Save profile edits ───────────────────────────────────────
   const handleSave = async () => {
     setSaving(true)
     setSaveError('')
@@ -282,7 +272,7 @@ export default function Profile() {
         setSaveSuccess(true)
         setTimeout(() => setSaveSuccess(false), 3000)
       } else {
-        // Optimistic update even if offline
+
         const patch = { name: editName, bio: editBio, avatar: editAvatar }
         setProfile(prev => ({ ...prev, ...patch }))
         if (isOwnProfile) updateUser(patch)
@@ -297,7 +287,6 @@ export default function Profile() {
     }
   }
 
-  // ── Admin: change user role ───────────────────────────────────
   const handleRoleChange = async (uid, newRole) => {
     try {
       const res = await fetch(`/api/profile/${uid}/role`, {
@@ -313,7 +302,6 @@ export default function Profile() {
     }
   }
 
-  // ── Admin: delete user ────────────────────────────────────────
   const handleDeleteUser = async (uid) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return
     try {
@@ -356,7 +344,6 @@ export default function Profile() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
 
-        {/* ── Loading ─────────────────────────────────────────── */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
             <div className="w-10 h-10 border-2 border-neon-blue border-t-transparent rounded-full animate-spin" />
@@ -374,25 +361,21 @@ export default function Profile() {
         {!loading && profile && (
           <div className="space-y-8">
 
-            {/* ── Profile Hero ──────────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="glass-strong rounded-3xl overflow-hidden border border-white/5 shadow-2xl relative"
             >
-              {/* Decorative background glow */}
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute -top-20 -left-20 w-64 h-64 bg-neon-blue/10 rounded-full blur-[80px]" />
                 <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-neon-purple/10 rounded-full blur-[80px]" />
               </div>
 
-              {/* Cover banner with high-tech HUD markings */}
               <div className="h-28 bg-gradient-to-r from-neon-blue/20 via-neon-purple/20 to-neon-cyan/20 relative">
                 <div className="absolute inset-0 bg-animated-grid opacity-10" />
                 
-                {/* HUD markings on the cover banner */}
                 <div className="absolute top-3 left-4 text-[8px] font-mono text-white/35 tracking-widest select-none">
-                  USER_PROFILE_SYS // SECURE_NODE
+                  USER_PROFILE_SYS 
                 </div>
                 <div className="absolute top-3 right-4 text-[8px] font-mono text-white/35 tracking-widest flex items-center gap-1.5 select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
@@ -406,7 +389,6 @@ export default function Profile() {
 
               <div className="px-8 pb-8 relative">
                 <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-12">
-                  {/* Avatar */}
                   <div className="relative group">
                     <div className="w-24 h-24 rounded-2xl border-4 border-[#070a13] overflow-hidden shadow-xl"
                       style={{ boxShadow: '0 0 30px rgba(0,212,255,0.3)' }}>
@@ -421,7 +403,6 @@ export default function Profile() {
                         <Camera size={20} className="text-white" />
                       </label>
                     )}
-                    {/* Role badge */}
                     {profile.role === 'admin' && (
                       <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br from-neon-pink to-neon-purple flex items-center justify-center shadow-lg">
                         <Crown size={12} className="text-white" />
@@ -429,7 +410,6 @@ export default function Profile() {
                     )}
                   </div>
 
-                  {/* Name + bio area */}
                   <div className="flex-1 min-w-0">
                     {editing ? (
                       <div className="space-y-3 pt-3">
@@ -494,7 +474,6 @@ export default function Profile() {
                     )}
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {(isOwnProfile || isAdmin) && (
                       editing ? (
@@ -536,7 +515,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Save feedback */}
                 <AnimatePresence>
                   {saveSuccess && (
                     <motion.div
@@ -560,7 +538,6 @@ export default function Profile() {
               </div>
             </motion.div>
 
-            {/* ── XP Level Progress ──────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -593,7 +570,6 @@ export default function Profile() {
               </div>
             </motion.div>
 
-            {/* ── Stats Grid ──────────────────────────────────────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
               <StatCard icon={Star} label="Total XP" value={totalXP} color="#ffcc00" sub={`Level ${xpLevel}`} />
               <StatCard icon={Leaf} label="Annual Footprint" value={`${profile.footprint || 0}t`} color="#00d4ff" sub="calculated footprint" />
@@ -602,7 +578,6 @@ export default function Profile() {
               <StatCard icon={Leaf} label="CO2 Offset" value={`${approvedCarbon}t`} color="#22c55e" sub="approved credits" />
             </div>
 
-            {/* ── Aesthetic Preferences ───────────────────────────── */}
             {isOwnProfile && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -621,7 +596,6 @@ export default function Profile() {
                     </div>
                   </div>
                   <div className="flex items-center gap-6 flex-wrap">
-                    {/* Toggle: Premium Cursor & Click Animations */}
                     <div className="flex items-center gap-4 bg-white/5 border border-white/5 rounded-2xl p-3 px-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-semibold text-white">Premium Cursor & Click Trails</span>
@@ -643,7 +617,6 @@ export default function Profile() {
                       </button>
                     </div>
 
-                    {/* Toggle: Magnetic Attractions */}
                     <div className="flex items-center gap-4 bg-white/5 border border-white/5 rounded-2xl p-3 px-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-semibold text-white">Magnetic Attraction Easing</span>
@@ -669,7 +642,6 @@ export default function Profile() {
               </motion.div>
             )}
 
-            {/* ── Badges ──────────────────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -682,7 +654,6 @@ export default function Profile() {
                 <span className="text-xs font-mono text-gray-500 ml-1">({profile.badges?.length || 0} earned)</span>
               </div>
               <div className="flex flex-wrap gap-3">
-                {/* Earned Badges */}
                 {(profile.badges || []).map(badge => {
                   const cfg = BADGE_CONFIG[badge] || { color: '#00d4ff', bg: 'rgba(0,212,255,0.1)', icon: Star, desc: '' }
                   const Icon = cfg.icon
@@ -706,7 +677,6 @@ export default function Profile() {
                   )
                 })}
 
-                {/* Locked Badges */}
                 {Object.entries(BADGE_CONFIG)
                   .filter(([name]) => name !== 'Admin' && !(profile.badges || []).includes(name))
                   .map(([name, cfg]) => {
@@ -730,10 +700,8 @@ export default function Profile() {
               </div>
             </motion.div>
 
-            {/* ── Bottom grid: Quiz History + Carbon History ──────── */}
             <div className="grid lg:grid-cols-2 gap-6">
 
-              {/* Quiz & Carbon Journey History */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -827,7 +795,6 @@ export default function Profile() {
                 )}
               </motion.div>
 
-              {/* Carbon Requests */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -866,7 +833,6 @@ export default function Profile() {
               </motion.div>
             </div>
 
-            {/* ── Admin: User Management Panel ─────────────────────── */}
             {isAdmin && isOwnProfile && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}

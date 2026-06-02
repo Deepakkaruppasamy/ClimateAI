@@ -21,7 +21,6 @@ const ChatMessageSchema = new mongoose.Schema({
   }
 });
 
-// Auto-expire old messages after 30 days to save space
 ChatMessageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });
 
 module.exports = mongoose.model('ChatMessage', ChatMessageSchema);

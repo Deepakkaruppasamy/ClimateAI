@@ -98,7 +98,6 @@ function AtmosphericBackground() {
     resize()
     window.addEventListener('resize', resize, { passive: true })
 
-    // Generate climate telemetry wind streamlines and radar cloud cells
     const windCurrents = []
     for (let i = 0; i < 20; i++) {
       windCurrents.push({
@@ -142,7 +141,6 @@ function AtmosphericBackground() {
       if (!canvas || !ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // 1. Draw soft satellite radar cloud cells (drifting meteorology zones)
       cloudCells.forEach(c => {
         c.x += c.vx
         c.y += c.vy
@@ -156,8 +154,8 @@ function AtmosphericBackground() {
 
         ctx.save()
         const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.radius)
-        grad.addColorStop(0, `rgba(0, 212, 255, ${c.opacity})`) // neon blue/cyan core
-        grad.addColorStop(0.5, `rgba(124, 58, 237, ${c.opacity * 0.4})`) // purple dispersion
+        grad.addColorStop(0, `rgba(0, 212, 255, ${c.opacity})`) 
+        grad.addColorStop(0.5, `rgba(124, 58, 237, ${c.opacity * 0.4})`) 
         grad.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = grad
         ctx.beginPath()
@@ -166,7 +164,6 @@ function AtmosphericBackground() {
         ctx.restore()
       })
 
-      // 2. Draw active wind current streamlines (atmospheric jet streams)
       ctx.save()
       windCurrents.forEach(w => {
         w.x += w.speed
@@ -177,10 +174,9 @@ function AtmosphericBackground() {
         }
 
         ctx.beginPath()
-        ctx.strokeStyle = `rgba(6, 255, 212, ${w.opacity})` // crisp neon cyan
+        ctx.strokeStyle = `rgba(6, 255, 212, ${w.opacity})` 
         ctx.lineWidth = w.thickness
 
-        // Draw curved streamline using sine wave displacement
         for (let j = 0; j < w.length; j += 5) {
           const px = w.x - j
           const py = w.y + Math.sin(px * w.frequency + w.phase) * w.amplitude
@@ -194,7 +190,6 @@ function AtmosphericBackground() {
       })
       ctx.restore()
 
-      // 3. Draw meteorological telemetry signs
       ctx.save()
       ctx.font = '9px monospace'
       telemetryPoints.forEach(p => {
@@ -218,18 +213,14 @@ function AtmosphericBackground() {
 
   return (
     <div className="fixed inset-0 bg-[#02050e] overflow-hidden z-0 select-none pointer-events-none">
-      {/* Dynamic atmospheric ambient glow mapping */}
       <div className="absolute inset-0 bg-radial-glow opacity-30" style={{ background: 'radial-gradient(circle at 50% 50%, #061129 0%, #02050e 100%)' }} />
 
-      {/* Cybernetic weather grid */}
       <div className="absolute inset-0 bg-animated-grid opacity-10" />
 
-      {/* Floating 3D Cyber-Climate Planet Hero Globe */}
       <div className="absolute right-[-10%] top-[15%] w-[450px] h-[450px] sm:w-[550px] sm:h-[550px] opacity-25 pointer-events-none mix-blend-screen hidden lg:block">
         <AnimatedGlobe />
       </div>
 
-      {/* Atmospheric Canvas Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen" />
     </div>
   )
@@ -271,7 +262,6 @@ export default function Assistant() {
     window.speechSynthesis.speak(utterance)
   }
 
-  // Load chat history on mount
   useEffect(() => {
     if (!user?._id || historyLoaded) return
     const loadHistory = async () => {
@@ -285,11 +275,11 @@ export default function Assistant() {
             time: new Date(m.createdAt).getTime()
           }))
           setMessages(prev => [
-            prev[0], // keep the greeting
+            prev[0], 
             ...restored
           ])
         }
-      } catch (e) { /* silent fail */ } finally {
+      } catch (e) {  } finally {
         setHistoryLoaded(true)
       }
     }
@@ -328,7 +318,6 @@ Guidelines:
     setInput('')
     setLoading(true)
 
-    // Save user message to history
     if (user?._id) {
       fetch(`/api/ai/history/${user._id}`, {
         method: 'POST',
@@ -357,7 +346,7 @@ Guidelines:
             aqi: aqi?.aqi,
             aqiCategory: aqi?.category,
           } : null,
-          // Inject user context for personalized responses
+
           userContext: user ? {
             name: user.name,
             city: weather?.city,
@@ -372,7 +361,7 @@ Guidelines:
       if (response.ok && data.content) {
         const assistantMsg = { role: 'assistant', content: data.content, time: Date.now() }
         setMessages(prev => [...prev, assistantMsg])
-        // Save assistant reply to history
+
         if (user?._id) {
           fetch(`/api/ai/history/${user._id}`, {
             method: 'POST',
@@ -385,7 +374,7 @@ Guidelines:
       }
     } catch (err) {
       console.warn('Backend chat failed — falling back to client-side or demo:', err)
-      // Fallback: If client has GROQ_API_KEY, we can try calling Groq directly
+
       if (GROQ_API_KEY) {
         try {
           const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -415,7 +404,6 @@ Guidelines:
         }
       }
 
-      // Elegant Demo fallback response matching current weather
       await new Promise(r => setTimeout(r, 1200 + Math.random() * 800))
       const replies = {
         wear: `Based on current conditions (${weather?.temp || 22}°C, ${weather?.description || 'mainly clear'}): ${weather?.temp > 25 ? '👕 Light breathable clothing is perfect. Stay hydrated!' : weather?.temp > 15 ? '🧥 A light jacket would be comfortable today.' : '🧣 Bundle up! Wear warm layers and a scarf.'}`,
@@ -486,7 +474,6 @@ Guidelines:
       <AtmosphericBackground />
 
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 w-full flex flex-col flex-1 relative z-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="heading-display text-3xl text-white">
@@ -495,7 +482,6 @@ Guidelines:
             <p className="text-gray-400 text-sm mt-1">Voice-enabled climate intelligence</p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Clear Chat Button */}
             <button
               onClick={clearChat}
               className="glass px-4 py-2 rounded-xl text-xs font-mono text-gray-400 hover:text-red-400 hover:neon-border-red transition-all flex items-center gap-2 group cursor-pointer"
@@ -505,7 +491,6 @@ Guidelines:
               <span>Clear Chat</span>
             </button>
 
-            {/* Live weather chip */}
             {weather && (
               <div className="glass rounded-xl px-4 py-2 flex items-center gap-2">
                 <Thermometer size={14} className="text-neon-blue" />
@@ -517,9 +502,7 @@ Guidelines:
           </div>
         </div>
 
-        {/* Chat Window */}
         <div className="glass-strong rounded-3xl flex flex-col flex-1 overflow-hidden" style={{ minHeight: '60vh' }}>
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6">
             {messages.map((msg, i) => <MessageBubble key={i} msg={msg} onSpeak={speak} speaking={isSpeaking} />)}
             <AnimatePresence>
@@ -528,7 +511,6 @@ Guidelines:
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Prompts — always visible */}
           <div className="px-6 pb-4">
             <p className="text-[10px] font-mono text-gray-600 uppercase tracking-wider mb-2">Quick Climate Queries</p>
             <div className="flex flex-wrap gap-2">
@@ -549,7 +531,6 @@ Guidelines:
             </div>
           </div>
 
-          {/* Input */}
           <div className="p-4 border-t border-white/5">
             <div className="flex gap-3 items-end">
               <div className="flex-1 glass rounded-2xl flex items-center gap-3 px-4 py-3">

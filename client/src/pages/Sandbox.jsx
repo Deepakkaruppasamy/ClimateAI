@@ -5,33 +5,30 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'rec
 import VideoBackground from '../components/ui/VideoBackground'
 
 export default function Sandbox() {
-  const [sandboxTab, setSandboxTab] = useState('projections') // 'projections' | 'policy'
+  const [sandboxTab, setSandboxTab] = useState('projections') 
   const [year, setYear] = useState(2026)
-  const [rcp, setRcp] = useState('rcp45') // rcp26 (net zero), rcp45 (moderate), rcp85 (high)
+  const [rcp, setRcp] = useState('rcp45') 
   
-  // Policy simulator states
-  const [coalPhaseout, setCoalPhaseout] = useState(30)   // % phased out
-  const [evAdoption, setEvAdoption] = useState(20)       // % of vehicles
-  const [deforestation, setDeforestation] = useState(0)  // -100=reforestation, +100=mass deforestation
-  const [renewableGrid, setRenewableGrid] = useState(25) // % of grid
+
+  const [coalPhaseout, setCoalPhaseout] = useState(30)   
+  const [evAdoption, setEvAdoption] = useState(20)       
+  const [deforestation, setDeforestation] = useState(0)  
+  const [renewableGrid, setRenewableGrid] = useState(25) 
   const [policyAiAnalysis, setPolicyAiAnalysis] = useState('')
   const [loadingPolicyAi, setLoadingPolicyAi] = useState(false)
 
-  // AI analysis states
   const [aiAnalysis, setAiAnalysis] = useState('')
   const [loadingAi, setLoadingAi] = useState(false)
 
-  // Math simulation formulas based on Year (y) and RCP scenario (r)
   const simulateClimate = (y, r) => {
     const baselineYear = 1850
     const diff = y - baselineYear
     
     let temp = 0
     let seaLevel = 0
-    let ice = 8.5 // million km2
-    let co2 = 280 // ppm
+    let ice = 8.5 
+    let co2 = 280 
 
-    // Historical (1850 - 2026)
     if (y <= 2026) {
       const factor = (y - baselineYear) / (2026 - baselineYear)
       temp = parseFloat((1.2 * factor + Math.sin(y / 7) * 0.05).toFixed(2))
@@ -39,7 +36,7 @@ export default function Sandbox() {
       ice = parseFloat((8.5 - 3.2 * factor).toFixed(2))
       co2 = Math.round(280 + 140 * factor)
     } else {
-      // Future Projections (2027 - 2100)
+
       const historicalFactor = 1.0
       const histTemp = 1.2
       const histSea = 20
@@ -63,7 +60,7 @@ export default function Sandbox() {
         temp = parseFloat((histTemp + 3.6 * futFactor + Math.sin(y / 5) * 0.06).toFixed(2))
         seaLevel = Math.round(histSea + 80 * futFactor)
         ice = parseFloat((histIce - 5.2 * futFactor).toFixed(2))
-        if (ice < 0.1) ice = 0.0 // Ice-free arctic
+        if (ice < 0.1) ice = 0.0 
         co2 = Math.round(histCo2 + 520 * futFactor)
       }
     }
@@ -73,7 +70,6 @@ export default function Sandbox() {
 
   const { temp, seaLevel, ice, co2 } = simulateClimate(year, rcp)
 
-  // Generate dataset for Recharts from 1850 up to selected year
   const getHistoricalDataset = () => {
     const data = []
     for (let y = 1850; y <= year; y += 10) {
@@ -82,7 +78,7 @@ export default function Sandbox() {
         ...simulateClimate(y, rcp)
       })
     }
-    // Add current year if not already multiple of 10
+
     if (year % 10 !== 0) {
       data.push({
         year,
@@ -94,7 +90,6 @@ export default function Sandbox() {
 
   const chartData = getHistoricalDataset()
 
-  // Dynamic AI call based on year and RCP scenario
   const fetchAiSimulation = async () => {
     setLoadingAi(true)
     setAiAnalysis('')
@@ -132,24 +127,22 @@ export default function Sandbox() {
     }
   }
 
-  // Reload AI analysis when year or RCP changes
   useEffect(() => {
     if (sandboxTab !== 'projections') return
     const delayDebounce = setTimeout(() => {
       fetchAiSimulation()
-    }, 1500) // Debounce requests to prevent spam
+    }, 1500) 
     return () => clearTimeout(delayDebounce)
   }, [year, rcp])
 
-  // Policy scenario calculation
   const calcPolicyImpact = () => {
-    // Each slider reduces or increases warming
-    const coalReduction = (coalPhaseout / 100) * 0.8    // max 0.8°C reduction
-    const evReduction = (evAdoption / 100) * 0.3         // max 0.3°C
-    const defoImpact = (deforestation / 100) * 0.5       // +/-0.5°C
-    const renewableReduction = (renewableGrid / 100) * 0.5 // max 0.5°C
+
+    const coalReduction = (coalPhaseout / 100) * 0.8    
+    const evReduction = (evAdoption / 100) * 0.3         
+    const defoImpact = (deforestation / 100) * 0.5       
+    const renewableReduction = (renewableGrid / 100) * 0.5 
     const totalReduction = coalReduction + evReduction - defoImpact + renewableReduction
-    const baseTemp2050 = 1.8  // baseline RCP4.5 2050 temp anomaly
+    const baseTemp2050 = 1.8  
     const projectedTemp = Math.max(0.8, parseFloat((baseTemp2050 - totalReduction).toFixed(2)))
     const co2Reduction = Math.round((coalPhaseout * 0.8 + evAdoption * 0.4 + renewableGrid * 1.2) / 3)
     const seaLevelBenefit = Math.round(totalReduction * 8)
@@ -181,7 +174,6 @@ export default function Sandbox() {
     }
   }
 
-  // Live Canvas Carbon Bubble Visualizer
   useEffect(() => {
     const canvas = document.getElementById('sandbox-bubble-canvas')
     if (!canvas) return
@@ -192,7 +184,6 @@ export default function Sandbox() {
     let width = (canvas.width = canvas.offsetWidth)
     let height = (canvas.height = canvas.offsetHeight)
 
-    // Handle resize
     const handleResize = () => {
       if (!canvas) return
       width = canvas.width = canvas.offsetWidth
@@ -200,20 +191,18 @@ export default function Sandbox() {
     }
     window.addEventListener('resize', handleResize)
 
-    // Particles array
     let particles = []
 
-    // Helper to generate particles
     const createParticle = (yVal = height + 10) => {
       const size = Math.random() * 4 + 1.5
-      // Determine color based on RCP scenario
-      let color = 'rgba(6, 255, 212, 0.4)' // RCP 2.6
+
+      let color = 'rgba(6, 255, 212, 0.4)' 
       let glow = 'rgba(6, 255, 212, 0.2)'
       if (rcp === 'rcp45') {
-        color = 'rgba(255, 172, 0, 0.4)' // RCP 4.5
+        color = 'rgba(255, 172, 0, 0.4)' 
         glow = 'rgba(255, 172, 0, 0.2)'
       } else if (rcp === 'rcp85') {
-        color = 'rgba(255, 0, 144, 0.5)' // RCP 8.5
+        color = 'rgba(255, 0, 144, 0.5)' 
         glow = 'rgba(255, 0, 144, 0.3)'
       }
 
@@ -221,7 +210,7 @@ export default function Sandbox() {
         x: Math.random() * width,
         y: yVal,
         size,
-        speed: (Math.random() * 0.6 + 0.3) * (1 + temp * 0.4), // speed scales with temp
+        speed: (Math.random() * 0.6 + 0.3) * (1 + temp * 0.4), 
         color,
         glow,
         angle: Math.random() * Math.PI * 2,
@@ -229,17 +218,14 @@ export default function Sandbox() {
       }
     }
 
-    // Pre-populate particles
     const targetCount = Math.floor(co2 / 6)
     for (let i = 0; i < targetCount; i++) {
       particles.push(createParticle(Math.random() * height))
     }
 
-    // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, width, height)
 
-      // Keep target count updated in real-time
       const currentTargetCount = Math.min(150, Math.floor(co2 / 6))
       while (particles.length < currentTargetCount) {
         particles.push(createParticle())
@@ -253,16 +239,14 @@ export default function Sandbox() {
         p.angle += p.wobbleSpeed
         p.x += Math.sin(p.angle) * 0.15
 
-        // Draw particle with glow
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
         ctx.fillStyle = p.color
         ctx.shadowColor = p.glow
         ctx.shadowBlur = p.size * 2
         ctx.fill()
-        ctx.shadowBlur = 0 // reset shadow blur
+        ctx.shadowBlur = 0 
 
-        // Reset particle if it leaves the top screen
         if (p.y < -10) {
           particles[idx] = createParticle()
         }
@@ -278,7 +262,6 @@ export default function Sandbox() {
       window.removeEventListener('resize', handleResize)
     }
   }, [co2, rcp, temp])
-
 
   const getRcpMetadata = () => {
     if (rcp === 'rcp26') return { label: 'Net Zero Pathway (RCP 2.6)', color: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/5', desc: 'Represents immediate, drastic cuts to greenhouse gases. Temp increase is capped close to 1.5°C.' }
@@ -300,7 +283,6 @@ export default function Sandbox() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title + Tab Switcher */}
         <div className="mb-8 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Ecological Projections</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -333,14 +315,12 @@ export default function Sandbox() {
           </div>
         </div>
 
-        {/* ── POLICY SIMULATOR TAB ── */}
         {sandboxTab === 'policy' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Policy impact cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Projected Temp 2050', value: `+${policyImpact.projectedTemp}°C`, color: policyImpact.projectedTemp < 1.5 ? '#06ffd4' : policyImpact.projectedTemp < 2.0 ? '#ffcc00' : '#ff4400' },
@@ -355,7 +335,6 @@ export default function Sandbox() {
               ))}
             </div>
 
-            {/* Policy sliders */}
             <div className="glass-strong rounded-3xl p-8 border border-white/5 shadow-2xl">
               <h3 className="text-white font-display text-lg mb-6">Adjust Policy Variables</h3>
               <div className="space-y-6">
@@ -393,7 +372,6 @@ export default function Sandbox() {
                 ))}
               </div>
 
-              {/* AI Scenario Button */}
               <button
                 onClick={fetchPolicyAiAnalysis}
                 disabled={loadingPolicyAi}
@@ -420,7 +398,6 @@ export default function Sandbox() {
           </motion.div>
         )}
 
-        {/* ── PROJECTIONS TAB ── */}
         {sandboxTab === 'projections' && (
         <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -444,16 +421,13 @@ export default function Sandbox() {
           ))}
         </div>
 
-        {/* Sandbox Panel */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Projections Graphs */}
           <div className="xl:col-span-8 space-y-6">
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <h3 className="text-lg text-white font-normal font-display">Historical to Projection Trend</h3>
                 
-                {/* RCP Tabs */}
                 <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/5 text-xs font-mono">
                   {[
                     { id: 'rcp26', label: 'RCP 2.6' },
@@ -475,7 +449,6 @@ export default function Sandbox() {
                 </div>
               </div>
 
-              {/* Chart */}
               <div className="h-80 w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -492,7 +465,6 @@ export default function Sandbox() {
               </div>
             </div>
 
-            {/* Timeline Slider */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative space-y-4">
               <div className="flex justify-between items-center text-sm font-mono">
                 <span className="text-gray-500">[1850]</span>
@@ -511,16 +483,13 @@ export default function Sandbox() {
             </div>
           </div>
 
-          {/* AI Analysis Panel */}
           <div className="xl:col-span-4 space-y-6">
             
-            {/* Scenario Metadata Card */}
             <div className={`p-6 rounded-3xl border transition-all ${meta.border} ${meta.bg}`}>
               <h4 className={`text-base font-semibold font-mono ${meta.color}`}>{meta.label}</h4>
               <p className="text-xs text-gray-300 leading-relaxed mt-2">{meta.desc}</p>
             </div>
 
-            {/* Interactive Telemetry Canvas */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 relative overflow-hidden h-48 shadow-2xl">
               <div className="absolute top-4 left-4 z-10 pointer-events-none">
                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">[ Live Carbon Telemetry ]</span>
@@ -529,7 +498,6 @@ export default function Sandbox() {
               <canvas id="sandbox-bubble-canvas" className="absolute inset-0 w-full h-full pointer-events-none" />
             </div>
 
-            {/* AI Predictions */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative flex flex-col justify-between min-h-[300px]">
               <div>
                 <div className="flex items-center gap-2 mb-4">

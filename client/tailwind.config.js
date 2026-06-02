@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+
 export default {
   content: [
     "./index.html",
@@ -7,19 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary palette
+
         'neon-blue': '#00d4ff',
         'neon-purple': '#7c3aed',
         'neon-cyan': '#06ffd4',
         'neon-pink': '#ff0090',
         'electric': '#0066ff',
-        // Dark backgrounds
+
         'dark-900': '#020409',
         'dark-800': '#040d1a',
         'dark-700': '#061022',
         'dark-600': '#0a1628',
         'dark-500': '#0d1f35',
-        // Glass
+
         'glass-10': 'rgba(255,255,255,0.04)',
         'glass-20': 'rgba(255,255,255,0.08)',
       },

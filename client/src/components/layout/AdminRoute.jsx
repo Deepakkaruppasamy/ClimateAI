@@ -13,7 +13,6 @@ export default function AdminRoute({ children }) {
     )
   }
 
-  // Redirect if not logged in or role is not admin
   if (!user || user.role !== 'admin') {
     console.warn(`🔒 Access Denied: User role ${user?.role || 'none'} attempted to access Admin Panel.`)
     return <Navigate to="/dashboard" state={{ from: location }} replace />

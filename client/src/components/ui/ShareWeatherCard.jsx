@@ -33,11 +33,9 @@ function WeatherCardPreview({ weather, aqi }) {
         fontFamily: 'Inter, system-ui, sans-serif',
       }}
     >
-      {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, #00d4ff, transparent)' }} />
 
       <div className="p-6">
-        {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
@@ -50,7 +48,6 @@ function WeatherCardPreview({ weather, aqi }) {
           <div style={{ fontSize: '48px', lineHeight: 1 }}>{getConditionIcon()}</div>
         </div>
 
-        {/* Main Temp */}
         <div className="flex items-end gap-3 mb-5">
           <span style={{ fontSize: '60px', fontWeight: '300', color: '#00d4ff', lineHeight: 1, letterSpacing: '-0.02em' }}>
             {weather?.temp ?? '--'}°
@@ -61,7 +58,6 @@ function WeatherCardPreview({ weather, aqi }) {
           </div>
         </div>
 
-        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
           {[
             { icon: '💧', label: 'Humidity', val: `${weather?.humidity ?? '--'}%` },
@@ -76,7 +72,6 @@ function WeatherCardPreview({ weather, aqi }) {
           ))}
         </div>
 
-        {/* AQI bar */}
         {aqi && (
           <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -88,7 +83,6 @@ function WeatherCardPreview({ weather, aqi }) {
           </div>
         )}
 
-        {/* Footer */}
         <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '9px', color: '#374151', fontFamily: 'monospace' }}>climateai.app</span>
           <span style={{ fontSize: '9px', color: '#374151', fontFamily: 'monospace' }}>{timeStr}</span>
@@ -116,7 +110,7 @@ export default function ShareWeatherCard({ onClose }) {
 
   const handleDownload = async () => {
     try {
-      // Try using the native Web Share API (works great on mobile)
+
       if (navigator.share) {
         await navigator.share({
           title: `Weather in ${weather?.city}`,
@@ -124,7 +118,7 @@ export default function ShareWeatherCard({ onClose }) {
           url: window.location.href,
         })
       } else {
-        // Fallback: copy a rich text description
+
         handleCopyLink()
       }
     } catch (err) {
@@ -160,12 +154,10 @@ export default function ShareWeatherCard({ onClose }) {
           </button>
         </div>
 
-        {/* Preview */}
         <div className="flex justify-center mb-6">
           <WeatherCardPreview weather={weather} aqi={aqi} />
         </div>
 
-        {/* Actions */}
         <div className="grid grid-cols-3 gap-3">
           <button
             onClick={handleDownload}

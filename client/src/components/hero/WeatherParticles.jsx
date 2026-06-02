@@ -25,7 +25,7 @@ export default function WeatherParticles() {
       const count = weatherType === 'rain' || weatherType === 'storm' ? 200
         : weatherType === 'snow' ? 120
         : weatherType === 'cloudy' ? 40
-        : 80 // stars/clear
+        : 80 
 
       for (let i = 0; i < count; i++) {
         particles.push(createParticle(i))
@@ -63,7 +63,7 @@ export default function WeatherParticles() {
           opacity: 0.03 + Math.random() * 0.06,
         }
       } else {
-        // Stars for clear weather
+
         return {
           type: 'star',
           x: Math.random() * canvas.width,
@@ -94,7 +94,7 @@ export default function WeatherParticles() {
           ctx.lineTo(x, y)
         }
         ctx.stroke()
-        // Flash overlay
+
         ctx.fillStyle = 'rgba(0, 212, 255, 0.05)'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.restore()

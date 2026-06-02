@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const QuizQuestionSchema = new mongoose.Schema({
   question: { type: String, required: true },
-  options: { type: [String], default: [] }, // array of possible answers
-  answer: { type: String, required: true }, // correct answer text
-  expl: { type: String, default: '' },      // explanation shown after answering
+  options: { type: [String], default: [] }, 
+  answer: { type: String, required: true }, 
+  expl: { type: String, default: '' },      
   type: { type: String, enum: ['multiple-choice', 'true-false', 'short-answer'], default: 'multiple-choice' },
   category: {
     type: String,

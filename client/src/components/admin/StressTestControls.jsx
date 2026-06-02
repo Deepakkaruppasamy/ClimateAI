@@ -20,7 +20,6 @@ export default function StressTestControls({ socket }) {
   const [fetchError, setFetchError] = useState('')
   const [testLog, setTestLog] = useState([])
 
-  // Fetch current flags from server
   const fetchStatus = async () => {
     try {
       const res = await fetch('/api/stress/status')
@@ -33,7 +32,6 @@ export default function StressTestControls({ socket }) {
 
   useEffect(() => { fetchStatus() }, [])
 
-  // Sync when another admin toggles via socket
   useEffect(() => {
     if (!socket) return
     const onUpdate = (f) => setFlags(f)
@@ -90,7 +88,6 @@ export default function StressTestControls({ socket }) {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center gap-2">
         <Zap size={16} className={flags.enabled ? 'text-amber-400' : 'text-gray-500'} />
         <h3 className="text-lg font-semibold text-white font-display">Stress Testing</h3>
@@ -106,14 +103,12 @@ export default function StressTestControls({ socket }) {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
-        {/* Controls Panel */}
         <div className="glass-strong rounded-2xl p-5 border border-white/5 space-y-5">
           <h4 className="text-sm font-semibold text-white font-display flex items-center gap-2">
             <Gauge size={14} className="text-neon-blue" />
             Stress Parameters
           </h4>
 
-          {/* Master Toggle */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
             <div>
               <p className="text-sm font-medium text-white">Enable Stress Mode</p>
@@ -130,7 +125,6 @@ export default function StressTestControls({ socket }) {
             </button>
           </div>
 
-          {/* Latency Slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5 text-gray-400 font-mono">
@@ -155,7 +149,6 @@ export default function StressTestControls({ socket }) {
             </div>
           </div>
 
-          {/* Rate Limit Slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5 text-gray-400 font-mono">
@@ -180,7 +173,6 @@ export default function StressTestControls({ socket }) {
             </div>
           </div>
 
-          {/* Preset Buttons */}
           <div className="grid grid-cols-3 gap-2 pt-1">
             {[
               { label: 'Light', ms: 500, chance: 0.1, color: '#06ffd4' },
@@ -198,7 +190,6 @@ export default function StressTestControls({ socket }) {
             ))}
           </div>
 
-          {/* Apply / Test buttons */}
           <div className="flex gap-2 pt-1">
             <button
               onClick={handleSave}
@@ -223,9 +214,7 @@ export default function StressTestControls({ socket }) {
           </div>
         </div>
 
-        {/* Status + Log Panel */}
         <div className="space-y-4">
-          {/* Current Status */}
           <div className="glass rounded-2xl p-4 border border-white/5">
             <h4 className="text-sm font-semibold text-white font-display flex items-center gap-2 mb-3">
               <Activity size={14} className="text-neon-cyan" />
@@ -245,7 +234,6 @@ export default function StressTestControls({ socket }) {
             />
           </div>
 
-          {/* Warning Banner when enabled */}
           <AnimatePresence>
             {flags.enabled && (
               <motion.div
@@ -262,7 +250,6 @@ export default function StressTestControls({ socket }) {
             )}
           </AnimatePresence>
 
-          {/* Test Log */}
           <div className="glass rounded-2xl p-4 border border-white/5">
             <h4 className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-3">Test Log</h4>
             {testLog.length === 0 ? (

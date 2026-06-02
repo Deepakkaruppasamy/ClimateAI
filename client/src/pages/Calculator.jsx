@@ -16,9 +16,9 @@ const OFFSET_PROJECTS = [
 
 export default function Calculator() {
   const { user } = useAuth()
-  const [step, setStep] = useState(1) // 1: Home, 2: Transit, 3: Diet, 4: Results
+  const [step, setStep] = useState(1) 
   const [calculating, setCalculating] = useState(false)
-  const [savedStatus, setSavedStatus] = useState('idle') // 'idle' | 'saving' | 'saved'
+  const [savedStatus, setSavedStatus] = useState('idle') 
 
   const saveFootprint = async (footprintVal) => {
     if (!user?._id) return
@@ -52,30 +52,29 @@ export default function Calculator() {
     }, 550)
   }
   
-  // Input states
-  const [electricity, setElectricity] = useState(350) // kWh/month
-  const [gas, setGas] = useState(50) // therms/month
-  const [carMiles, setCarMiles] = useState(800) // miles/month
+
+  const [electricity, setElectricity] = useState(350) 
+  const [gas, setGas] = useState(50) 
+  const [carMiles, setCarMiles] = useState(800) 
   const [carMpg, setCarMpg] = useState(25)
-  const [flights, setFlights] = useState(3) // flights/year
-  const [dietFactor, setDietFactor] = useState('average') // high, average, veggie, vegan
+  const [flights, setFlights] = useState(3) 
+  const [dietFactor, setDietFactor] = useState('average') 
   
-  // Checkout modal states
+
   const [activeProject, setActiveProject] = useState(null)
   const [cardNum, setCardNum] = useState('')
   const [cardName, setCardName] = useState('')
   const [paying, setPaying] = useState(false)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
 
-  // Calculations
   const calculateEmissions = () => {
-    // Emissions factors (metric tons CO2 per unit per year)
+
     const homeElectricCO2 = (electricity * 12 * 0.0004) // 0.4kg per kWh
     const homeGasCO2 = (gas * 12 * 0.0053) // 5.3kg per therm
-    const transitCarCO2 = ((carMiles * 12) / carMpg) * 0.0089 // 8.9kg per gallon
-    const transitFlightCO2 = flights * 0.9 // ~0.9 metric tons per flight
+    const transitCarCO2 = ((carMiles * 12) / carMpg) * 0.0089 
+    const transitFlightCO2 = flights * 0.9 
     
-    let dietCO2 = 2.5 // default Average
+    let dietCO2 = 2.5 
     if (dietFactor === 'high') dietCO2 = 3.3
     if (dietFactor === 'veggie') dietCO2 = 1.7
     if (dietFactor === 'vegan') dietCO2 = 1.2
@@ -109,13 +108,13 @@ export default function Calculator() {
         origin: { y: 0.6 },
         colors: ['#00d4ff', '#7c3aed', '#06ffd4']
       })
-      // Submit carbon offset request to admin Carbon Audit panel
+
       try {
         await fetch('/api/carbon/request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user?._id || '507f1f77bcf86cd799439011', // valid Mongoose ObjectId fallback
+            userId: user?._id || '507f1f77bcf86cd799439011', 
             amount: total,
             projectId: activeProject?.id || 'PROJ-UNKNOWN'
           })
@@ -149,7 +148,6 @@ export default function Calculator() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title */}
         <div className="mb-10 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Sustainability Suite</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -162,16 +160,13 @@ export default function Calculator() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Form Wizard / Results */}
           <div className="xl:col-span-7">
             <motion.div 
               layout
               className="glass-strong rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl relative overflow-hidden"
             >
-              {/* Active Step Glow Accent */}
               <div className="absolute -top-10 left-1/4 w-32 h-32 bg-neon-cyan/10 rounded-full blur-[40px] pointer-events-none" />
               
-              {/* Holographic scanning laser sweep */}
               <AnimatePresence>
                 {calculating && (
                   <motion.div
@@ -187,7 +182,6 @@ export default function Calculator() {
                 )}
               </AnimatePresence>
 
-              {/* Wizard Steps indicator */}
               <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4 text-xs font-mono text-gray-500">
                 <span className={step === 1 ? 'text-neon-cyan' : ''}>[01] HOUSEHOLD</span>
                 <span className={step === 2 ? 'text-neon-cyan' : ''}>[02] TRANSIT</span>
@@ -199,7 +193,6 @@ export default function Calculator() {
                 <form onSubmit={(e) => e.preventDefault()} className="flex-1">
                   <AnimatePresence mode="wait">
                   
-                  {/* STEP 1: HOUSEHOLD ENERGY */}
                   {step === 1 && (
                     <motion.div
                       key="step1"
@@ -250,7 +243,6 @@ export default function Calculator() {
                     </motion.div>
                   )}
 
-                  {/* STEP 2: TRANSIT & FLIGHTS */}
                   {step === 2 && (
                     <motion.div
                       key="step2"
@@ -319,7 +311,6 @@ export default function Calculator() {
                     </motion.div>
                   )}
 
-                  {/* STEP 3: LIFESTYLE & DIET */}
                   {step === 3 && (
                     <motion.div
                       key="step3"
@@ -362,7 +353,6 @@ export default function Calculator() {
                     </motion.div>
                   )}
 
-                  {/* STEP 4: ANALYSIS RESULTS */}
                   {step === 4 && (
                     <motion.div
                       key="step4"
@@ -415,7 +405,6 @@ export default function Calculator() {
                         </button>
                       </div>
 
-                      {/* Branded ShareCard */}
                       <div className="mt-8 pt-6 border-t border-white/5 text-left max-w-sm mx-auto">
                         <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-4 text-center">Share Your Sustainability Metrics</span>
                         <ShareCard
@@ -431,7 +420,6 @@ export default function Calculator() {
                 </AnimatePresence>
               </form>
 
-              {/* Vertical Impact battery meter */}
               {step < 4 && (
                 <div className="flex flex-col items-center justify-between p-4 glass rounded-2xl border border-white/5 w-24 shrink-0">
                   <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider text-center">Carbon Index</span>
@@ -459,7 +447,6 @@ export default function Calculator() {
               )}
             </div>
 
-              {/* Navigation Controls */}
               <div className="flex items-center justify-between border-t border-white/5 pt-6 mt-8">
                 {step > 1 ? (
                   <button
@@ -488,10 +475,8 @@ export default function Calculator() {
             </motion.div>
           </div>
 
-          {/* Recharts Analytics & Offsetting */}
           <div className="xl:col-span-5 space-y-6">
             
-            {/* Chart Breakdown */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative">
               <h3 className="text-lg text-white font-normal font-display mb-4">CO2 Expenditure Breakdown</h3>
               
@@ -521,7 +506,6 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Offset Marketplace */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl space-y-4">
               <div>
                 <h3 className="text-lg text-white font-normal font-display">Neutralize Your Footprint</h3>
@@ -565,11 +549,9 @@ export default function Calculator() {
         </div>
       </div>
 
-      {/* Glassmorphic Simulated Payment Modal */}
       <AnimatePresence>
         {activeProject && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -578,7 +560,6 @@ export default function Calculator() {
               className="absolute inset-0 bg-black/70 backdrop-blur-md"
             />
 
-            {/* Modal Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -673,7 +654,6 @@ export default function Calculator() {
 
                     <h3 className="text-2xl text-white font-display">Offset Verified</h3>
                     
-                    {/* Rotating 3D Carbon Certificate */}
                     <motion.div
                       initial={{ rotateY: 90, scale: 0.95 }}
                       animate={{ rotateY: 0, scale: 1 }}

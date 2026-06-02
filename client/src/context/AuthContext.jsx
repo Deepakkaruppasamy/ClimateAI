@@ -6,7 +6,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Load user from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('climate_user')
     if (savedUser) {
@@ -20,7 +19,6 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
-  // Log in with email and password
   const login = async (email, password) => {
     try {
       const response = await fetch('/api/auth/login', {
@@ -47,7 +45,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Register with name, email, and password
   const signup = async (name, email, password) => {
     try {
       const response = await fetch('/api/auth/register', {
@@ -74,7 +71,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Update local user state (used after profile edits)
   const updateUser = (patch) => {
     setUser(prev => {
       const updated = { ...prev, ...patch }
@@ -83,7 +79,6 @@ export function AuthProvider({ children }) {
     })
   }
 
-  // Log out of the session
   const logout = () => {
     setUser(null)
     localStorage.removeItem('climate_user')

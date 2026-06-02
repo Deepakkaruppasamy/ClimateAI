@@ -4,16 +4,12 @@ const router = express.Router()
 const User = require('../models/User')
 const { hashPassword, verifyPassword, generateAvatar } = require('../utils/authHelper')
 
-// ── In-Memory Database Fallback (Utilizes global app.locals.mockUsers) ─────
-
-// Helper to filter out sensitive password hashes
 const serializeUser = (user) => {
   const serialized = user.toObject ? user.toObject() : { ...user }
   delete serialized.password
   return serialized
 }
 
-// ── Register User ───────────────────────────────────────────
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body
 
@@ -33,7 +29,7 @@ router.post('/register', async (req, res) => {
 
   if (isDBConnected) {
     try {
-      // Check if email already exists
+
       const existingUser = await User.findOne({ email: normalizedEmail })
       if (existingUser) {
         return res.status(400).json({ error: 'An account with this email already exists' })
@@ -56,7 +52,7 @@ router.post('/register', async (req, res) => {
       return res.status(500).json({ error: 'Database error occurred during registration', details: err.message })
     }
   } else {
-    // MongoDB offline: check in-memory registry
+
     const mockUsers = req.app.locals.mockUsers || []
     const existingMock = mockUsers.find(u => u.email === normalizedEmail)
     if (existingMock) {
@@ -87,7 +83,6 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// ── Login User ──────────────────────────────────────────────
 router.post('/login', async (req, res) => {
   const { email, password } = req.body
 
@@ -110,7 +105,6 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid email or password' })
       }
 
-      // Auto-elevate custom user if they exist in DB with standard user role
       if (['deep@gmail.com', 'deepakk.23it@kongu.edu'].includes(normalizedEmail) && user.role !== 'admin') {
         user.role = 'admin'
       }
@@ -124,7 +118,7 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ error: 'Database error occurred during login' })
     }
   } else {
-    // MongoDB offline: check in-memory registry
+
     const mockUsers = req.app.locals.mockUsers || []
     const mockUser = mockUsers.find(u => u.email === normalizedEmail)
     if (!mockUser) {

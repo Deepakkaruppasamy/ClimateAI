@@ -23,7 +23,7 @@ export default function CitySearch() {
         const res = await axios.get(`/api/weather/search?q=${encodeURIComponent(query)}`)
         setResults(res.data)
       } catch {
-        // Fallback: call Nominatim directly from browser without unsafe headers
+
         try {
           const res = await axios.get(
             `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`
@@ -89,7 +89,6 @@ export default function CitySearch() {
         )}
       </AnimatePresence>
 
-      {/* Backdrop */}
       {open && results.length > 0 && (
         <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
       )}

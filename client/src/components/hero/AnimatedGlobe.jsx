@@ -11,7 +11,6 @@ export default function AnimatedGlobe() {
     const w = mount.clientWidth
     const h = mount.clientHeight
 
-    // Scene
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100)
     camera.position.z = 3
@@ -22,16 +21,15 @@ export default function AnimatedGlobe() {
     renderer.setClearColor(0x000000, 0)
     mount.appendChild(renderer.domElement)
 
-    // Globe geometry
     const globeGeo = new THREE.SphereGeometry(1, 64, 64)
     
-    // Create canvas texture for the globe
+
     const texCanvas = document.createElement('canvas')
     texCanvas.width = 1024
     texCanvas.height = 512
     const texCtx = texCanvas.getContext('2d')
     
-    // Draw world map simplified
+
     const gradient = texCtx.createLinearGradient(0, 0, 0, 512)
     gradient.addColorStop(0, '#001a2e')
     gradient.addColorStop(0.5, '#002244')
@@ -39,11 +37,11 @@ export default function AnimatedGlobe() {
     texCtx.fillStyle = gradient
     texCtx.fillRect(0, 0, 1024, 512)
     
-    // Ocean glow
+
     texCtx.fillStyle = 'rgba(0, 100, 200, 0.3)'
     texCtx.fillRect(0, 0, 1024, 512)
     
-    // Landmass dots
+
     texCtx.fillStyle = 'rgba(0, 212, 255, 0.6)'
     for (let i = 0; i < 3000; i++) {
       const x = Math.random() * 1024
@@ -66,7 +64,6 @@ export default function AnimatedGlobe() {
     const globe = new THREE.Mesh(globeGeo, globeMat)
     scene.add(globe)
 
-    // Wireframe overlay
     const wireMat = new THREE.MeshBasicMaterial({
       color: 0x00d4ff,
       wireframe: true,
@@ -77,7 +74,6 @@ export default function AnimatedGlobe() {
     wireGlobe.scale.setScalar(1.002)
     scene.add(wireGlobe)
 
-    // Atmosphere glow
     const atmGeo = new THREE.SphereGeometry(1.08, 64, 64)
     const atmMat = new THREE.MeshBasicMaterial({
       color: 0x00d4ff,
@@ -87,7 +83,6 @@ export default function AnimatedGlobe() {
     })
     scene.add(new THREE.Mesh(atmGeo, atmMat))
 
-    // Outer glow ring
     const outerGeo = new THREE.SphereGeometry(1.15, 64, 64)
     const outerMat = new THREE.MeshBasicMaterial({
       color: 0x7c3aed,
@@ -97,7 +92,6 @@ export default function AnimatedGlobe() {
     })
     scene.add(new THREE.Mesh(outerGeo, outerMat))
 
-    // Orbit rings
     function createRing(radius, color, opacity) {
       const ringGeo = new THREE.RingGeometry(radius, radius + 0.005, 128)
       const ringMat = new THREE.MeshBasicMaterial({
@@ -112,7 +106,6 @@ export default function AnimatedGlobe() {
     const ring3 = createRing(1.7, 0x06ffd4, 0.15)
     scene.add(ring1, ring2, ring3)
 
-    // Orbiting dots
     const dotGeo = new THREE.SphereGeometry(0.015, 8, 8)
     const dots = []
     const dotColors = [0x00d4ff, 0x7c3aed, 0x06ffd4, 0xff0090]
@@ -124,7 +117,6 @@ export default function AnimatedGlobe() {
       scene.add(dot)
     }
 
-    // Lighting
     scene.add(new THREE.AmbientLight(0x334466, 1))
     const dirLight = new THREE.DirectionalLight(0x00d4ff, 2)
     dirLight.position.set(5, 3, 5)
@@ -133,7 +125,6 @@ export default function AnimatedGlobe() {
     rimLight.position.set(-5, -3, -5)
     scene.add(rimLight)
 
-    // Stars
     const starGeo = new THREE.BufferGeometry()
     const starPos = []
     for (let i = 0; i < 2000; i++) {
@@ -143,7 +134,6 @@ export default function AnimatedGlobe() {
     const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.6 })
     scene.add(new THREE.Points(starGeo, starMat))
 
-    // Mouse interaction
     let mouseX = 0, mouseY = 0
     const onMouseMove = (e) => {
       mouseX = (e.clientX / window.innerWidth - 0.5) * 2
@@ -158,7 +148,6 @@ export default function AnimatedGlobe() {
       globe.rotation.y += 0.003
       wireGlobe.rotation.y += 0.003
 
-      // Subtle mouse parallax
       globe.rotation.x += (mouseY * 0.2 - globe.rotation.x) * 0.05
       globe.rotation.y += mouseX * 0.001
 
@@ -192,7 +181,7 @@ export default function AnimatedGlobe() {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('resize', handleResize)
       
-      // Cleanup geometries and materials to avoid WebGL memory leaks
+
       globeGeo.dispose()
       globeMat.dispose()
       wireMat.dispose()

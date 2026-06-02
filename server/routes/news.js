@@ -4,7 +4,6 @@ const router = express.Router()
 const Comment = require('../models/Comment')
 const Article = require('../models/Article')
 
-// ── In-Memory Articles Fallback ──────────────────────────────
 let mockArticles = [
   { 
     id: '1', _id: '1',
@@ -35,22 +34,18 @@ let mockArticles = [
   }
 ]
 
-// ── GNews Live Feed Cache ──────────────────────────────────────
 let liveNewsCache = null
 let liveCacheTimestamp = 0
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000 
 
-// GET /api/news/live — Fetch live climate news from GNews API (with cache)
 router.get('/live', async (req, res) => {
   const GNEWS_KEY = process.env.GNEWS_API_KEY
   const now = Date.now()
 
-  // Serve from cache if still fresh
   if (liveNewsCache && (now - liveCacheTimestamp) < CACHE_TTL_MS) {
     return res.json({ success: true, articles: liveNewsCache, cached: true })
   }
 
-  // If no API key — return curated fallback articles with LIVE flag
   if (!GNEWS_KEY) {
     const fallbackLive = [
       { id: 'l1', title: 'Record Solar Power Output Achieved in Europe This Quarter', category: 'Renewable Energy', summary: 'European solar grids hit a new milestone as sunshine hours and panel efficiency combine for record output, reducing fossil fuel dependency by 18%.', date: new Date().toLocaleDateString(), likes: 0, source: 'live', imageUrl: '' },
@@ -62,7 +57,6 @@ router.get('/live', async (req, res) => {
     return res.json({ success: true, articles: fallbackLive, demo: true, message: 'Set GNEWS_API_KEY in .env for real live news' })
   }
 
-  // Fetch from GNews API
   try {
     const https = require('https')
     const url = `https://gnews.io/api/v4/search?q=climate+change&lang=en&max=10&sortby=publishedAt&apikey=${GNEWS_KEY}`
@@ -100,9 +94,6 @@ router.get('/live', async (req, res) => {
   }
 })
 
-// ── In-Memory Comments Fallback (Utilizes global app.locals.mockComments) ─────
-
-// ── GET All Articles ─────────────────────────────────────────
 router.get('/', async (req, res) => {
   const isDBConnected = mongoose.connection.readyState === 1
   if (isDBConnected) {
@@ -119,7 +110,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── POST Create Article (Admin) ──────────────────────────────
 router.post('/', async (req, res) => {
   const { title, summary, category, date, imageUrl, featured } = req.body
   if (!title || !summary) {
@@ -160,7 +150,6 @@ router.post('/', async (req, res) => {
   }
 })
 
-// ── PUT Update Article (Admin) ───────────────────────────────
 router.put('/:id', async (req, res) => {
   const { id } = req.params
   const { title, summary, category, date, imageUrl, featured } = req.body
@@ -186,7 +175,6 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-// ── DELETE Article (Admin) ───────────────────────────────────
 router.delete('/:articleId/article', async (req, res) => {
   const { articleId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1
@@ -216,7 +204,6 @@ router.delete('/:articleId/article', async (req, res) => {
   }
 })
 
-// ── GET Comments for Article ────────────────────────────────
 router.get('/:id/comments', async (req, res) => {
   const articleId = req.params.id
   const isDBConnected = mongoose.connection.readyState === 1
@@ -238,7 +225,6 @@ router.get('/:id/comments', async (req, res) => {
   }
 })
 
-// ── POST Add Comment to Article ─────────────────────────────
 router.post('/:id/comments', async (req, res) => {
   const articleId = req.params.id
   const { userName, userAvatar, content } = req.body
@@ -286,7 +272,6 @@ router.post('/:id/comments', async (req, res) => {
   }
 })
 
-// ── DELETE Comment ──────────────────────────────────────────
 router.delete('/:id/comments/:commentId', async (req, res) => {
   const { id: articleId, commentId } = req.params;
   const isDBConnected = mongoose.connection.readyState === 1;
@@ -313,7 +298,6 @@ router.delete('/:id/comments/:commentId', async (req, res) => {
   }
 });
 
-// ── Pin/Unpin Comment ───────────────────────────────────────
 router.post('/:id/comments/:commentId/pin', async (req, res) => {
   const { id: articleId, commentId } = req.params;
   const isDBConnected = mongoose.connection.readyState === 1;

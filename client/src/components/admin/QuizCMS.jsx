@@ -159,7 +159,6 @@ export default function QuizCMS({ socket }) {
 
   useEffect(() => { fetchQuestions() }, [])
 
-  // Live socket updates
   useEffect(() => {
     if (!socket) return
     const onAdded = (q) => setQuestions(prev => {
@@ -227,7 +226,6 @@ export default function QuizCMS({ socket }) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen size={16} className="text-neon-purple" />
@@ -252,7 +250,6 @@ export default function QuizCMS({ socket }) {
         </div>
       </div>
 
-      {/* Form */}
       <AnimatePresence>
         {(showForm || editingQ) && (
           <QuestionForm
@@ -264,7 +261,6 @@ export default function QuizCMS({ socket }) {
         )}
       </AnimatePresence>
 
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 font-mono">
           <AlertCircle size={12} />
@@ -272,7 +268,6 @@ export default function QuizCMS({ socket }) {
         </div>
       )}
 
-      {/* Questions */}
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-xs text-gray-500 font-mono">
           <Loader2 size={14} className="animate-spin text-neon-purple" />

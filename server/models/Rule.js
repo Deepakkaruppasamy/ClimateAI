@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const RuleSchema = new mongoose.Schema({
   userId: {
-    type: String, // String to handle both MongoDB ObjectId and Mock User IDs seamlessly
+    type: String, 
     required: true,
     index: true
   },

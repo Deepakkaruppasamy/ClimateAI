@@ -10,43 +10,39 @@ export default function News() {
   const { user } = useAuth()
   const { socket } = useSocket()
   
-  // Tab state
-  const [activeTab, setActiveTab] = useState('articles') // 'articles' | 'live'
 
-  // News articles states
+  const [activeTab, setActiveTab] = useState('articles') 
+
   const [articles, setArticles] = useState([])
   const [loadingArticles, setLoadingArticles] = useState(true)
   const [errorArticles, setErrorArticles] = useState('')
   
-  // Live feed state
+
   const [liveArticles, setLiveArticles] = useState([])
   const [loadingLive, setLoadingLive] = useState(false)
   const [liveError, setLiveError] = useState('')
   
-  // Likes state (local UI simulation)
+
   const [likedArticles, setLikedArticles] = useState([])
 
-  // Active article selected for discussion
   const [activeArticle, setActiveArticle] = useState(null)
   
-  // Voice readout narration state
+
   const [narratingId, setNarratingId] = useState(null)
   
-  // Comments states
+
   const [comments, setComments] = useState([])
   const [loadingComments, setLoadingComments] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [errorComment, setErrorComment] = useState('')
 
-  // Cancel speech on unmount
   useEffect(() => {
     return () => {
       window.speechSynthesis?.cancel()
     }
   }, [])
 
-  // AI voice readout controller
   const handleListen = (art) => {
     playTap()
     
@@ -63,14 +59,14 @@ export default function News() {
     const textToRead = `${art.title}. Summary: ${art.summary}`
     const utterance = new SpeechSynthesisUtterance(textToRead)
     
-    // Select standard English robot-like profile
+
     const voices = window.speechSynthesis?.getVoices() || []
     const cleanVoice = voices.find(v => v.lang.includes('en-US') && v.name.toLowerCase().includes('google')) 
       || voices.find(v => v.lang.includes('en'))
     
     if (cleanVoice) utterance.voice = cleanVoice
-    utterance.pitch = 0.85 // Futuristic mechanical low pitch
-    utterance.rate = 1.05  // Snappy transmission reading
+    utterance.pitch = 0.85 
+    utterance.rate = 1.05  
     
     utterance.onend = () => {
       setNarratingId(null)
@@ -85,8 +81,6 @@ export default function News() {
     window.speechSynthesis?.speak(utterance)
   }
 
-
-  // Fetch all articles
   const fetchArticles = async () => {
     setLoadingArticles(true)
     setErrorArticles('')
@@ -105,7 +99,6 @@ export default function News() {
     }
   }
 
-  // Fetch comments for an article
   const fetchComments = async (articleId) => {
     setLoadingComments(true)
     setErrorComment('')
@@ -124,7 +117,6 @@ export default function News() {
     }
   }
 
-  // Submit comment
   const handleCommentSubmit = async (e) => {
     e.preventDefault()
     if (!newComment.trim()) return
@@ -156,7 +148,6 @@ export default function News() {
     }
   }
 
-  // Handle local like toggle
   const handleLikeToggle = (artId) => {
     if (likedArticles.includes(artId)) {
       setLikedArticles(likedArticles.filter(id => id !== artId))
@@ -165,7 +156,6 @@ export default function News() {
     }
   }
 
-  // Fetch live climate news
   const fetchLiveNews = async () => {
     setLoadingLive(true)
     setLiveError('')
@@ -188,7 +178,6 @@ export default function News() {
     fetchArticles()
   }, [])
 
-  // Fetch live news when tab switches to live, then auto-refresh every 30 min
   useEffect(() => {
     if (activeTab !== 'live') return
     if (liveArticles.length === 0) fetchLiveNews()
@@ -196,7 +185,6 @@ export default function News() {
     return () => clearInterval(timer)
   }, [activeTab])
 
-  // Real-time socket sync
   useEffect(() => {
     if (!socket) return
     const onAdded = (article) => setArticles(prev => [article, ...prev])
@@ -242,7 +230,6 @@ export default function News() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title + Tab selector */}
         <div className="mb-10 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Global Intelligence Hub</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -251,7 +238,6 @@ export default function News() {
           <p className="text-gray-400 text-sm max-w-xl mt-1">
             Browse aggregated news reports, updates, and innovations on carbon capturing systems, global treaties, and participate in discussion threads.
           </p>
-          {/* Tab pills */}
           <div className="flex gap-2 mt-6">
             <button
               onClick={() => { playTap(); setActiveTab('articles') }}
@@ -282,10 +268,8 @@ export default function News() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Articles Feed */}
           <div className={`${activeArticle ? 'xl:col-span-7' : 'xl:col-span-12'} space-y-6 transition-all duration-300`}>
 
-            {/* ── LIVE FEED TAB ── */}
             {activeTab === 'live' && (
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -340,7 +324,6 @@ export default function News() {
               </div>
             )}
 
-            {/* ── CURATED ARTICLES TAB ── */}
             {activeTab === 'articles' && (
               loadingArticles ? (
               <div className="py-24 text-center space-y-4">
@@ -368,19 +351,16 @@ export default function News() {
                       }`}
                       onMouseEnter={playHover}
                     >
-                      {/* Laser decoder sweep overlay */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-350 z-10">
                         <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-neon-cyan to-transparent laser-sweep" />
                         
-                        {/* Corner Crosshairs */}
                         <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t border-l border-neon-cyan/40 group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform duration-300" />
                         <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t border-r border-neon-cyan/40 group-hover:-translate-x-0.5 group-hover:translate-y-0.5 transition-transform duration-300" />
                         <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b border-l border-neon-cyan/40 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
                         <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b border-r border-neon-cyan/40 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
                         
-                        {/* Ingestion Telemetry */}
                         <div className="absolute bottom-3 right-4 text-[7px] font-mono text-neon-cyan/50 tracking-widest uppercase select-none font-bold">
-                          SECURE_DECODING // OK
+                          SECURE_DECODING 
                         </div>
                       </div>
 
@@ -459,7 +439,6 @@ export default function News() {
             ))}
           </div>
 
-          {/* Discussion comments area */}
           <AnimatePresence>
             {activeArticle && (
               <motion.div
@@ -469,7 +448,6 @@ export default function News() {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="xl:col-span-5 glass-strong rounded-3xl p-6 border border-white/10 shadow-2xl relative space-y-6"
               >
-                {/* Header info */}
                 <div className="border-b border-white/5 pb-4 flex items-start justify-between gap-4">
                   <div>
                     <span className="text-[10px] font-mono text-neon-cyan uppercase tracking-widest">[ DISCUSSION HUB ]</span>
@@ -483,7 +461,6 @@ export default function News() {
                   </button>
                 </div>
 
-                {/* Submit comment form */}
                 <form onSubmit={handleCommentSubmit} className="space-y-3">
                   <div className="relative">
                     <textarea
@@ -509,7 +486,6 @@ export default function News() {
                   )}
                 </form>
 
-                {/* Comments feed */}
                 <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                   {loadingComments ? (
                     <div className="py-8 text-center text-xs font-mono text-gray-500 flex items-center justify-center gap-2">

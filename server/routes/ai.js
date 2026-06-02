@@ -2,10 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 const router = express.Router()
 
-// ── In-memory chat history fallback (for demo mode) ──────────────
-const mockChatHistory = {} // { userId: [{ role, content, createdAt }] }
+const mockChatHistory = {} 
 
-// GET /api/ai/history/:userId — load chat history
 router.get('/history/:userId', async (req, res) => {
   const { userId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1
@@ -26,7 +24,6 @@ router.get('/history/:userId', async (req, res) => {
   }
 })
 
-// POST /api/ai/history/:userId — save a message
 router.post('/history/:userId', async (req, res) => {
   const { userId } = req.params
   const { role, content } = req.body
@@ -45,13 +42,12 @@ router.post('/history/:userId', async (req, res) => {
   } else {
     if (!mockChatHistory[userId]) mockChatHistory[userId] = []
     mockChatHistory[userId].push({ role, content, createdAt: new Date() })
-    // Keep last 30
+
     if (mockChatHistory[userId].length > 30) mockChatHistory[userId].shift()
     return res.json({ success: true, warning: 'DB offline — saved in memory' })
   }
 })
 
-// DELETE /api/ai/history/:userId — clear chat history
 router.delete('/history/:userId', async (req, res) => {
   const { userId } = req.params
   const isDBConnected = mongoose.connection.readyState === 1
@@ -70,7 +66,6 @@ router.delete('/history/:userId', async (req, res) => {
   }
 })
 
-// ── AI Chat Endpoint (Groq) ────────────────────────────────
 router.post('/chat', async (req, res) => {
   const { messages, weatherContext, userContext } = req.body
 
@@ -85,7 +80,6 @@ router.post('/chat', async (req, res) => {
     const Groq = require('groq-sdk')
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-    // Build enriched system prompt with user context
     let userContextStr = ''
     if (userContext) {
       userContextStr = `
@@ -122,7 +116,6 @@ Personalize responses to this specific user when relevant. Be helpful, precise, 
   }
 })
 
-// ── AI Recommendations ─────────────────────────────────────
 router.post('/recommendations', async (req, res) => {
   const { weather } = req.body
   const recs = []

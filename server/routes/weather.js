@@ -2,7 +2,6 @@ const express = require('express')
 const axios = require('axios')
 const router = express.Router()
 
-// ── Current + Forecast Weather (Open-Meteo) ───────────────
 router.get('/current', async (req, res) => {
   const { lat = 40.7128, lon = -74.0060 } = req.query
   try {
@@ -67,7 +66,6 @@ router.get('/current', async (req, res) => {
   }
 })
 
-// ── AQI (simulated — integrate OpenAQ for production) ─────
 router.get('/aqi', async (req, res) => {
   const { lat, lon } = req.query
   res.json({
@@ -81,7 +79,6 @@ router.get('/aqi', async (req, res) => {
   })
 })
 
-// ── Search City ───────────────────────────────────────────
 router.get('/search', async (req, res) => {
   const { q } = req.query
   if (!q) return res.status(400).json({ error: 'Query required' })

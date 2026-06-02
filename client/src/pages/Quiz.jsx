@@ -11,7 +11,7 @@ const QUIZ_QUESTIONS = [
   {
     question: 'Which of the following greenhouse gases has the highest warming potential relative to CO2 over a 100-year cycle?',
     options: ['Methane (CH4)', 'Nitrous Oxide (N2O)', 'Fluorinated Gases (F-Gases)', 'Water Vapor'],
-    answer: 2, // F-gases have GWP in the thousands
+    answer: 2, 
     expl: 'Fluorinated gases (F-gases) have global warming potentials (GWP) that can be thousands of times stronger than CO2 over 100 years.'
   },
   {
@@ -43,12 +43,11 @@ const QUIZ_QUESTIONS = [
 export default function Quiz() {
   const { user } = useAuth()
   
-  // Leaderboard states
+
   const [leaderboard, setLeaderboard] = useState([])
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true)
   const [errorLeaderboard, setErrorLeaderboard] = useState('')
 
-  // Quiz game states
   const [questions, setQuestions] = useState(QUIZ_QUESTIONS)
   const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [activeQuestion, setActiveQuestion] = useState(0)
@@ -58,20 +57,17 @@ export default function Quiz() {
   const [completed, setCompleted] = useState(false)
   const [savingScore, setSavingScore] = useState(false)
 
-  // Filters & Hub Configuration
   const [quizStarted, setQuizStarted] = useState(false)
   const [isDailyChallenge, setIsDailyChallenge] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('all') // 'all' | 'renewable-energy' | 'climate-science' | 'policy' | 'ecosystems'
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all') // 'all' | 'easy' | 'medium' | 'hard'
+  const [selectedCategory, setSelectedCategory] = useState('all') 
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all') 
 
-  // Gamified States
   const [timeLeft, setTimeLeft] = useState(15)
   const [streak, setStreak] = useState(0)
   const [gamblePlayed, setGamblePlayed] = useState(false)
   const [gambleSuccess, setGambleSuccess] = useState(null)
   const [gambleCardChoice, setGambleCardChoice] = useState(null)
 
-  // Start normal quiz with category/difficulty filters
   const startNormalQuiz = async () => {
     playTap()
     setIsDailyChallenge(false)
@@ -120,7 +116,6 @@ export default function Quiz() {
     }
   }
 
-  // Start daily deterministic challenge seeded by date
   const startDailyChallenge = async () => {
     playTap()
     setIsDailyChallenge(true)
@@ -164,7 +159,6 @@ export default function Quiz() {
     }
   }
 
-  // Fetch leaderboard standings
   const fetchLeaderboard = async () => {
     setLoadingLeaderboard(true)
     setErrorLeaderboard('')
@@ -183,19 +177,17 @@ export default function Quiz() {
     }
   }
 
-  // Handle option select
   const handleOptionSelect = (optIndex) => {
     if (answered) return
     setSelectedOption(optIndex)
     playTap()
   }
 
-  // Timer Countdown Logic
   useEffect(() => {
     if (completed || loadingQuestions || answered) return
     if (timeLeft <= 0) {
       setAnswered(true)
-      setSelectedOption(-1) // Special value for expired
+      setSelectedOption(-1) 
       setStreak(0)
       playError()
       return
@@ -206,7 +198,6 @@ export default function Quiz() {
     return () => clearInterval(timer)
   }, [timeLeft, completed, loadingQuestions, answered])
 
-  // Lock answer
   const handleLockAnswer = () => {
     if (selectedOption === null || answered) return
     setAnswered(true)
@@ -214,7 +205,7 @@ export default function Quiz() {
       const nextStreak = streak + 1
       setStreak(nextStreak)
       
-      // Calculate XP with streak multiplier
+
       const streakMultiplier = Math.min(4, Math.floor(nextStreak / 2) + 1)
       setScore(score + 1 * streakMultiplier)
       playSuccess()
@@ -224,11 +215,10 @@ export default function Quiz() {
     }
   }
 
-  // Next question
   const handleNextQuestion = () => {
     setSelectedOption(null)
     setAnswered(false)
-    setTimeLeft(15) // Reset timer
+    setTimeLeft(15) 
     playTap()
     
     if (activeQuestion < questions.length - 1) {
@@ -238,12 +228,11 @@ export default function Quiz() {
     }
   }
 
-  // Complete quiz
   const handleQuizComplete = async () => {
     setCompleted(true)
     const pointsPercentage = Math.round((score / questions.length) * 100)
     
-    // Confetti blast!
+
     confetti({
       particleCount: 150,
       spread: 80,
@@ -251,7 +240,6 @@ export default function Quiz() {
       colors: ['#00d4ff', '#7c3aed', '#06ffd4', '#ea580c']
     })
 
-    // Submit score to database
     setSavingScore(true)
     try {
       const res = await fetch('/api/quiz/score', {
@@ -265,7 +253,7 @@ export default function Quiz() {
         })
       })
       if (res.ok) {
-        // Fetch new leaderboard list to show updated score immediately
+
         fetchLeaderboard()
       }
     } catch (e) {
@@ -275,7 +263,6 @@ export default function Quiz() {
     }
   }
 
-  // Restart quiz
   const restartQuiz = () => {
     setActiveQuestion(0)
     setSelectedOption(null)
@@ -343,7 +330,6 @@ export default function Quiz() {
 
       <div className="max-w-[95%] lg:px-12 mx-auto relative z-10">
         
-        {/* Title */}
         <div className="mb-10 text-center md:text-left">
           <span className="label-overline mb-2 inline-block">Science Competence</span>
           <h1 className="text-4xl lg:text-5xl font-light font-display">
@@ -356,7 +342,6 @@ export default function Quiz() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Quiz Game Cards */}
           <div className="xl:col-span-7">
             <motion.div
               className="glass-strong rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl relative min-h-[450px] flex flex-col justify-between"
@@ -364,7 +349,7 @@ export default function Quiz() {
               <div className="absolute -top-10 left-1/4 w-32 h-32 bg-yellow-500/10 rounded-full blur-[40px] pointer-events-none" />
 
               {!quizStarted ? (
-                // Start Screen Hub
+
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                     <Trophy className="text-yellow-400" />
@@ -375,7 +360,6 @@ export default function Quiz() {
                     Select a scientific domain category and difficulty tier to begin, or challenge yourself in the daily seeded puzzle.
                   </p>
 
-                  {/* Category Selection */}
                   <div className="space-y-2">
                     <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Select Category Domain</span>
                     <div className="flex flex-wrap gap-2">
@@ -401,7 +385,6 @@ export default function Quiz() {
                     </div>
                   </div>
 
-                  {/* Difficulty Selection */}
                   <div className="space-y-2">
                     <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Select Difficulty Tier</span>
                     <div className="flex flex-wrap gap-2">
@@ -426,7 +409,6 @@ export default function Quiz() {
                     </div>
                   </div>
 
-                  {/* Main Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
                     <button
                       onClick={startNormalQuiz}
@@ -460,11 +442,9 @@ export default function Quiz() {
                       exit={{ opacity: 0, y: -15 }}
                       className="space-y-6"
                     >
-                      {/* Header info */}
                       <div className="flex justify-between items-center text-xs font-mono text-gray-500 border-b border-white/5 pb-4 gap-4 flex-wrap">
                         <span>QUESTION {activeQuestion + 1} OF {questions.length}</span>
                         
-                        {/* Streak Fire badge */}
                         {streak >= 2 && (
                           <div className="flex items-center gap-1 px-2.5 py-1 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded-full text-[10px] font-mono font-bold quiz-streak-fire uppercase">
                             🔥 {streak} STREAK COMBO ({Math.min(4, Math.floor(streak / 2) + 1)}x XP)
@@ -474,7 +454,6 @@ export default function Quiz() {
                         <span className="text-yellow-400 font-semibold">{Math.round((score / questions.length) * 100)} POINTS</span>
                       </div>
 
-                      {/* Timer dwindling neon progress bar */}
                       {!answered && !completed && (
                         <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden relative">
                           <div 
@@ -484,12 +463,10 @@ export default function Quiz() {
                         </div>
                       )}
 
-                      {/* Question text */}
                       <h3 className="text-lg md:text-xl font-normal leading-snug font-display text-white">
                         {questions[activeQuestion].question}
                       </h3>
 
-                      {/* Options list */}
                       <div className="space-y-3">
                         {questions[activeQuestion].options.map((opt, idx) => {
                           const isSelected = selectedOption === idx
@@ -520,7 +497,6 @@ export default function Quiz() {
                         })}
                       </div>
 
-                      {/* Explanation */}
                       {answered && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
@@ -555,7 +531,6 @@ export default function Quiz() {
                         </div>
                       )}
 
-                      {/* Quantum XP Gamble Mode */}
                       {!gamblePlayed ? (
                         <div className="mt-8 pt-6 border-t border-white/5 w-full max-w-md text-center">
                           <span className="text-[9px] font-mono text-neon-purple uppercase tracking-widest block mb-2">[ PLATFORM MINI-GAME ]</span>
@@ -616,7 +591,6 @@ export default function Quiz() {
                         <span>RETURN TO HUB</span>
                       </button>
 
-                      {/* Branded ShareCard */}
                       <div className="mt-8 pt-6 border-t border-white/5 text-left w-full max-w-sm mx-auto">
                         <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-4 text-center">Share Your Ecological Mastery</span>
                         <ShareCard
@@ -636,7 +610,6 @@ export default function Quiz() {
                 </AnimatePresence>
               )}
 
-              {/* Action Controls */}
               {!completed && !loadingQuestions && (
                 <div className="flex justify-end border-t border-white/5 pt-6 mt-6">
                   {!answered ? (
@@ -664,7 +637,6 @@ export default function Quiz() {
             </motion.div>
           </div>
 
-          {/* Standings Leaderboard */}
           <div className="xl:col-span-5">
             <div className="glass-strong rounded-3xl p-6 border border-white/5 shadow-2xl relative space-y-6">
               <div className="flex items-center gap-2 border-b border-white/5 pb-4">

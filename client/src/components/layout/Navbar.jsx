@@ -46,7 +46,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Close mobile menu on route change
   useEffect(() => setMobileOpen(false), [location.pathname])
 
   return (
@@ -63,7 +62,6 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
 
             <div className="flex items-center gap-2 xl:gap-4">
-              {/* ── Logo ─────────────────────────────────────── */}
               <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
                 <div className="relative">
                   <motion.div
@@ -89,7 +87,6 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* ── Desktop Navigation ───────────────────────── */}
               <div className="hidden lg:flex items-center gap-0.5">
                 {navLinks.map(({ path, label, icon: Icon }) => {
                   const active = location.pathname === path
@@ -123,9 +120,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* ── Right Side ───────────────────────────────── */}
             <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-              {/* Sound Equalizer Switch */}
               <button
                 onClick={toggleAudio}
                 onMouseEnter={playHover}
@@ -152,7 +147,6 @@ export default function Navbar() {
                 <span className="text-[10px] font-mono tracking-wider">{audioOn ? "SFX" : "MUTE"}</span>
               </button>
 
-              {/* Theme Toggle */}
               <button
                 onClick={() => { toggleTheme(); playTap() }}
                 className="flex items-center justify-center glass w-9 h-9 rounded-xl border border-white/5 hover:border-neon-blue/30 transition-all hover:bg-neon-blue/5 text-gray-400 hover:text-white"
@@ -176,14 +170,12 @@ export default function Navbar() {
                 </motion.div>
               )}
 
-              {/* User Profile / Auth State */}
               {user ? (
                 <div className="relative group">
                   <button className="flex items-center gap-2 glass pl-2 pr-3 py-1.5 rounded-xl hover:neon-border-blue transition-all duration-300">
                     <img className="w-7 h-7 rounded-lg object-cover" src={user.avatar} alt="avatar" />
                     <span className="text-sm text-white font-medium">{user.name.split(' ')[0]}</span>
                   </button>
-                  {/* Dropdown Menu */}
                   <div className="absolute right-0 mt-2 w-52 glass-strong rounded-2xl p-2 hidden group-hover:block z-50 border border-white/5 shadow-2xl">
                     <div className="px-3 py-2 text-xs text-gray-500 border-b border-white/5 truncate">
                       {user.email}
@@ -220,7 +212,6 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* Live indicator */}
               <div className="flex items-center gap-1.5 glass px-2 py-1.5 rounded-xl">
                 <motion.div
                   className="w-1.5 h-1.5 rounded-full bg-neon-cyan"
@@ -231,7 +222,6 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* ── Mobile Toggle ────────────────────────────── */}
             <button
               className="lg:hidden glass p-2.5 rounded-xl"
               onClick={() => setMobileOpen(v => !v)}
@@ -248,11 +238,9 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* ── Mobile Menu ──────────────────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

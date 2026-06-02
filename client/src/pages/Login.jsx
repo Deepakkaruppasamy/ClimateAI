@@ -10,7 +10,6 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Form states
   const [isLogin, setIsLogin] = useState(true)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -19,7 +18,6 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Redirect if already logged in
   const from = location.state?.from?.pathname || '/dashboard'
 
   useEffect(() => {
@@ -28,12 +26,11 @@ export default function Login() {
     }
   }, [user, navigate, from])
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
-    // Validations
+
     if (!email || !password) {
       setError('Please fill in all credentials.')
       return
@@ -63,7 +60,6 @@ export default function Login() {
     }
   }
 
-  // Toggle modes
   const handleToggleMode = () => {
     setIsLogin(!isLogin)
     setError('')
@@ -75,7 +71,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#070a13]">
-      {/* Background Video */}
       <VideoBackground
         className="!fixed"
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260520_133010_cb9c806d-bc9d-47f1-ac4c-b1759134ec8b.mp4"
@@ -85,15 +80,12 @@ export default function Login() {
       />
       <div className="fixed inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
 
-      {/* Main Glass Authentication Card */}
       <motion.div
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="glass-strong rounded-3xl p-8 md:p-10 max-w-md w-full mx-4 z-10 border border-white/10 shadow-2xl relative"
       >
-        {/* Glow Accent */}
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-neon-blue/20 rounded-full blur-[50px] pointer-events-none" />
 
-        {/* Logo Icon */}
         <motion.div 
           className="w-16 h-16 mb-6 mx-auto relative flex items-center justify-center"
         >
@@ -112,7 +104,6 @@ export default function Login() {
           </p>
         </motion.div>
 
-        {/* Error Alert */}
         <AnimatePresence mode="wait">
           {error && (
             <motion.div
@@ -127,7 +118,6 @@ export default function Login() {
           )}
         </AnimatePresence>
 
-        {/* Form Fields */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <AnimatePresence mode="popLayout">
             {!isLogin && (
@@ -191,7 +181,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -211,7 +200,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Toggle Mode Link */}
         <motion.div className="mt-6 text-center">
           <button
             onClick={handleToggleMode}
@@ -223,7 +211,6 @@ export default function Login() {
           </button>
         </motion.div>
 
-        {/* Info Text */}
         <motion.div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t border-white/5 text-[10px] text-gray-500 font-mono">
           <Shield size={12} className="text-neon-cyan" />
           <span>PBKDF2 secure credential validation</span>

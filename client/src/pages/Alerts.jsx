@@ -59,7 +59,6 @@ const severityColors = {
   low: { ring: '#7c3aed', label: 'ADVISORY', bg: 'rgba(124,58,237,0.08)' },
 }
 
-// ── Self-Contained micro-canvas particle engine ───────────
 function AlertCardCanvas({ type }) {
   const canvasRef = useRef(null)
 
@@ -207,7 +206,6 @@ function AlertCard({ alert, onDismiss }) {
   const Icon = type.icon
   const sev = severityColors[type.severity] || severityColors.low
 
-  // Trigger procedural audio beep alarm once on mount based on threat severity
   useEffect(() => {
     if (type.severity === 'critical') {
       playAlarm('critical')
@@ -227,7 +225,6 @@ function AlertCard({ alert, onDismiss }) {
       style={{ background: sev.bg, border: `1px solid ${type.color}33` }}
       onMouseEnter={playHover}
     >
-      {/* Dynamic atmospheric micro-canvas hazard backgrounds */}
       <AlertCardCanvas type={alert.type} />
 
       {type.severity === 'critical' && (
@@ -283,7 +280,6 @@ function AlertCard({ alert, onDismiss }) {
   )
 }
 
-// Alert history mock data
 const alertHistory = [
   { date: '2026-05-25', type: 'High Wind Advisory', area: 'Coastal', status: 'expired' },
   { date: '2026-05-24', type: 'Heavy Rain Warning', area: 'Metro', status: 'expired' },
@@ -299,7 +295,6 @@ export default function Alerts() {
   const [activeAlerts, setActiveAlerts] = useState([])
   const [broadcastAlerts, setBroadcastAlerts] = useState([])
 
-  // Push Notifications state
   const [pushStatus, setPushStatus] = useState('default')
   const [vapidPublicKey, setVapidPublicKey] = useState(null)
 
@@ -356,7 +351,6 @@ export default function Alerts() {
     }
   }
 
-  // Rules state
   const [rules, setRules] = useState([])
   const [loadingRules, setLoadingRules] = useState(true)
   const [showRuleForm, setShowRuleForm] = useState(false)
@@ -375,7 +369,6 @@ export default function Alerts() {
     }
   }, [weather])
 
-  // Fetch user rules
   useEffect(() => {
     const fetchRules = async () => {
       try {
@@ -391,7 +384,6 @@ export default function Alerts() {
     fetchRules()
   }, [])
 
-  // Socket: listen for admin broadcasts and periodic alert events
   useEffect(() => {
     if (!socket) return
 
@@ -407,7 +399,7 @@ export default function Alerts() {
         active: true,
       }
       setBroadcastAlerts(prev => [newAlert, ...prev])
-      // Auto-remove after 30 seconds
+
       setTimeout(() => setBroadcastAlerts(prev => prev.filter(a => a.id !== id)), 30000)
     }
 
@@ -496,7 +488,6 @@ export default function Alerts() {
       <div className="absolute inset-0 bg-animated-grid opacity-15 pointer-events-none z-[3]" />
       <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="heading-display text-3xl text-white">
@@ -523,7 +514,6 @@ export default function Alerts() {
           </div>
         </div>
 
-        {/* Summary Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Active Alerts', val: allActive.length, color: '#ff4444' },
@@ -539,17 +529,14 @@ export default function Alerts() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left — Active Alerts */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Broadcast Banner — admin dispatched */}
             <AnimatePresence>
               {broadcastAlerts.length > 0 && broadcastAlerts.map(alert => (
                 <AlertCard key={alert.id} alert={alert} onDismiss={dismissBroadcast} />
               ))}
             </AnimatePresence>
 
-            {/* Weather-generated alerts */}
             <div>
               <h2 className="heading-section text-xl text-white mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
@@ -571,7 +558,6 @@ export default function Alerts() {
               )}
             </div>
 
-            {/* Alert History */}
             <div>
               <h2 className="heading-section text-xl text-white mb-4">Alert History</h2>
               <div className="glass rounded-2xl overflow-hidden">
@@ -608,9 +594,7 @@ export default function Alerts() {
             </div>
           </div>
 
-          {/* Right — Smart Rules */}
           <div className="space-y-6">
-            {/* Push Notifications Card */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -634,7 +618,6 @@ export default function Alerts() {
               )}
             </div>
 
-            {/* Add Rule */}
             <div className="glass-strong rounded-3xl p-6 border border-white/5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -649,7 +632,6 @@ export default function Alerts() {
                 </button>
               </div>
 
-              {/* Rule Form */}
               <AnimatePresence>
                 {showRuleForm && (
                   <motion.form
@@ -709,7 +691,6 @@ export default function Alerts() {
                 )}
               </AnimatePresence>
 
-              {/* Rules List */}
               {loadingRules ? (
                 <div className="flex items-center justify-center gap-2 py-4 text-xs text-gray-500 font-mono">
                   <Loader2 size={12} className="animate-spin" />

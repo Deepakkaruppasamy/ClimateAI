@@ -1,4 +1,4 @@
-// Install all dependencies then start the dev server
+
 const { execSync, spawn } = require('child_process')
 const path = require('path')
 const fs = require('fs')
@@ -14,7 +14,6 @@ function run(cmd, cwd) {
   execSync(cmd, { cwd, stdio: 'inherit', shell: true })
 }
 
-// Install dependencies
 console.log('━'.repeat(50))
 console.log('[1/2] Installing client dependencies...')
 run('npm install', clientDir)
@@ -31,12 +30,10 @@ console.log('  ⚙️  Backend:  http://localhost:5000')
 console.log('\nPress Ctrl+C to stop\n')
 console.log('━'.repeat(50))
 
-// Start backend
 const server = spawn('npm', ['run', 'dev'], {
   cwd: serverDir, shell: true, stdio: 'inherit',
 })
 
-// Wait 3s then start frontend
 setTimeout(() => {
   const client = spawn('npm', ['run', 'dev'], {
     cwd: clientDir, shell: true, stdio: 'inherit',

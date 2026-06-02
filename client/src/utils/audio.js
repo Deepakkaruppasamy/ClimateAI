@@ -1,8 +1,7 @@
-// ClimateAI — Futuristic Web Audio API Acoustic Synthesizer
+
 let audioCtx = null;
 let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 
-// Initialize context lazily on user gesture to conform to browser policies
 function getAudioContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -22,14 +21,13 @@ export function setSoundEnabled(enabled) {
   localStorage.setItem('soundEnabled', enabled ? 'true' : 'false');
 }
 
-// Play a quick high-tech click "tap" sound
 export function playTap() {
   if (!soundEnabled) return;
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     
-    // Main transient pop
+
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     
@@ -50,7 +48,6 @@ export function playTap() {
   }
 }
 
-// Play a very subtle high-pass hover click
 export function playHover() {
   if (!soundEnabled) return;
   try {
@@ -77,18 +74,17 @@ export function playHover() {
     osc.start(now);
     osc.stop(now + 0.03);
   } catch (e) {
-    // Fail silently on hover
+
   }
 }
 
-// Play an ascending major triad synth sweep for accomplishments
 export function playSuccess() {
   if (!soundEnabled) return;
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     
-    const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+    const notes = [261.63, 329.63, 392.00, 523.25]; 
     notes.forEach((freq, index) => {
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
@@ -112,7 +108,6 @@ export function playSuccess() {
   }
 }
 
-// Play a low resonant frequency slide with distortion for alerts or failures
 export function playError() {
   if (!soundEnabled) return;
   try {
@@ -145,17 +140,16 @@ export function playError() {
   }
 }
 
-// Play a dual-chime harmonic ping for notifications
 export function playNotification() {
   if (!soundEnabled) return;
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     
-    const baseFreq = 880; // A5
-    const secondFreq = 1318.51; // E6
+    const baseFreq = 880; 
+    const secondFreq = 1318.51; 
     
-    // First high chime
+
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
@@ -165,7 +159,7 @@ export function playNotification() {
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
     
-    // Second offset chime
+
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'sine';
@@ -186,7 +180,6 @@ export function playNotification() {
   }
 }
 
-// Procedural Emergency Hazard Sirens
 export function playAlarm(severity = 'critical') {
   if (!soundEnabled) return;
   try {
@@ -194,7 +187,7 @@ export function playAlarm(severity = 'critical') {
     const now = ctx.currentTime;
     
     if (severity === 'critical') {
-      // Repetitive sweeping pitch siren
+
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
       const filter = ctx.createBiquadFilter();
@@ -217,14 +210,14 @@ export function playAlarm(severity = 'critical') {
       osc.start(now);
       osc.stop(now + 0.3);
     } else {
-      // Advisory tritone chime sequence
+
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, now); // D5
-      osc.frequency.setValueAtTime(659.25, now + 0.07); // E5
-      osc.frequency.setValueAtTime(880.00, now + 0.14); // A5
+      osc.frequency.setValueAtTime(587.33, now); 
+      osc.frequency.setValueAtTime(659.25, now + 0.07); 
+      osc.frequency.setValueAtTime(880.00, now + 0.14); 
       
       gainNode.gain.setValueAtTime(0.035, now);
       gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
@@ -240,7 +233,6 @@ export function playAlarm(severity = 'critical') {
   }
 }
 
-// Procedural White Noise Static sweep
 export function playRadioStatic() {
   if (!soundEnabled) return;
   try {
@@ -251,7 +243,7 @@ export function playRadioStatic() {
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     
-    // Fill buffer with random noise values
+
     for (let i = 0; i < bufferSize; i++) {
       data[i] = Math.random() * 2 - 1;
     }
@@ -275,7 +267,7 @@ export function playRadioStatic() {
     noiseSource.start(now);
     noiseSource.stop(now + 0.25);
   } catch (e) {
-    // Fail silently on noise channel
+
   }
 }
 

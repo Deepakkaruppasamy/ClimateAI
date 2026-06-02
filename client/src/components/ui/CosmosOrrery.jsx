@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, Globe, Search, ArrowLeft, ZoomIn, ZoomOut, Info, Navigation, Star } from 'lucide-react'
 import { playTap, playHover } from '../../utils/audio'
 
-// Planet telemetry index database
 const PLANETS = [
   { name: 'Sun', color: '#ffcc00', size: 42, distance: 0, speed: 0, desc: 'Yellow dwarf star at the center of the solar system, holding 99.8% of its entire mass.', stats: { diameter: '1,392,700 km', temp: '5,500 °C (Surface)', mass: '333,000 Earths', orbit: 'N/A' }, facts: ['Core temperature reaches 15 million °C', 'Fuse 600 million tons of hydrogen per second', 'Generates solar wind stream that sweeps space'] },
   { name: 'Mercury', color: '#a1a1a1', size: 9, distance: 75, speed: 0.038, desc: 'The smallest and closest planet to the Sun, lacking any substantial atmosphere.', stats: { diameter: '4,879 km', temp: '-180 to 430 °C', mass: '0.055 Earths', orbit: '88 Earth Days' }, facts: ['A year lasts just 88 Earth days', 'Shrinking slowly as its iron core cools down', 'Highest temperature fluctuations in Solar System'] },
@@ -16,7 +15,6 @@ const PLANETS = [
   { name: 'Neptune', color: '#3350b5', size: 17, distance: 410, speed: 0.002, desc: 'The most distant wind-swept blue ice giant, freezing under active supersonic storm vectors.', stats: { diameter: '49,244 km', temp: '-200 °C', mass: '17.1 Earths', orbit: '164.8 Earth Years' }, facts: ['Supersonic winds reach speeds of up to 2,100 km/h', 'Deep blue color arises from atmospheric methane absorption', 'Triton is the only large moon with a retrograde orbit'] }
 ]
 
-// Famous global coordinates on Earth map
 const EARTH_LOCATIONS = [
   { name: 'Thekkalur, India', lat: 11.135, lon: 77.228, desc: 'Active Simulated Hyperlocal Node', icon: '📍', active: true },
   { name: 'New York, USA', lat: 40.7128, lon: -74.0060, desc: 'East Coast Operations', icon: '🏙️' },
@@ -31,15 +29,15 @@ const EARTH_LOCATIONS = [
 
 export default function CosmosOrrery() {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedPlanet, setSelectedPlanet] = useState(null) // planet object
+  const [selectedPlanet, setSelectedPlanet] = useState(null) 
   const [zoomRatio, setZoomRatio] = useState(1.0)
   
-  // Earth map specific states
+
   const [showEarthMap, setShowEarthMap] = useState(false)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [MapComponent, setMapComponent] = useState(null)
   
-  const [mapCenter, setMapCenter] = useState([11.135, 77.228]) // Starting at Thekkalur
+  const [mapCenter, setMapCenter] = useState([11.135, 77.228]) 
   const [mapZoom, setMapZoom] = useState(12)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -50,7 +48,6 @@ export default function CosmosOrrery() {
   const hoveredPlanetNameRef = useRef(null)
   const [hoveredPlanet, setHoveredPlanet] = useState(null)
 
-  // Dynamically load Leaflet for Earth Map View
   useEffect(() => {
     if (showEarthMap && !mapLoaded) {
       import('leaflet').then(L => {
@@ -64,7 +61,6 @@ export default function CosmosOrrery() {
     }
   }, [showEarthMap, mapLoaded])
 
-  // Custom component inside MapContainer to handle center dynamic updates
   const ChangeMapView = ({ center, zoom }) => {
     if (!MapComponent) return null
     try {
@@ -78,7 +74,6 @@ export default function CosmosOrrery() {
     return null
   }
 
-  // Address search query logic via free Nominatim OpenStreetMap API
   const handleSearchSubmit = async (e) => {
     e.preventDefault()
     if (!searchQuery.trim()) return
@@ -104,14 +99,13 @@ export default function CosmosOrrery() {
     }
   }
 
-  // Direct click selection to zoom into a planet
   const selectPlanet = (planet) => {
     playTap()
     setSelectedPlanet(planet)
     setZoomRatio(1.0)
     
     if (planet && planet.name === 'Earth') {
-      // Allow the smooth zoom camera animation to run before revealing the detailed map
+
       setTimeout(() => {
         setShowEarthMap(true)
       }, 1200)
@@ -129,7 +123,6 @@ export default function CosmosOrrery() {
     setZoomRatio(1.0)
   }
 
-  // Twinkling background space stars generator
   const starsRef = useRef([])
   const generateStars = (w, h) => {
     const stars = []
@@ -145,7 +138,6 @@ export default function CosmosOrrery() {
     starsRef.current = stars
   }
 
-  // Core HTML5 Canvas Cosmic Drawing Loop
   useEffect(() => {
     if (!isOpen || showEarthMap) return
 
@@ -168,7 +160,7 @@ export default function CosmosOrrery() {
     const drawLoop = () => {
       if (!ctx || !canvas) return
       
-      // Clear space backdrop with rich deep void colors
+
       ctx.fillStyle = '#010308'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -176,7 +168,6 @@ export default function CosmosOrrery() {
       const cy = canvas.height / 2
       const time = performance.now() * 0.001
 
-      // 1. Draw and Twinkle space stars
       starsRef.current.forEach(star => {
         star.opacity += Math.sin(time * star.twinkleSpeed * 100) * 0.05
         star.opacity = Math.max(0.1, Math.min(1.0, star.opacity))
@@ -186,31 +177,29 @@ export default function CosmosOrrery() {
         ctx.fill()
       })
 
-      // 2. Camera target zooming easing
       let targetScale = 1.0
       let targetX = 0
       let targetY = 0
 
       if (selectedPlanet) {
-        // Zooming in on a selected planet
+
         targetScale = selectedPlanet.name === 'Sun' ? 2.5 : selectedPlanet.name === 'Earth' ? 4.5 : 3.8
         targetScale *= zoomRatio
         
-        // Find planet's active position to track camera
+
         const planetState = planetPositionsRef.current.find(p => p.name === selectedPlanet.name)
         if (planetState) {
-          // Centering target offset
+
           targetX = -planetState.relX * targetScale
           targetY = -planetState.relY * targetScale
         }
       } else {
-        // Standard full system overview layout
+
         const maxDist = PLANETS[PLANETS.length - 1].distance
         const sizeLimit = Math.min(canvas.width, canvas.height) * 0.85
         targetScale = (sizeLimit / 2) / maxDist
       }
 
-      // Smooth camera interpolation
       cameraScale += (targetScale - cameraScale) * 0.075
       cameraX += (targetX - cameraX) * 0.075
       cameraY += (targetY - cameraY) * 0.075
@@ -218,12 +207,10 @@ export default function CosmosOrrery() {
       const sunX = cx + cameraX
       const sunY = cy + cameraY
 
-      // Reset registry of active planet position boxes
       const newPlanetPositions = []
 
-      // 3. Draw Planetary orbits
       PLANETS.forEach(planet => {
-        if (planet.distance === 0) return // Skip Sun orbit
+        if (planet.distance === 0) return 
         
         const orbitRadius = planet.distance * cameraScale
         ctx.beginPath()
@@ -232,15 +219,14 @@ export default function CosmosOrrery() {
           : 'rgba(255,255,255,0.04)'
         ctx.lineWidth = hoveredPlanetNameRef.current === planet.name ? 1.5 : 1
         
-        // Standard concentric circle
+
         ctx.arc(sunX, sunY, orbitRadius, 0, Math.PI * 2)
         ctx.stroke()
       })
 
-      // 4. Draw Center Sun
       const sunRadius = PLANETS[0].size * cameraScale * 0.6
       
-      // Gorgeous golden corona glow
+
       const coronaGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.2, sunX, sunY, sunRadius * 2.8)
       coronaGlow.addColorStop(0, 'rgba(255, 204, 0, 0.95)')
       coronaGlow.addColorStop(0.35, 'rgba(255, 120, 0, 0.45)')
@@ -256,7 +242,6 @@ export default function CosmosOrrery() {
       ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2)
       ctx.fill()
 
-      // Registry Sun positions
       newPlanetPositions.push({
         name: 'Sun',
         x: sunX,
@@ -266,11 +251,9 @@ export default function CosmosOrrery() {
         radius: sunRadius
       })
 
-      // 5. Draw Orbiting Planets
       PLANETS.forEach(planet => {
         if (planet.distance === 0) return
 
-        // Compute angle
         const angle = time * planet.speed * 2.5
         const relX = Math.cos(angle) * planet.distance
         const relY = Math.sin(angle) * planet.distance
@@ -279,7 +262,6 @@ export default function CosmosOrrery() {
         const py = sunY + relY * cameraScale
         const radius = Math.max(3, planet.size * cameraScale * 0.6)
 
-        // Store positions
         newPlanetPositions.push({
           name: planet.name,
           x: px,
@@ -289,7 +271,6 @@ export default function CosmosOrrery() {
           radius
         })
 
-        // Draw Saturn's Rings first
         if (planet.name === 'Saturn') {
           ctx.save()
           ctx.translate(px, py)
@@ -302,19 +283,17 @@ export default function CosmosOrrery() {
           ctx.restore()
         }
 
-        // Draw Planet Body
         ctx.fillStyle = planet.color
         ctx.beginPath()
         ctx.arc(px, py, radius, 0, Math.PI * 2)
         ctx.fill()
 
-        // Shadow masking to represent single side light casting from center Sun
         ctx.save()
         ctx.beginPath()
         ctx.arc(px, py, radius + 0.5, 0, Math.PI * 2)
         ctx.clip()
         
-        // Calculate angle facing away from Sun
+
         const shadowAngle = Math.atan2(py - sunY, px - sunX)
         const sx = px + Math.cos(shadowAngle) * (radius * 0.5)
         const sy = py + Math.sin(shadowAngle) * (radius * 0.5)
@@ -330,7 +309,6 @@ export default function CosmosOrrery() {
         ctx.fill()
         ctx.restore()
 
-        // Custom Earth atmosphere thin cyan glow
         if (planet.name === 'Earth') {
           ctx.strokeStyle = 'rgba(6, 255, 212, 0.45)'
           ctx.lineWidth = 1
@@ -339,7 +317,6 @@ export default function CosmosOrrery() {
           ctx.stroke()
         }
 
-        // Planet Hover indicator rings
         if (hoveredPlanetNameRef.current === planet.name) {
           ctx.strokeStyle = 'rgba(6, 255, 212, 0.85)'
           ctx.lineWidth = 1.2
@@ -347,7 +324,7 @@ export default function CosmosOrrery() {
           ctx.arc(px, py, radius + 5, 0, Math.PI * 2)
           ctx.stroke()
           
-          // Draw subtle floating planet name label
+
           ctx.fillStyle = '#ffffff'
           ctx.font = '10px JetBrains Mono, monospace'
           ctx.textAlign = 'center'
@@ -355,7 +332,6 @@ export default function CosmosOrrery() {
         }
       })
 
-      // Update ref registry
       planetPositionsRef.current = newPlanetPositions
       animFrameIdRef.current = requestAnimationFrame(drawLoop)
     }
@@ -368,7 +344,6 @@ export default function CosmosOrrery() {
     }
   }, [isOpen, selectedPlanet, zoomRatio, showEarthMap])
 
-  // Mouse hover coordinate check
   const handleMouseMove = (e) => {
     if (!canvasRef.current) return
     const rect = canvasRef.current.getBoundingClientRect()
@@ -391,7 +366,6 @@ export default function CosmosOrrery() {
     }
   }
 
-  // Click handler to select planet
   const handleCanvasClick = (e) => {
     if (!canvasRef.current) return
     const rect = canvasRef.current.getBoundingClientRect()
@@ -414,7 +388,6 @@ export default function CosmosOrrery() {
 
   return (
     <>
-      {/* ── Spinning Floating Toggle Button ── */}
       <div className="fixed bottom-6 right-6 z-[999]">
         <motion.button
           onClick={() => { playTap(); setIsOpen(true) }}
@@ -422,7 +395,6 @@ export default function CosmosOrrery() {
           transition={{ rotate: { duration: 1.5, ease: 'easeInOut' }, scale: { duration: 0.2 } }}
           className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center shadow-[0_0_30px_rgba(0,212,255,0.45)] border border-white/20 overflow-hidden group cursor-pointer"
         >
-          {/* Cybernetic Animated SVG Solar System Portal */}
           <div className="absolute inset-0 bg-black/20 z-[2] group-hover:bg-transparent transition-all duration-300 pointer-events-none" />
           
           <svg className="w-8 h-8 z-10 relative pointer-events-none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -457,24 +429,18 @@ export default function CosmosOrrery() {
               }
             `}</style>
             
-            {/* Sun */}
             <circle cx="50" cy="50" r="12" fill="url(#sunGradient)" className="sun-core" />
             
-            {/* Inner Orbit */}
             <circle cx="50" cy="50" r="24" className="orbit-ring" strokeDasharray="3 3" />
-            {/* Planet 1 */}
             <g className="orbit-node-1">
               <circle cx="74" cy="50" r="3.5" fill="#00d4ff" filter="drop-shadow(0 0 3px #00d4ff)" />
             </g>
 
-            {/* Outer Orbit */}
             <circle cx="50" cy="50" r="38" className="orbit-ring" />
-            {/* Planet 2 */}
             <g className="orbit-node-2">
               <circle cx="50" cy="12" r="4.5" fill="#a78bfa" filter="drop-shadow(0 0 3px #a78bfa)" />
             </g>
 
-            {/* Gradients */}
             <defs>
               <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="#fff" />
@@ -484,13 +450,11 @@ export default function CosmosOrrery() {
             </defs>
           </svg>
 
-          {/* Animated cybernetic outer spinner rings */}
           <div className="absolute inset-0.5 rounded-[14px] border border-dashed border-neon-cyan opacity-40 animate-spin z-10 pointer-events-none" style={{ animationDuration: '8s' }} />
           <div className="absolute inset-2 rounded-xl border border-dotted border-white/20 animate-spin z-10 pointer-events-none" style={{ animationDuration: '5s', animationDirection: 'reverse' }} />
         </motion.button>
       </div>
 
-      {/* ── Fullscreen Interactive Cosmos Overlay Modal ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -499,7 +463,6 @@ export default function CosmosOrrery() {
             exit={{ opacity: 0, scale: 1.05 }}
             className="fixed inset-0 z-[1000] bg-black overflow-hidden flex flex-col justify-between font-body text-white"
           >
-            {/* Top Navigation HUD Bar */}
             <div className="relative z-50 h-16 border-b border-white/5 bg-[#020409]/80 backdrop-blur-md px-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
@@ -510,13 +473,12 @@ export default function CosmosOrrery() {
                 </button>
                 <div>
                   <h2 className="text-white text-base font-semibold font-mono tracking-wider flex items-center gap-2 select-none">
-                    COSMOS_ORRERY // v1.1
+                    COSMOS_ORRERY 
                   </h2>
                   <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase block select-none">SYSTEM TELEMETRY & GEO EXPLORER</span>
                 </div>
               </div>
 
-              {/* Dynamic status indicators */}
               <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 select-none">
                   <Star size={11} className="text-yellow-400" />
@@ -529,10 +491,8 @@ export default function CosmosOrrery() {
               </div>
             </div>
 
-            {/* Main Interactive Screen Area */}
             <div className="flex-1 relative flex overflow-hidden">
               
-              {/* Left HUD Panel: Planet list or Selected planet stats */}
               <div className="w-80 border-r border-white/5 bg-[#020409]/70 backdrop-blur-lg z-20 flex flex-col p-6 space-y-6 overflow-y-auto">
                 {!selectedPlanet ? (
                   <>
@@ -543,7 +503,6 @@ export default function CosmosOrrery() {
                       </p>
                     </div>
 
-                    {/* Planet selection buttons */}
                     <div className="space-y-2">
                       {PLANETS.map((planet, idx) => (
                         <button
@@ -572,7 +531,6 @@ export default function CosmosOrrery() {
                   </>
                 ) : (
                   <>
-                    {/* Planet Details Card */}
                     <div className="space-y-6">
                       <button
                         onClick={zoomOut}
@@ -590,7 +548,6 @@ export default function CosmosOrrery() {
                         <p className="text-xs text-gray-400 leading-relaxed font-light">{selectedPlanet.desc}</p>
                       </div>
 
-                      {/* Fact table */}
                       <div className="glass rounded-2xl p-4 border border-white/5 font-mono space-y-3">
                         <span className="text-[9px] text-gray-500 uppercase block tracking-wider">[ PHYSICAL_METRICS ]</span>
                         {Object.entries(selectedPlanet.stats).map(([k, v]) => (
@@ -601,7 +558,6 @@ export default function CosmosOrrery() {
                         ))}
                       </div>
 
-                      {/* Bulleted Facts list */}
                       <div className="space-y-3">
                         <span className="text-[9px] font-mono text-neon-cyan uppercase block tracking-wider select-none">[ HISTORICAL_LOGS ]</span>
                         <ul className="space-y-2.5">
@@ -618,9 +574,7 @@ export default function CosmosOrrery() {
                 )}
               </div>
 
-              {/* Center Screen: Canvas Space or Earth Map */}
               <div className="flex-1 relative bg-[#010308]">
-                {/* 1. Canvas Orrery Drawing screen */}
                 <canvas
                   ref={canvasRef}
                   onMouseMove={handleMouseMove}
@@ -628,7 +582,6 @@ export default function CosmosOrrery() {
                   className={`w-full h-full cursor-crosshair transition-opacity duration-700 ${showEarthMap ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                 />
 
-                {/* 2. Interactive Zoom controls for Orrery Canvas */}
                 {!showEarthMap && (
                   <div className="absolute bottom-6 right-6 z-30 flex gap-2">
                     <button
@@ -646,7 +599,6 @@ export default function CosmosOrrery() {
                   </div>
                 )}
 
-                {/* 3. Fully Interactive Zoomed Leaflet Map for Earth (All Places visible) */}
                 <AnimatePresence>
                   {showEarthMap && (
                     <motion.div
@@ -655,7 +607,6 @@ export default function CosmosOrrery() {
                       exit={{ opacity: 0, scale: 0.98 }}
                       className="absolute inset-0 z-30 flex flex-col bg-[#040d1a]"
                     >
-                      {/* Search Bar Address Query */}
                       <div className="absolute top-4 left-4 right-4 z-[999] flex flex-col sm:flex-row gap-2 max-w-xl">
                         <form onSubmit={handleSearchSubmit} className="flex-1 flex gap-2">
                           <div className="relative flex-1">
@@ -686,14 +637,12 @@ export default function CosmosOrrery() {
                         </button>
                       </div>
 
-                      {/* Map Error Banner */}
                       {searchError && (
                         <div className="absolute top-18 left-4 right-4 z-[999] max-w-xl glass p-3 rounded-xl border border-red-500/20 text-red-400 text-xs font-mono select-none">
                           🚨 {searchError}
                         </div>
                       )}
 
-                      {/* Leaflet Map rendering */}
                       {mapLoaded && MapComponent ? (
                         <MapComponent.MapContainer
                           center={mapCenter}
@@ -707,7 +656,6 @@ export default function CosmosOrrery() {
                           />
                           <ChangeMapView center={mapCenter} zoom={mapZoom} />
 
-                          {/* Render custom pre-loaded search pins for detailed location checks */}
                           {EARTH_LOCATIONS.map((loc) => (
                             <MapComponent.Marker
                               key={loc.name}
@@ -731,7 +679,7 @@ export default function CosmosOrrery() {
                           ))}
                         </MapComponent.MapContainer>
                       ) : (
-                        /* Dynamic loading state */
+
                         <div className="w-full h-full flex flex-col items-center justify-center relative"
                           style={{ background: 'radial-gradient(ellipse at 50% 50%, #001a3a 0%, #020409 100%)' }}>
                           <div className="absolute inset-0 bg-animated-grid opacity-20" />
@@ -747,7 +695,6 @@ export default function CosmosOrrery() {
                         </div>
                       )}
 
-                      {/* Map Sidebar locations index overlays */}
                       <div className="absolute bottom-4 left-4 z-[999] max-w-sm hidden md:block">
                         <div className="glass-strong rounded-2xl p-4 border border-white/10 shadow-2xl space-y-3 backdrop-blur-md max-h-[300px] overflow-y-auto custom-scrollbar">
                           <span className="text-[9px] font-mono text-neon-blue uppercase tracking-widest block select-none">[ TELEMETRY_STATION_INDEX ]</span>
@@ -776,7 +723,6 @@ export default function CosmosOrrery() {
 
             </div>
 
-            {/* Bottom Cybernetic Telemetry Stat Bar */}
             <div className="h-10 border-t border-white/5 bg-[#020409] px-6 flex items-center justify-between text-[10px] font-mono text-gray-600 select-none z-20">
               <span>SAT_LINK: ONLINE // SECURE_LOGGED</span>
               <span>ORRERY COORD ANOMALY SHIFT: 0.00%</span>
