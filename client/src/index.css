@@ -256,16 +256,22 @@ body {
    ANIMATED BACKGROUNDS
    ============================================================ */
 .bg-animated-grid {
+  position: absolute !important;
+  inset: -50px !important;
+  width: calc(100% + 100px) !important;
+  height: calc(100% + 100px) !important;
   background-image: 
     linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
   animation: gridMove 20s linear infinite;
 }
 
 @keyframes gridMove {
-  0% { background-position: 0 0; }
-  100% { background-position: 50px 50px; }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(50px, 50px, 0); }
 }
 
 .bg-circuit {
@@ -680,13 +686,13 @@ body {
    VIDEO CAROUSEL TRANSITIONS
    ============================================================ */
 @keyframes kenBurns {
-  0%   { transform: scale(1.0) translate(0%, 0%); }
-  100% { transform: scale(1.08) translate(-1.5%, -1%); }
+  0%   { transform: scale3d(1.0, 1.0, 1.0) translate3d(0, 0, 0); }
+  100% { transform: scale3d(1.08, 1.08, 1.0) translate3d(-1.5%, -1%, 0); }
 }
 
 @keyframes kenBurnsAlt {
-  0%   { transform: scale(1.08) translate(-2%, -1%); }
-  100% { transform: scale(1.0) translate(0%, 0%); }
+  0%   { transform: scale3d(1.08, 1.08, 1.0) translate3d(-2%, -1%, 0); }
+  100% { transform: scale3d(1.0, 1.0, 1.0) translate3d(0, 0, 0); }
 }
 
 .ken-burns       { animation: kenBurns 12s ease-in-out forwards; }
