@@ -77,12 +77,13 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#070a13]">
       {/* Background Video */}
       <VideoBackground
+        className="!fixed"
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260520_133010_cb9c806d-bc9d-47f1-ac4c-b1759134ec8b.mp4"
         overlay="dark"
         kenBurns={true}
         grain={true}
       />
-      <div className="absolute inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
+      <div className="fixed inset-0 bg-animated-grid opacity-10 pointer-events-none z-[3]" />
 
       {/* Main Glass Authentication Card */}
       <motion.div
