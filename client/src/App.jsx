@@ -64,6 +64,25 @@ function AnimatedRoutes() {
   )
 }
 
+function Footer() {
+  return (
+    <footer className="w-full border-t border-white/5 bg-[#02050e]/50 backdrop-blur-md py-6 mt-12 relative z-10 select-none">
+      <div className="max-w-[95%] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
+          <span className="text-xs font-mono text-gray-500 uppercase tracking-widest">ClimateAI // Intel Portal</span>
+        </div>
+        <div className="text-xs text-gray-400 font-mono text-center">
+          Created with ❤️ by <span className="text-white font-semibold">Deepak Karuppasamy</span>
+        </div>
+        <div className="text-[10px] font-mono text-gray-600">
+          © {new Date().getFullYear()} ALL RIGHTS RESERVED
+        </div>
+      </div>
+    </footer>
+  )
+}
+
 export default function App() {
   const [appReady, setAppReady] = useState(false)
 
@@ -88,6 +107,7 @@ export default function App() {
                   <div className="flex-1 w-full">
                     <AnimatedRoutes />
                   </div>
+                  <Footer />
                   <Toaster
                     position="top-right"
                     toastOptions={{
