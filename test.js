@@ -1,0 +1,1 @@
+const lucide = require('./client/node_modules/lucide-react'); ['ArrowRight', 'Zap', 'Wind', 'Droplets', 'Eye', 'Shield', 'Brain', 'BarChart2', 'Map', 'Bell', 'Cloud', 'Sun', 'Thermometer', 'TrendingUp', 'Globe', 'Activity', 'Layers', 'ChevronRight', 'Play', 'Sparkles'].forEach(function(i) { if (typeof lucide[i] !== 'function') console.log(i + ' is ' + typeof lucide[i]); })

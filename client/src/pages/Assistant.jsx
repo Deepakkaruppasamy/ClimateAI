@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell, Volume2, VolumeX } from 'lucide-react'
+import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { useWeather } from '../context/WeatherContext'
 import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
@@ -275,6 +275,28 @@ Guidelines:
     }
   }
 
+  const clearChat = async () => {
+    if (!window.confirm('Are you sure you want to clear your chat history?')) return
+
+    if (user?._id) {
+      try {
+        await fetch(`/api/ai/history/${user._id}`, {
+          method: 'DELETE'
+        })
+      } catch (err) {
+        console.error('Failed to clear chat history on server:', err)
+      }
+    }
+
+    setMessages([
+      {
+        role: 'assistant',
+        content: `Hello${user ? ` ${user.name.split(' ')[0]}` : ''}! I'm ClimateAI, your intelligent weather assistant. 🌍\n\nI can help you with:\n• Real-time weather insights\n• Smart clothing & travel recommendations\n• Health & safety alerts\n• Farming and outdoor activity guidance\n\nWhat would you like to know about today's weather?`,
+        time: Date.now(),
+      }
+    ])
+  }
+
   const toggleVoice = () => {
     if (!('webkitSpeechRecognition' in window)) {
       alert('Voice recognition not supported in this browser.')
@@ -325,17 +347,27 @@ Guidelines:
             </h1>
             <p className="text-gray-400 text-sm mt-1">Voice-enabled climate intelligence</p>
           </div>
-          {/* Live weather chip */}
-          {weather && (
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            {/* Clear Chat Button */}
+            <button
+              onClick={clearChat}
+              className="glass px-4 py-2 rounded-xl text-xs font-mono text-gray-400 hover:text-red-400 hover:neon-border-red transition-all flex items-center gap-2 group cursor-pointer"
+              title="Clear entire chat history"
+            >
+              <Trash2 size={13} className="text-gray-500 group-hover:text-red-400 transition-colors" />
+              <span>Clear Chat</span>
+            </button>
+
+            {/* Live weather chip */}
+            {weather && (
               <div className="glass rounded-xl px-4 py-2 flex items-center gap-2">
                 <Thermometer size={14} className="text-neon-blue" />
                 <span className="text-sm text-white">{weather.temp}°C</span>
                 <span className="text-gray-500">·</span>
                 <span className="text-sm text-gray-400">{weather.description}</span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Chat Window */}

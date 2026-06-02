@@ -1,0 +1,1 @@
+const lucide = require('./client/node_modules/lucide-react'); ['Zap', 'Globe', 'Search', 'ArrowLeft', 'ZoomIn', 'ZoomOut', 'Info', 'Navigation', 'Star'].forEach(function(i) { if (!lucide[i]) console.log(i + ' is MISSING'); })

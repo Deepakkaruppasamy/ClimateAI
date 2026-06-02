@@ -44,37 +44,6 @@ export default function CosmosOrrery() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
-
-  const toggleVideoRef = useRef(null)
-  
-  // Custom HLS loader for live orbital toggle button video stream
-  useEffect(() => {
-    const video = toggleVideoRef.current
-    if (!video) return
-    let hlsInstance = null
-    const url = 'https://stream.mux.com/BuGGTsiXq1T00WUb8qfURrHkTCbhrkfFLSv4uAOZzdhw.m3u8'
-    
-    const initHls = async () => {
-      const { default: Hls } = await import('hls.js')
-      if (Hls.isSupported()) {
-        hlsInstance = new Hls({ autoStartLoad: true })
-        hlsInstance.loadSource(url)
-        hlsInstance.attachMedia(video)
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url
-      }
-      video.muted = true
-      video.playsInline = true
-      video.loop = true
-      video.play().catch(() => {})
-    }
-    initHls()
-
-    return () => {
-      if (hlsInstance) hlsInstance.destroy()
-    }
-  }, [])
-
   const canvasRef = useRef(null)
   const animFrameIdRef = useRef(null)
   const planetPositionsRef = useRef([])
@@ -453,16 +422,67 @@ export default function CosmosOrrery() {
           transition={{ rotate: { duration: 1.5, ease: 'easeInOut' }, scale: { duration: 0.2 } }}
           className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center shadow-[0_0_30px_rgba(0,212,255,0.45)] border border-white/20 overflow-hidden group cursor-pointer"
         >
-          {/* Loop video stream rendering inside button */}
-          <video
-            ref={toggleVideoRef}
-            className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-            autoPlay
-            muted
-            playsInline
-            loop
-          />
+          {/* Cybernetic Animated SVG Solar System Portal */}
           <div className="absolute inset-0 bg-black/20 z-[2] group-hover:bg-transparent transition-all duration-300 pointer-events-none" />
+          
+          <svg className="w-8 h-8 z-10 relative pointer-events-none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <style>{`
+              @keyframes orbit-cw {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              @keyframes orbit-ccw {
+                0% { transform: rotate(360deg); }
+                100% { transform: rotate(0deg); }
+              }
+              @keyframes pulse-glow {
+                0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 4px #00d4ff); }
+                50% { opacity: 1.0; filter: drop-shadow(0 0 10px #06ffd4); }
+              }
+              .orbit-ring {
+                fill: none;
+                stroke: rgba(255, 255, 255, 0.15);
+                stroke-width: 1.5;
+              }
+              .orbit-node-1 {
+                animation: orbit-cw 6s linear infinite;
+                transform-origin: 50px 50px;
+              }
+              .orbit-node-2 {
+                animation: orbit-ccw 9s linear infinite;
+                transform-origin: 50px 50px;
+              }
+              .sun-core {
+                animation: pulse-glow 3s ease-in-out infinite;
+              }
+            `}</style>
+            
+            {/* Sun */}
+            <circle cx="50" cy="50" r="12" fill="url(#sunGradient)" className="sun-core" />
+            
+            {/* Inner Orbit */}
+            <circle cx="50" cy="50" r="24" className="orbit-ring" strokeDasharray="3 3" />
+            {/* Planet 1 */}
+            <g className="orbit-node-1">
+              <circle cx="74" cy="50" r="3.5" fill="#00d4ff" filter="drop-shadow(0 0 3px #00d4ff)" />
+            </g>
+
+            {/* Outer Orbit */}
+            <circle cx="50" cy="50" r="38" className="orbit-ring" />
+            {/* Planet 2 */}
+            <g className="orbit-node-2">
+              <circle cx="50" cy="12" r="4.5" fill="#a78bfa" filter="drop-shadow(0 0 3px #a78bfa)" />
+            </g>
+
+            {/* Gradients */}
+            <defs>
+              <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#fff" />
+                <stop offset="30%" stopColor="#ffea6c" />
+                <stop offset="100%" stopColor="#ffaa00" />
+              </radialGradient>
+            </defs>
+          </svg>
 
           {/* Animated cybernetic outer spinner rings */}
           <div className="absolute inset-0.5 rounded-[14px] border border-dashed border-neon-cyan opacity-40 animate-spin z-10 pointer-events-none" style={{ animationDuration: '8s' }} />

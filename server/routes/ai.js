@@ -51,6 +51,25 @@ router.post('/history/:userId', async (req, res) => {
   }
 })
 
+// DELETE /api/ai/history/:userId — clear chat history
+router.delete('/history/:userId', async (req, res) => {
+  const { userId } = req.params
+  const isDBConnected = mongoose.connection.readyState === 1
+
+  if (isDBConnected) {
+    try {
+      const ChatMessage = require('../models/ChatMessage')
+      await ChatMessage.deleteMany({ userId })
+      return res.json({ success: true, message: 'Chat history cleared' })
+    } catch (err) {
+      return res.status(500).json({ error: 'Failed to clear chat history', details: err.message })
+    }
+  } else {
+    mockChatHistory[userId] = []
+    return res.json({ success: true, message: 'Chat history cleared in memory' })
+  }
+})
+
 // ── AI Chat Endpoint (Groq) ────────────────────────────────
 router.post('/chat', async (req, res) => {
   const { messages, weatherContext, userContext } = req.body

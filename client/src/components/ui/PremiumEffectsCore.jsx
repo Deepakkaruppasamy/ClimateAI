@@ -64,6 +64,7 @@ export default function PremiumEffectsCore() {
     let currentY = 0
     let targetX = 0
     let targetY = 0
+    const activeMagneticRect = { pageLeft: 0, pageTop: 0, width: 0, height: 0 }
 
     const updatePosition = () => {
       // Linear interpolation (lerp) for smooth easing
@@ -80,10 +81,9 @@ export default function PremiumEffectsCore() {
 
       // Animate active magnetic target on active frame sync
       const activeEl = activeMagneticRef.current
-      if (magneticEnabled && activeEl) {
-        const rect = activeEl.getBoundingClientRect()
-        const elCenterX = rect.left + rect.width / 2
-        const elCenterY = rect.top + rect.height / 2
+      if (magneticEnabled && activeEl && activeMagneticRect.width > 0) {
+        const elCenterX = activeMagneticRect.pageLeft - window.scrollX + activeMagneticRect.width / 2
+        const elCenterY = activeMagneticRect.pageTop - window.scrollY + activeMagneticRect.height / 2
 
         const distX = targetX - elCenterX
         const distY = targetY - elCenterY
@@ -101,6 +101,7 @@ export default function PremiumEffectsCore() {
           activeEl.style.boxShadow = ''
           activeEl.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease'
           activeMagneticRef.current = null
+          activeMagneticRect.width = 0
         }
       }
 
@@ -151,6 +152,13 @@ export default function PremiumEffectsCore() {
       if (target) {
         activeMagneticRef.current = target
         target.style.transition = 'none' // Remove delay during active lock
+        
+        // Cache absolute page coordinates to avoid layout thrashing
+        const rect = target.getBoundingClientRect()
+        activeMagneticRect.pageLeft = rect.left + window.scrollX
+        activeMagneticRect.pageTop = rect.top + window.scrollY
+        activeMagneticRect.width = rect.width
+        activeMagneticRect.height = rect.height
       }
     }
 
@@ -162,6 +170,7 @@ export default function PremiumEffectsCore() {
         target.style.boxShadow = ''
         target.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease'
         activeMagneticRef.current = null
+        activeMagneticRect.width = 0
       }
     }
 

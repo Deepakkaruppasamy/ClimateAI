@@ -168,11 +168,31 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     }, { threshold: 0.05 });
     observer.observe(el);
     
+    // Cache the absolute document page coordinates and size to avoid layout thrashing
+    const rectRef = { pageLeft: 0, pageTop: 0, width: 0, height: 0 };
+    const measure = () => {
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      rectRef.pageLeft = r.left + window.scrollX - x.current;
+      rectRef.pageTop = r.top + window.scrollY - y.current;
+      rectRef.width = r.width;
+      rectRef.height = r.height;
+    };
+
+    // Initial measurement
+    measure();
+
+    const handleResize = () => {
+      measure();
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    
     // Unified requestAnimationFrame loop variables
     let animationFrameId;
     let lerpedScroll = window.scrollY;
     let homeX = 0;
     let homeY = 0;
+    let frameCount = 0;
     
     const tick = () => {
       if (!el) return;
@@ -181,6 +201,13 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       if (!isTabActive.current || !isIntersecting.current) {
         animationFrameId = requestAnimationFrame(tick);
         return;
+      }
+      
+      // Low-frequency periodic re-measurement (once per 60 frames / ~1 second)
+      // serves as a zero-overhead fallback for dynamic DOM/flex layout shifts.
+      frameCount++;
+      if (frameCount % 60 === 0) {
+        measure();
       }
       
       const now = performance.now();
@@ -194,11 +221,20 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       // 1.3 foreground moves 30% faster, 1.0 midground locks, 0.5 background lags half
       const parallaxY = -lerpedScroll * (zFactor - 1.0);
       
+      // Derive viewport-relative bounding box mathematically using cached layout coordinates
+      const rect = {
+        left: rectRef.pageLeft - window.scrollX + x.current,
+        top: rectRef.pageTop - window.scrollY + y.current,
+        width: rectRef.width,
+        height: rectRef.height
+      };
+      rect.right = rect.left + rect.width;
+      rect.bottom = rect.top + rect.height;
+      
       // 2. Physics logic (only when not dragging)
       if (!isDragging.current) {
         // Kinetic mouse repulsion force vector
         const mouse = window.quantumMouse;
-        const rect = el.getBoundingClientRect();
         const cardCenterX = rect.left + rect.width / 2;
         const cardCenterY = rect.top + rect.height / 2;
         
@@ -232,6 +268,12 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
         
         x.current += vx.current;
         y.current += vy.current;
+        
+        // Update derived rect after physical displacement changes
+        rect.left = rectRef.pageLeft - window.scrollX + x.current;
+        rect.top = rectRef.pageTop - window.scrollY + y.current;
+        rect.right = rect.left + rect.width;
+        rect.bottom = rect.top + rect.height;
         
         // 3. Draggable card boundaries soft bouncing physics
         const w = window.innerWidth;
@@ -270,9 +312,9 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
       const finalY = y.current + floatY + parallaxY;
       
       // 5. Proximity Glow calculation via global registry
-      const currentRect = el.getBoundingClientRect();
-      const cardCenterX = currentRect.left + currentRect.width / 2;
-      const cardCenterY = currentRect.top + currentRect.height / 2;
+      // Utilize derived viewport coords to prevent layout thrashing
+      const cardCenterX = rect.left + rect.width / 2;
+      const cardCenterY = rect.top + rect.height / 2;
       
       const cardInfo = {
         id: idRef.current,
@@ -322,6 +364,7 @@ export default function useQuantumFloat(delay = 0, zFactor = 1.0) {
     return () => {
       cancelAnimationFrame(animationFrameId);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('resize', handleResize);
       observer.disconnect();
       
       // Clean registry
