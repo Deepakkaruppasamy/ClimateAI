@@ -583,8 +583,8 @@ Guidelines:
                 <Send size={18} />
               </motion.button>
             </div>
-            <div className="text-xs text-gray-600 text-center mt-2">
-              {GROQ_API_KEY ? '🟢 Groq AI connected' : '⚠️ Demo mode — Add VITE_GROQ_API_KEY to .env for full AI'}
+            <div className="text-xs text-gray-500 text-center mt-2 font-mono select-none">
+              Created with ❤️ by Deepak Karuppasamy
             </div>
           </div>
         </div>
