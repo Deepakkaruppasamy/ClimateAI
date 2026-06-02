@@ -4,6 +4,7 @@ import { Send, Mic, MicOff, Zap, Thermometer, BookOpen, Leaf, Bell, Volume2, Vol
 import { useWeather } from '../context/WeatherContext'
 import { useAuth } from '../context/AuthContext'
 import VideoBackground from '../components/ui/VideoBackground'
+import AnimatedGlobe from '../components/hero/AnimatedGlobe'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || ''
 
@@ -222,6 +223,11 @@ function AtmosphericBackground() {
 
       {/* Cybernetic weather grid */}
       <div className="absolute inset-0 bg-animated-grid opacity-10" />
+
+      {/* Floating 3D Cyber-Climate Planet Hero Globe */}
+      <div className="absolute right-[-10%] top-[15%] w-[450px] h-[450px] sm:w-[550px] sm:h-[550px] opacity-25 pointer-events-none mix-blend-screen hidden lg:block">
+        <AnimatedGlobe />
+      </div>
 
       {/* Atmospheric Canvas Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen" />
