@@ -217,7 +217,7 @@ function AtmosphericBackground() {
   }, [])
 
   return (
-    <div className="absolute inset-0 bg-[#02050e] overflow-hidden -z-10 select-none pointer-events-none">
+    <div className="fixed inset-0 bg-[#02050e] overflow-hidden z-0 select-none pointer-events-none">
       {/* Dynamic atmospheric ambient glow mapping */}
       <div className="absolute inset-0 bg-radial-glow opacity-30" style={{ background: 'radial-gradient(circle at 50% 50%, #061129 0%, #02050e 100%)' }} />
 
