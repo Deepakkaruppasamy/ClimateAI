@@ -100,37 +100,39 @@ function FeatureCard({ icon: Icon, title, desc, color, delay, badge, to }) {
   }
 
   return (
-    <motion.div
-      ref={combinedRef}
-      onMouseMove={tiltProps.onMouseMove}
-      onMouseLeave={tiltProps.onMouseLeave}
-      onMouseEnter={playHover}
-      initial={{ opacity: 0, y: 50 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: delay * 0.12, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="glass rounded-2xl p-6 card-hover group cursor-default relative overflow-hidden"
-      style={tiltProps.style}
-    >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-        style={{ background: `radial-gradient(ellipse at 20% 20%, ${color}10 0%, transparent 70%)` }} />
-      {badge && (
-        <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full font-mono font-bold"
-          style={{ background: `${color}22`, color, border: `1px solid ${color}44` }}>
-          {badge}
-        </span>
-      )}
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
-        style={{ background: `${color}18`, border: `1px solid ${color}33` }}>
-        <Icon size={24} style={{ color }} />
-      </div>
-      <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>{title}</h3>
-      <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
-      <div className="mt-4 flex items-center gap-2 text-sm opacity-0 group-hover:opacity-100 transition-all translate-x-0 group-hover:translate-x-1 duration-300"
-        style={{ color }}>
-        <span>Explore</span>
-        <ChevronRight size={14} />
-      </div>
-    </motion.div>
+    <Link to={to} className="block text-left" onClick={playTap}>
+      <motion.div
+        ref={combinedRef}
+        onMouseMove={tiltProps.onMouseMove}
+        onMouseLeave={tiltProps.onMouseLeave}
+        onMouseEnter={playHover}
+        initial={{ opacity: 0, y: 50 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: delay * 0.12, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="glass rounded-2xl p-6 card-hover group cursor-pointer relative overflow-hidden h-full"
+        style={tiltProps.style}
+      >
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background: `radial-gradient(ellipse at 20% 20%, ${color}10 0%, transparent 70%)` }} />
+        {badge && (
+          <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full font-mono font-bold"
+            style={{ background: `${color}22`, color, border: `1px solid ${color}44` }}>
+            {badge}
+          </span>
+        )}
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+          style={{ background: `${color}18`, border: `1px solid ${color}33` }}>
+          <Icon size={24} style={{ color }} />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>{title}</h3>
+        <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+        <div className="mt-4 flex items-center gap-2 text-sm opacity-0 group-hover:opacity-100 transition-all translate-x-0 group-hover:translate-x-1 duration-300"
+          style={{ color }}>
+          <span>Explore</span>
+          <ChevronRight size={14} />
+        </div>
+      </motion.div>
+    </Link>
   )
 }
 
@@ -171,12 +173,12 @@ export default function Landing() {
   const heroScale   = useTransform(scrollY, [0, 500], [1, 0.97])
 
   const features = [
-    { icon: Cloud,     title: 'AI Weather Dashboard',  desc: 'Real-time temperature, AQI, UV index, wind maps, and 7-day forecasts powered by neural climate models.', color: '#00d4ff', badge: 'LIVE',  delay: 0 },
-    { icon: Brain,     title: 'AI Chat Assistant',      desc: 'Voice-enabled conversational AI. Ask about weather, get smart clothing, travel, and health recommendations.', color: '#7c3aed', badge: 'AI',    delay: 1 },
-    { icon: BarChart2, title: 'Climate Analytics',      desc: 'Animated charts, real-time graphs, heatmaps, radar visualizations and predictive trend analysis.', color: '#06ffd4', badge: 'NEW',   delay: 2 },
-    { icon: Zap,       title: 'Smart Recommendations',  desc: 'AI-generated clothing, travel, health alerts and farming advice based on live hyperlocal conditions.', color: '#ff9900', delay: 3 },
-    { icon: Shield,    title: 'Disaster Alert System',  desc: 'Pulsing emergency overlays, critical warning cards, and instant multi-channel alert dispatch.', color: '#ff4444', badge: 'ALERT', delay: 4 },
-    { icon: Map,       title: 'Interactive Maps',       desc: '3D weather layers, animated precipitation markers, wind simulation and real-time global radar.', color: '#a78bfa', delay: 5 },
+    { icon: Cloud,     title: 'AI Weather Dashboard',  desc: 'Real-time temperature, AQI, UV index, wind maps, and 7-day forecasts powered by neural climate models.', color: '#00d4ff', badge: 'LIVE',  delay: 0, to: '/dashboard' },
+    { icon: Brain,     title: 'AI Chat Assistant',      desc: 'Voice-enabled conversational AI. Ask about weather, get smart clothing, travel, and health recommendations.', color: '#7c3aed', badge: 'AI',    delay: 1, to: '/assistant' },
+    { icon: BarChart2, title: 'Climate Analytics',      desc: 'Animated charts, real-time graphs, heatmaps, radar visualizations and predictive trend analysis.', color: '#06ffd4', badge: 'NEW',   delay: 2, to: '/analytics' },
+    { icon: Zap,       title: 'Smart Recommendations',  desc: 'AI-generated clothing, travel, health alerts and farming advice based on live hyperlocal conditions.', color: '#ff9900', delay: 3, to: '/dashboard' },
+    { icon: Shield,    title: 'Disaster Alert System',  desc: 'Pulsing emergency overlays, critical warning cards, and instant multi-channel alert dispatch.', color: '#ff4444', badge: 'ALERT', delay: 4, to: '/alerts' },
+    { icon: Map,       title: 'Interactive Maps',       desc: '3D weather layers, animated precipitation markers, wind simulation and real-time global radar.', color: '#a78bfa', delay: 5, to: '/map' },
   ]
 
   const stats = [
