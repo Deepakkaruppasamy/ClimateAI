@@ -97,23 +97,43 @@ function AtmosphericBackground() {
     resize()
     window.addEventListener('resize', resize, { passive: true })
 
-    // Generate lightweight floating thermal/carbon atmospheric particles
-    const particles = []
-    for (let i = 0; i < 40; i++) {
-      particles.push({
+    // Generate climate telemetry wind streamlines and radar cloud cells
+    const windCurrents = []
+    for (let i = 0; i < 20; i++) {
+      windCurrents.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: 1 + Math.random() * 2.5,
-        speed: 0.15 + Math.random() * 0.35,
-        drift: (Math.random() - 0.5) * 0.15,
-        alpha: 0.15 + Math.random() * 0.45,
-        twinkle: 0.005 + Math.random() * 0.01,
-        twinkleDir: Math.random() > 0.5 ? 1 : -1,
-        color: Math.random() > 0.6 
-          ? 'rgba(6, 255, 212, ' // neon cyan
-          : Math.random() > 0.5 
-          ? 'rgba(124, 58, 237, ' // neon purple
-          : 'rgba(0, 212, 255, ' // neon blue
+        length: 80 + Math.random() * 120,
+        speed: 0.8 + Math.random() * 1.5,
+        thickness: 0.8 + Math.random() * 1.2,
+        opacity: 0.1 + Math.random() * 0.3,
+        amplitude: 10 + Math.random() * 20,
+        frequency: 0.003 + Math.random() * 0.005,
+        phase: Math.random() * Math.PI
+      })
+    }
+
+    const cloudCells = []
+    for (let i = 0; i < 8; i++) {
+      cloudCells.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: 120 + Math.random() * 160,
+        vx: 0.1 + Math.random() * 0.25,
+        vy: (Math.random() - 0.5) * 0.1,
+        opacity: 0.02 + Math.random() * 0.04
+      })
+    }
+
+    const telemetryPoints = []
+    for (let i = 0; i < 15; i++) {
+      telemetryPoints.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        symbol: Math.random() > 0.5 ? '+' : '°',
+        opacity: 0.1 + Math.random() * 0.3,
+        twinkleSpeed: 0.01 + Math.random() * 0.02,
+        twinkleDir: 1
       })
     }
 
@@ -121,31 +141,69 @@ function AtmosphericBackground() {
       if (!canvas || !ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      particles.forEach(p => {
-        p.y -= p.speed
-        p.x += Math.sin(p.y * 0.004) * p.drift * 2
-        
-        // Twinkle opacity smoothly
-        p.alpha += p.twinkle * p.twinkleDir
-        if (p.alpha > 0.6 || p.alpha < 0.1) p.twinkleDir *= -1
+      // 1. Draw soft satellite radar cloud cells (drifting meteorology zones)
+      cloudCells.forEach(c => {
+        c.x += c.vx
+        c.y += c.vy
 
-        // Wrap around screen bounds
-        if (p.y < -10) {
-          p.y = canvas.height + 10
-          p.x = Math.random() * canvas.width
+        if (c.x - c.radius > canvas.width) {
+          c.x = -c.radius
+          c.y = Math.random() * canvas.height
         }
-        if (p.x < -10) p.x = canvas.width + 10
-        if (p.x > canvas.width + 10) p.x = -10
+        if (c.y - c.radius > canvas.height) c.y = -c.radius
+        if (c.y + c.radius < 0) c.y = canvas.height + c.radius
 
         ctx.save()
-        ctx.fillStyle = `${p.color}${p.alpha.toFixed(2)})`
-        ctx.shadowColor = p.color.replace(', ', ')')
-        ctx.shadowBlur = p.radius * 3
+        const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.radius)
+        grad.addColorStop(0, `rgba(0, 212, 255, ${c.opacity})`) // neon blue/cyan core
+        grad.addColorStop(0.5, `rgba(124, 58, 237, ${c.opacity * 0.4})`) // purple dispersion
+        grad.addColorStop(1, 'rgba(0,0,0,0)')
+        ctx.fillStyle = grad
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2)
         ctx.fill()
         ctx.restore()
       })
+
+      // 2. Draw active wind current streamlines (atmospheric jet streams)
+      ctx.save()
+      windCurrents.forEach(w => {
+        w.x += w.speed
+        
+        if (w.x - w.length > canvas.width) {
+          w.x = -w.length
+          w.y = Math.random() * canvas.height
+        }
+
+        ctx.beginPath()
+        ctx.strokeStyle = `rgba(6, 255, 212, ${w.opacity})` // crisp neon cyan
+        ctx.lineWidth = w.thickness
+
+        // Draw curved streamline using sine wave displacement
+        for (let j = 0; j < w.length; j += 5) {
+          const px = w.x - j
+          const py = w.y + Math.sin(px * w.frequency + w.phase) * w.amplitude
+          if (j === 0) {
+            ctx.moveTo(px, py)
+          } else {
+            ctx.lineTo(px, py)
+          }
+        }
+        ctx.stroke()
+      })
+      ctx.restore()
+
+      // 3. Draw meteorological telemetry signs
+      ctx.save()
+      ctx.font = '9px monospace'
+      telemetryPoints.forEach(p => {
+        p.opacity += p.twinkleSpeed * p.twinkleDir
+        if (p.opacity > 0.5 || p.opacity < 0.05) p.twinkleDir *= -1
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`
+        ctx.fillText(p.symbol, p.x, p.y)
+      })
+      ctx.restore()
 
       animationId = requestAnimationFrame(render)
     }
@@ -159,35 +217,13 @@ function AtmosphericBackground() {
 
   return (
     <div className="absolute inset-0 bg-[#02050e] overflow-hidden -z-10 select-none pointer-events-none">
-      {/* 1. Scrolling grid overlay */}
-      <div className="absolute inset-0 bg-animated-grid opacity-15" />
+      {/* Dynamic atmospheric ambient glow mapping */}
+      <div className="absolute inset-0 bg-radial-glow opacity-30" style={{ background: 'radial-gradient(circle at 50% 50%, #061129 0%, #02050e 100%)' }} />
 
-      {/* 2. Hardware-Accelerated Drifting Nebula Gradients */}
-      <style>{`
-        @keyframes drift-nebula-1 {
-          0%, 100% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(80px, 40px) scale(1.15); }
-        }
-        @keyframes drift-nebula-2 {
-          0%, 100% { transform: translate(0px, 0px) scale(1.1); }
-          50% { transform: translate(-60px, -30px) scale(0.9); }
-        }
-        .nebula-1 {
-          background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
-          animation: drift-nebula-1 25s ease-in-out infinite;
-          will-change: transform;
-        }
-        .nebula-2 {
-          background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
-          animation: drift-nebula-2 30s ease-in-out infinite;
-          will-change: transform;
-        }
-      `}</style>
-      
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full nebula-1" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full nebula-2" />
+      {/* Cybernetic weather grid */}
+      <div className="absolute inset-0 bg-animated-grid opacity-10" />
 
-      {/* 3. Glowing particle canvas */}
+      {/* Atmospheric Canvas Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen" />
     </div>
   )
